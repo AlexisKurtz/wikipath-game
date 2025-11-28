@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WikiPath - Connect the Pages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+
+    .header {
+        background: #2c3e50;
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .game-info {
+        display: flex;
+        justify-content: space-around;
+        background: #34495e;
+        padding: 20px;
+        color: white;
+    }
+
+    .info-box {
+        text-align: center;
+    }
+
+    .info-box .label {
+        font-size: 0.9em;
+        opacity: 0.8;
+        margin-bottom: 5px;
+    }
+
+    .info-box .value {
+        font-size: 1.8em;
+        font-weight: bold;
+    }
+
+    .content {
+        padding: 30px;
+    }
+
+    .page-title {
+        font-size: 2em;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #667eea;
+    }
+
+    .links-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .wiki-link {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #495057;
+        display: block;
+    }
+
+    .wiki-link:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        font-size: 1.2em;
+        color: #666;
+    }
+
+    .win-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .win-modal.active {
+        display: flex;
+    }
+
+    .win-content {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        text-align: center;
+        max-width: 500px;
+    }
+
+    .win-content h2 {
+        color: #27ae60;
+        font-size: 2.5em;
+        margin-bottom: 20px;
+    }
+
+    .win-content p {
+        font-size: 1.2em;
+        margin: 10px 0;
+        color: #555;
+    }
+
+    .btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 1.1em;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+        background: #5568d3;
+    }
+
+    .path-history {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .path-history h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+
+    .path-item {
+        padding: 8px 0;
+        color: #666;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .path-item:last-child {
+        border-bottom: none;
+    }
+
+    .error {
+        background: #fee;
+        color: #c33;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 WikiPath</h1>
+            <p>Connect Wikipedia pages using only links!</p>
+        </div>
+
+```
+    <div class="game-info">
+        <div class="info-box">
+            <div class="label">Current Page</div>
+            <div class="value" id="current-page-display">-</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Target Page</div>
+            <div class="value" id="target-page-display">-</div>
+        </div>
+        <div class="info-box">
+            <div class="label">Clicks</div>
+            <div class="value" id="click-counter">0</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div id="game-area">
+            <div class="loading">Loading game...</div>
+        </div>
+    </div>
+</div>
+
+<div class="win-modal" id="win-modal">
+    <div class="win-content">
+        <h2>🎉 You Won!</h2>
+        <p>You connected the pages in <strong id="final-clicks">0</strong> clicks!</p>
+        <div class="path-history" id="win-path"></div>
+        <button class="btn" onclick="location.reload()">Play Again</button>
+    </div>
+</div>
+
+<script>
+    // ======================
+    // GAME STATE MANAGEMENT
+    // ======================
+    const gameState = {
+        currentPage: '',
+        targetPage: '',
+        clickCount: 0,
+        path: [],
+        started: false
+    };
+
+    // ======================
+    // WIKIPEDIA API HANDLER
+    // ======================
+    class WikipediaAPI {
+        constructor() {
+            this.baseUrl = 'https://en.wikipedia.org/w/api.php';
+        }
+
+        // Fetch a random Wikipedia page title
+        async getRandomPage() {
+            const params = new URLSearchParams({
+                action: 'query',
+                format: 'json',
+                list: 'random',
+                rnnamespace: 0,
+                rnlimit: 1,
+                origin: '*'
+            });
+
+            const response = await fetch(`${this.baseUrl}?${params}`);
+            const data = await response.json();
+            return data.query.random[0].title;
+        }
+
+        // Fetch links from a Wikipedia page
+        async getPageLinks(pageTitle) {
+            const params = new URLSearchParams({
+                action: 'query',
+                format: 'json',
+                titles: pageTitle,
+                prop: 'links',
+                pllimit: 'max',
+                plnamespace: 0,
+                origin: '*'
+            });
+
+            const response = await fetch(`${this.baseUrl}?${params}`);
+            const data = await response.json();
+            
+            const pages = data.query.pages;
+            const pageId = Object.keys(pages)[0];
+            
+            if (pages[pageId].links) {
+                return pages[pageId].links.map(link => link.title);
+            }
+            return [];
+        }
+    }
+
+    // ======================
+    // GAME CONTROLLER
+    // ======================
+    class GameController {
+        constructor() {
+            this.api = new WikipediaAPI();
+            this.gameArea = document.getElementById('game-area');
+            this.clickCounter = document.getElementById('click-counter');
+            this.currentPageDisplay = document.getElementById('current-page-display');
+            this.targetPageDisplay = document.getElementById('target-page-display');
+        }
+
+        async initialize() {
+            try {
+                // Get random start and target pages
+                gameState.currentPage = await this.api.getRandomPage();
+                gameState.targetPage = await this.api.getRandomPage();
+                
+                // Make sure they're different
+                while (gameState.currentPage === gameState.targetPage) {
+                    gameState.targetPage = await this.api.getRandomPage();
+                }
+
+                gameState.path.push(gameState.currentPage);
+                this.updateDisplay();
+                await this.loadPage(gameState.currentPage);
+            } catch (error) {
+                this.showError('Failed to initialize game. Please refresh the page.');
+                console.error(error);
+            }
+        }
+
+        async loadPage(pageTitle) {
+            this.gameArea.innerHTML = '<div class="loading">Loading links...</div>';
+
+            try {
+                const links = await this.api.getPageLinks(pageTitle);
+                this.displayLinks(pageTitle, links);
+            } catch (error) {
+                this.showError('Failed to load page links.');
+                console.error(error);
+            }
+        }
+
+        displayLinks(pageTitle, links) {
+            // Filter out common navigation/meta links
+            const filteredLinks = links.filter(link => 
+                !link.includes(':') && 
+                !link.startsWith('List of') &&
+                link.length > 2
+            ).slice(0, 50); // Limit to 50 links for better UX
+
+            let html = `
+                <h2 class="page-title">${pageTitle}</h2>
+                <p style="color: #666; margin-bottom: 20px;">
+                    Click on a link to navigate. Try to reach <strong>${gameState.targetPage}</strong>!
+                </p>
+                <div class="links-container">
+            `;
+
+            filteredLinks.forEach(link => {
+                html += `
+                    <a href="#" class="wiki-link" data-page="${link}">
+                        ${link}
+                    </a>
+                `;
+            });
+
+            html += '</div>';
+
+            // Add path history
+            if (gameState.path.length > 1) {
+                html += '<div class="path-history"><h3>Your Path:</h3>';
+                gameState.path.forEach((page, index) => {
+                    html += `<div class="path-item">${index + 1}. ${page}</div>`;
+                });
+                html += '</div>';
+            }
+
+            this.gameArea.innerHTML = html;
+
+            // Add click handlers to links
+            document.querySelectorAll('.wiki-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.handleLinkClick(e.target.dataset.page);
+                });
+            });
+        }
+
+        async handleLinkClick(pageTitle) {
+            gameState.clickCount++;
+            gameState.currentPage = pageTitle;
+            gameState.path.push(pageTitle);
+            
+            this.updateDisplay();
+
+            // Check if target reached
+            if (pageTitle === gameState.targetPage) {
+                this.showWinScreen();
+                return;
+            }
+
+            await this.loadPage(pageTitle);
+        }
+
+        updateDisplay() {
+            this.clickCounter.textContent = gameState.clickCount;
+            this.currentPageDisplay.textContent = this.truncateTitle(gameState.currentPage);
+            this.targetPageDisplay.textContent = this.truncateTitle(gameState.targetPage);
+        }
+
+        truncateTitle(title) {
+            return title.length > 20 ? title.substring(0, 20) + '...' : title;
+        }
+
+        showWinScreen() {
+            const modal = document.getElementById('win-modal');
+            const finalClicksEl = document.getElementById('final-clicks');
+            const winPathEl = document.getElementById('win-path');
+
+            finalClicksEl.textContent = gameState.clickCount;
+
+            let pathHtml = '<h3>Your Journey:</h3>';
+            gameState.path.forEach((page, index) => {
+                pathHtml += `<div class="path-item">${index + 1}. ${page}</div>`;
+            });
+            winPathEl.innerHTML = pathHtml;
+
+            modal.classList.add('active');
+        }
+
+        showError(message) {
+            this.gameArea.innerHTML = `<div class="error">${message}</div>`;
+        }
+    }
+
+    // ======================
+    // INITIALIZE GAME
+    // ======================
+    const game = new GameController();
+    game.initialize();
+</script>
+```
+
+</body>
+</html>
