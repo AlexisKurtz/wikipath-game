@@ -462,6 +462,37 @@
 
             // Fetch a random Wikipedia page title
             async getRandomPage() {
+                // Try to get a popular page from most viewed articles
+                try {
+                    // Get top viewed articles from the past week
+                    const date = new Date();
+                    date.setDate(date.getDate() - 1); // Yesterday
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    
+                    const topViewsUrl = `https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/${year}/${month}/${day}`;
+                    const response = await fetch(topViewsUrl);
+                    const data = await response.json();
+                    
+                    if (data.items && data.items[0] && data.items[0].articles) {
+                        // Filter out special pages and get random from top 8000
+                        const articles = data.items[0].articles.filter(article => 
+                            !article.article.includes(':') && 
+                            article.article !== 'Main_Page' &&
+                            article.article.length > 2
+                        ).slice(0, 8000); // Top 8000 articles
+                        
+                        if (articles.length > 0) {
+                            const randomArticle = articles[Math.floor(Math.random() * articles.length)];
+                            return decodeURIComponent(randomArticle.article.replace(/_/g, ' '));
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not fetch popular pages, using fallback');
+                }
+                
+                // Fallback to random page if popular pages fail
                 const params = new URLSearchParams({
                     action: 'query',
                     format: 'json',
