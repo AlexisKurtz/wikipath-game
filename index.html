@@ -372,7 +372,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.2.1</div>
+        <div class="version">v1.2.2</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -390,6 +390,9 @@
             <div class="info-box">
                 <div class="label">Timer</div>
                 <div class="value" id="timer-display">0:00</div>
+            </div>
+            <div class="info-box">
+                <button class="btn btn-small" onclick="retryGame()">Retry</button>
             </div>
             <div class="info-box">
                 <button class="btn btn-small" onclick="startNewGame()">New Game</button>
@@ -926,6 +929,41 @@
         // Function to start a new game
         function startNewGame() {
             clearUrl();
+            location.reload();
+        }
+
+        // Function to retry the same game
+        function retryGame() {
+            if (!gameState.startPage || !gameState.targetPage) {
+                return;
+            }
+            
+            // Keep the same start and target pages
+            const start = gameState.startPage;
+            const target = gameState.targetPage;
+            
+            // Reset game state
+            gameState.currentPage = start;
+            gameState.clickCount = 0;
+            gameState.totalClicks = 0;
+            gameState.visitedPages = new Set([start]);
+            gameState.path = [start];
+            gameState.startTime = Date.now();
+            gameState.elapsedTime = 0;
+            
+            // Update URL with reset state
+            updateUrl(
+                start,
+                target,
+                start,
+                0,
+                0,
+                [start],
+                [start],
+                gameState.startTime
+            );
+            
+            // Reload the page to refresh
             location.reload();
         }
     </script>
