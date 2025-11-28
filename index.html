@@ -417,7 +417,8 @@
             params.set('path', path.join('|'));
             
             const newUrl = `${window.location.pathname}?${params.toString()}`;
-            window.history.replaceState({}, '', newUrl);
+            // Use pushState instead of replaceState to enable browser back button
+            window.history.pushState({ gameState: true }, '', newUrl);
         }
 
         function clearUrl() {
@@ -674,6 +675,27 @@
                 this.gameArea.innerHTML = `<div class="error">${message}</div>`;
             }
         }
+
+        // ======================
+        // BROWSER BACK BUTTON HANDLER
+        // ======================
+        window.addEventListener('popstate', function(event) {
+            // When user clicks back button, reload the game state from URL
+            const urlParams = getUrlParams();
+            
+            if (urlParams.start && urlParams.target) {
+                // Update game state from URL
+                gameState.startPage = urlParams.start;
+                gameState.targetPage = urlParams.target;
+                gameState.currentPage = urlParams.current || urlParams.start;
+                gameState.clickCount = urlParams.clicks;
+                gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
+                
+                // Update display and load the page
+                game.updateDisplay();
+                game.loadPage(gameState.currentPage);
+            }
+        });
 
         // ======================
         // INITIALIZE GAME
