@@ -372,7 +372,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.0.0</div>
+        <div class="version">v1.1.0</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -529,6 +529,7 @@
                     prop: 'text',
                     disableeditsection: 1,
                     disabletoc: 1,
+                    redirects: 1, // Follow redirects automatically
                     origin: '*'
                 });
 
@@ -542,7 +543,9 @@
                     
                     return {
                         title: data.parse.title,
-                        content: data.parse.text['*']
+                        content: data.parse.text['*'],
+                        redirected: data.parse.redirects ? true : false,
+                        finalTitle: data.parse.title
                     };
                 } catch (error) {
                     console.error('Error fetching page content:', error);
@@ -659,6 +662,31 @@
 
                 try {
                     const pageData = await this.api.getPageContent(pageTitle);
+                    
+                    // If this was a redirect, update the current page to the final title
+                    // but don't count it as a separate navigation
+                    if (pageData.redirected && pageData.finalTitle !== pageTitle) {
+                        gameState.currentPage = pageData.finalTitle;
+                        // Update the last item in path to the final title (not the redirect)
+                        if (gameState.path.length > 0 && gameState.path[gameState.path.length - 1] === pageTitle) {
+                            gameState.path[gameState.path.length - 1] = pageData.finalTitle;
+                        }
+                        // Update visited pages
+                        gameState.visitedPages.delete(pageTitle);
+                        gameState.visitedPages.add(pageData.finalTitle);
+                        
+                        // Update URL with corrected state
+                        updateUrl(
+                            gameState.startPage,
+                            gameState.targetPage,
+                            gameState.currentPage,
+                            gameState.clickCount,
+                            gameState.totalClicks,
+                            Array.from(gameState.visitedPages),
+                            gameState.path
+                        );
+                    }
+                    
                     this.displayArticle(pageData);
                 } catch (error) {
                     this.showError(`Failed to load page: ${pageTitle}. Please try clicking another link.`);
