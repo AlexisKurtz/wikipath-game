@@ -372,7 +372,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.1.1</div>
+        <div class="version">v1.2.0</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -386,6 +386,10 @@
             <div class="info-box">
                 <div class="label">Pages Visited</div>
                 <div class="value" id="pages-visited">1</div>
+            </div>
+            <div class="info-box">
+                <div class="label">Timer</div>
+                <div class="value" id="timer-display">0:00</div>
             </div>
             <div class="info-box">
                 <button class="btn btn-small" onclick="startNewGame()">New Game</button>
@@ -424,11 +428,12 @@
                 clicks: parseInt(params.get('clicks')) || 0,
                 totalClicks: parseInt(params.get('totalClicks')) || 0,
                 visited: params.get('visited') ? params.get('visited').split('|') : [],
-                path: params.get('path') ? params.get('path').split('|') : []
+                path: params.get('path') ? params.get('path').split('|') : [],
+                startTime: params.get('startTime') || null
             };
         }
 
-        function updateUrl(start, target, current, clicks, totalClicks, visited, path) {
+        function updateUrl(start, target, current, clicks, totalClicks, visited, path, startTime) {
             const params = new URLSearchParams();
             params.set('start', start);
             params.set('target', target);
@@ -437,6 +442,9 @@
             params.set('totalClicks', totalClicks.toString());
             params.set('visited', visited.join('|'));
             params.set('path', path.join('|'));
+            if (startTime) {
+                params.set('startTime', startTime);
+            }
             
             const newUrl = `${window.location.pathname}?${params.toString()}`;
             // Use pushState instead of replaceState to enable browser back button
@@ -457,7 +465,9 @@
             clickCount: 0,
             totalClicks: 0, // Total clicks made (never decreases)
             visitedPages: new Set(), // Track all unique pages visited
-            path: []
+            path: [],
+            startTime: null, // Timer start
+            elapsedTime: 0 // Time in seconds
         };
 
         // ======================
@@ -594,6 +604,8 @@
                 this.pagesVisited = document.getElementById('pages-visited');
                 this.targetPageDisplay = document.getElementById('target-page-display');
                 this.targetDescription = document.getElementById('target-description');
+                this.timerDisplay = document.getElementById('timer-display');
+                this.timerInterval = null;
             }
 
             async initialize() {
@@ -610,12 +622,14 @@
                         gameState.totalClicks = urlParams.totalClicks;
                         gameState.visitedPages = new Set(urlParams.visited);
                         gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
+                        gameState.startTime = urlParams.startTime;
                         
                         // Fetch description for target page
                         const targetDesc = await this.api.getPageDescription(gameState.targetPage);
                         this.targetDescription.textContent = targetDesc;
                         
                         this.updateDisplay();
+                        this.startTimer();
                         await this.loadPage(gameState.currentPage);
                     } else {
                         // Start new game
@@ -632,6 +646,7 @@
                         gameState.clickCount = 0;
                         gameState.totalClicks = 0;
                         gameState.visitedPages = new Set([gameState.startPage]);
+                        gameState.startTime = Date.now();
                         
                         // Fetch description for target page
                         const targetDesc = await this.api.getPageDescription(gameState.targetPage);
@@ -645,15 +660,48 @@
                             gameState.clickCount,
                             gameState.totalClicks,
                             Array.from(gameState.visitedPages),
-                            gameState.path
+                            gameState.path,
+                            gameState.startTime
                         );
                         
                         this.updateDisplay();
+                        this.startTimer();
                         await this.loadPage(gameState.currentPage);
                     }
                 } catch (error) {
                     this.showError('Failed to initialize game. Please refresh the page.');
                     console.error(error);
+                }
+            }
+
+            startTimer() {
+                // Clear any existing timer
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+                
+                // Update timer every second
+                this.timerInterval = setInterval(() => {
+                    if (gameState.startTime) {
+                        gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+                        this.updateTimerDisplay();
+                    }
+                }, 1000);
+                
+                // Initial display
+                this.updateTimerDisplay();
+            }
+
+            updateTimerDisplay() {
+                const minutes = Math.floor(gameState.elapsedTime / 60);
+                const seconds = gameState.elapsedTime % 60;
+                this.timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            stopTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
                 }
             }
 
@@ -683,7 +731,8 @@
                             gameState.clickCount,
                             gameState.totalClicks,
                             Array.from(gameState.visitedPages),
-                            gameState.path
+                            gameState.path,
+                            gameState.startTime
                         );
                     }
                     
@@ -772,7 +821,8 @@
                     gameState.clickCount,
                     gameState.totalClicks,
                     Array.from(gameState.visitedPages),
-                    gameState.path
+                    gameState.path,
+                    gameState.startTime
                 );
                 
                 this.updateDisplay();
@@ -793,6 +843,8 @@
             }
 
             showWinScreen() {
+                this.stopTimer(); // Stop the timer when game is won
+                
                 const modal = document.getElementById('win-modal');
                 const finalClicksEl = document.getElementById('final-clicks');
                 const winPathEl = document.getElementById('win-path');
@@ -800,6 +852,7 @@
                 finalClicksEl.textContent = gameState.totalClicks; // Show total clicks in win screen
 
                 let pathHtml = '<h3>Your Journey:</h3>';
+                pathHtml += `<p style="margin-bottom: 15px;">Time: ${this.timerDisplay.textContent}</p>`;
                 gameState.path.forEach((page, index) => {
                     pathHtml += `<div class="path-item">${index + 1}. ${page}</div>`;
                 });
