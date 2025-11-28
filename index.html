@@ -285,6 +285,12 @@
             background: #5568d3;
         }
 
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 0.9em;
+            margin: 0;
+        }
+
         .path-history {
             margin-top: 30px;
             padding: 20px;
@@ -364,7 +370,7 @@
                 <div class="value" id="pages-visited">1</div>
             </div>
             <div class="info-box">
-                <button class="btn" onclick="startNewGame()" style="margin: 0; padding: 10px 20px; font-size: 0.9em;">New Game</button>
+                <button class="btn btn-small" onclick="startNewGame()">New Game</button>
             </div>
         </div>
     </div>
@@ -383,52 +389,51 @@
             <h2>🎉 Congratulations!</h2>
             <p>You connected the pages in <strong id="final-clicks">0</strong> clicks!</p>
             <div class="path-history" id="win-path"></div>
-            <button class="btn" onclick="location.reload()">Play Again</button>
+            <button class="btn" onclick="startNewGame()">Play Again</button>
         </div>
     </div>
 
     <script>
         // ======================
+        // URL STATE MANAGEMENT
+        // ======================
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                start: params.get('start'),
+                target: params.get('target'),
+                current: params.get('current'),
+                clicks: parseInt(params.get('clicks')) || 0,
+                path: params.get('path') ? params.get('path').split('|') : []
+            };
+        }
+
+        function updateUrl(start, target, current, clicks, path) {
+            const params = new URLSearchParams();
+            params.set('start', start);
+            params.set('target', target);
+            params.set('current', current);
+            params.set('clicks', clicks.toString());
+            params.set('path', path.join('|'));
+            
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, '', newUrl);
+        }
+
+        function clearUrl() {
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+
+        // ======================
         // GAME STATE MANAGEMENT
         // ======================
         const gameState = {
+            startPage: '',
             currentPage: '',
             targetPage: '',
             clickCount: 0,
-            path: [],
-            started: false
+            path: []
         };
-
-        // Save game state to memory
-        function saveGameState() {
-            const state = {
-                currentPage: gameState.currentPage,
-                targetPage: gameState.targetPage,
-                clickCount: gameState.clickCount,
-                path: gameState.path,
-                started: gameState.started
-            };
-            window.gameStateBackup = state;
-        }
-
-        // Load game state from memory
-        function loadGameState() {
-            const saved = window.gameStateBackup;
-            if (saved) {
-                gameState.currentPage = saved.currentPage;
-                gameState.targetPage = saved.targetPage;
-                gameState.clickCount = saved.clickCount;
-                gameState.path = saved.path;
-                gameState.started = saved.started;
-                return true;
-            }
-            return false;
-        }
-
-        // Clear game state
-        function clearGameState() {
-            window.gameStateBackup = null;
-        }
 
         // ======================
         // WIKIPEDIA API HANDLER
@@ -504,26 +509,42 @@
 
             async initialize() {
                 try {
-                    // Check if there's a saved game state
-                    const hasSavedGame = loadGameState();
+                    const urlParams = getUrlParams();
                     
-                    if (hasSavedGame && gameState.started) {
-                        // Resume existing game
+                    // Check if we have a game in progress (URL has parameters)
+                    if (urlParams.start && urlParams.target) {
+                        // Resume existing game from URL
+                        gameState.startPage = urlParams.start;
+                        gameState.targetPage = urlParams.target;
+                        gameState.currentPage = urlParams.current || urlParams.start;
+                        gameState.clickCount = urlParams.clicks;
+                        gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
+                        
                         this.updateDisplay();
                         await this.loadPage(gameState.currentPage);
                     } else {
                         // Start new game
-                        gameState.currentPage = await this.api.getRandomPage();
+                        gameState.startPage = await this.api.getRandomPage();
                         gameState.targetPage = await this.api.getRandomPage();
                         
                         // Make sure they're different
-                        while (gameState.currentPage === gameState.targetPage) {
+                        while (gameState.startPage === gameState.targetPage) {
                             gameState.targetPage = await this.api.getRandomPage();
                         }
 
-                        gameState.path = [gameState.currentPage];
-                        gameState.started = true;
-                        saveGameState();
+                        gameState.currentPage = gameState.startPage;
+                        gameState.path = [gameState.startPage];
+                        gameState.clickCount = 0;
+                        
+                        // Save to URL
+                        updateUrl(
+                            gameState.startPage,
+                            gameState.targetPage,
+                            gameState.currentPage,
+                            gameState.clickCount,
+                            gameState.path
+                        );
+                        
                         this.updateDisplay();
                         await this.loadPage(gameState.currentPage);
                     }
@@ -607,8 +628,14 @@
                 gameState.currentPage = pageTitle;
                 gameState.path.push(pageTitle);
                 
-                // Save state after each move
-                saveGameState();
+                // Update URL with new state
+                updateUrl(
+                    gameState.startPage,
+                    gameState.targetPage,
+                    gameState.currentPage,
+                    gameState.clickCount,
+                    gameState.path
+                );
                 
                 this.updateDisplay();
 
@@ -656,7 +683,7 @@
 
         // Function to start a new game
         function startNewGame() {
-            clearGameState();
+            clearUrl();
             location.reload();
         }
     </script>
