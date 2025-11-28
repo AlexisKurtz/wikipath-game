@@ -1,5 +1,576 @@
-<!DOCTYPE html>
 
+Hi i want to create an app, im not a dev but i have a little knowledge but id like it to be developped in dev best practices. Can you help me with that?
+
+Hi! I'd be happy to help you create an app following development best practices!
+
+To get started and provide you with the best guidance, I need to understand a bit more about what you're building:
+
+What kind of app are you thinking of? (e.g., a web app, mobile app, a simple tool, something more complex)
+What's the core purpose or main feature? Just a brief description of what it should do.
+Do you have a preference for any particular technology? Or would you like me to recommend something based on your skill level?
+Since you mentioned having some knowledge but not being a developer, I can help you build something right here using web technologies (HTML/CSS/JavaScript or React), which are great for learning and can follow professional practices like:
+
+Clean, organized code structure
+Proper error handling
+Comments and documentation
+Responsive design
+Security considerations
+Version control readiness
+Let me know what you're envisioning, and we can start building it together step by step!
+
+I’d like you to ask one question at a time so I can focus on one at a time
+
+Perfect! Let's take it one step at a time.
+
+What kind of app are you thinking of building?
+
+For example: a web app you'd use in a browser, a mobile app, a desktop application, or something else?
+
+I’m unsure at this point, I think we can start with a web app
+
+Great choice! Web apps are perfect for getting started and can often be adapted to mobile later if needed.
+
+What's the main purpose of your app - what problem does it solve or what should it help users do?
+
+I was thinking about a game that uses Wikipedia as a base (ex: plugged on its API). You would have a starting page, ex: Kevin Bacon’s Wikipedia page and you have to reach another Wikipedia page, ex: Weimar Republic’s Wikipedia page using only Wikipedia links on the pages. There would be a counter of how many links you clicked, players would have to connect the pages in a minimum of click.
+In a second time, I’d like to add a leaderboard, a daily challenge like Wordle.
+
+That's a fantastic idea! It's like "Six Degrees of Wikipedia" - a really fun concept that's perfect for a web app. The game has clear mechanics and using Wikipedia's API is very doable.
+
+Before we start building, let me ask:
+
+What's your current skill level with web development? For example:
+
+Have you written HTML/CSS/JavaScript before?
+Have you worked with APIs?
+Are you comfortable with basics, or is this pretty new territory?
+This will help me know how much to explain as we build and what approach to take.
+
+I’m familiar with css and html
+
+Perfect! That's a great foundation. We'll build on that with JavaScript for the interactivity and API calls.
+
+Do you want to start building a basic version right now, or would you like me to first explain the overall technical approach and architecture we'll use?
+
+(Either way works - we can dive straight into code, or I can give you a roadmap first so you understand how all the pieces will fit together.)
+
+Please explain, give a poc
+
+Great! Let me explain the technical approach and architecture, then create a proof of concept for you.
+
+Technical Architecture Overview
+Core Technologies:
+
+HTML/CSS: Structure and styling (you're already comfortable here!)
+JavaScript: Game logic, API interactions, state management
+Wikipedia API: Fetching page content and extracting links
+LocalStorage: Saving game state and eventually leaderboard data (in the browser)
+Key Components:
+
+Game State Manager: Tracks current page, target page, click count, path history
+Wikipedia API Handler: Fetches pages and parses links
+UI Controller: Displays current page content, updates counter, shows win condition
+Path Tracker: Records the journey from start to finish
+How It Works:
+
+Player starts on a random Wikipedia page (or selected starting page)
+App fetches that page's content via Wikipedia API
+Displays the page title and clickable links from that page
+When player clicks a link, counter increments and new page loads
+Process repeats until target page is reached
+Game ends, shows score (number of clicks)
+Best Practices We'll Follow:
+
+Modular code structure (separate concerns)
+Error handling for API failures
+Responsive design
+Clear comments and documentation
+Efficient API usage (caching when possible)
+Let me create a proof of concept that demonstrates the core mechanic - starting on one page, clicking links to navigate to another page, with a working counter.
+
+Yes go, I also want to have it on GitHub
+
+Perfect! I'll create the proof of concept now, and then I'll guide you through setting it up on GitHub.
+
+Wikipedia Link Game - POC
+Interactive artifact 
+Perfect! I've created a working proof of concept. Here's what it does:
+
+Features in this POC:
+
+✅ Fetches random start and target Wikipedia pages
+✅ Displays clickable links from current page
+✅ Tracks click count
+✅ Shows your path history
+✅ Win screen when you reach the target
+✅ Clean, responsive design
+✅ Error handling for API failures
+Code Structure (following best practices):
+
+Modular class-based architecture
+Separate concerns (API, Game Logic, UI)
+Clear comments explaining each section
+Proper error handling
+Now let's get this on GitHub!
+Next question: Do you already have a GitHub account, or do we need to set one up first?
+
+We need to setup. But I want you to explain first what the added value is
+
+Great question! Let me explain why GitHub is valuable for your project.
+
+What is GitHub?
+GitHub is a platform for storing and managing code. Think of it like "Google Drive for developers" but with superpowers.
+
+Added Value for Your Project:
+1. Version Control (The "Time Machine")
+
+Every change you make is saved as a checkpoint
+You can go back to any previous version if something breaks
+You can see exactly what changed, when, and why
+No more "final_v2_FINAL_actualfinal.html" files!
+2. Backup & Safety
+
+Your code is stored in the cloud
+If your computer crashes, your work is safe
+You can access it from any computer
+3. Collaboration (for later)
+
+When you want help from other developers
+Easy to share your code
+Others can suggest improvements ("pull requests")
+You can review changes before accepting them
+4. Professional Development
+
+GitHub is your public portfolio
+Employers/clients can see your projects
+Shows you follow industry standards
+Demonstrates your learning journey
+5. Deployment Options
+
+You can host your web app directly from GitHub (it's free!)
+GitHub Pages lets anyone access your game via a URL
+No need for separate hosting services initially
+6. Project Management
+
+Track bugs and features you want to add
+Organize tasks with "Issues"
+Document your project with a README
+For Your Wikipedia Game Specifically:
+Right now: Safe storage, version history
+Soon: Easy deployment so friends can play
+Later: When adding leaderboard, other developers could contribute
+Future: Portfolio piece to show your work
+Does this make sense? Would you like to proceed with setting up GitHub?
+
+Yes go
+
+Perfect! Let me guide you through setting up GitHub step by step.
+
+Step 1: Create a GitHub Account
+
+Go to: https://github.com/signup
+
+You'll need:
+
+A username (choose something professional - this becomes part of your profile URL)
+Your email address
+A password
+Follow their signup process (they'll verify your email).
+
+Let me know once you've created your account, and I'll guide you through the next step!
+
+(Take your time - just reply when you're ready to continue)
+
+Ok I have my GitHub account
+
+Excellent! Now let's create your first repository (repo) for the Wikipedia game.
+
+Step 2: Create a New Repository
+
+Go to: https://github.com/new (or click the "+" icon in the top right, then "New repository")
+Fill in these details:
+Repository name: wikipath-game (or whatever you prefer - no spaces, use hyphens)
+Description: "A Wikipedia link navigation game - connect pages in minimum clicks"
+Public or Private: Choose Public (so it can be a portfolio piece)
+Check the box: ✅ "Add a README file"
+Leave other options as default
+Click "Create repository"
+Let me know when you've created the repository, and I'll guide you on how to add your code to it!
+
+Can we automate code transfer from here to GitHub?
+
+Unfortunately, no - we can't directly automate the transfer from this chat interface to your GitHub account. There's no direct integration between Claude and GitHub that would let me push code to your repository.
+
+However, I can make it VERY easy for you! Here are your options:
+
+Option 1: Manual Upload (Easiest for beginners - 2 minutes)
+
+Copy the code from the artifact I created
+Create a new file in GitHub called index.html
+Paste the code
+Commit (save) it
+Option 2: Using GitHub Desktop (Best long-term)
+
+Download GitHub Desktop app (user-friendly GUI)
+Clone your repo to your computer
+Save files locally
+Push changes with a button click
+Option 3: Command Line (Most professional, but requires setup)
+
+Use Git commands in your terminal
+More powerful but steeper learning curve
+Which option sounds best for you? I recommend Option 1 to get started quickly, then we can set up Option 2 for easier future updates.
+
+Ok
+
+Great! Let me guide you through Option 1 - Manual Upload (the quickest way to get your code on GitHub).
+
+Step 3: Upload Your Code to GitHub
+
+Go to your repository page on GitHub (should be at https://github.com/YOUR-USERNAME/wikipath-game)
+Click the "Add file" button (top right area)
+Select "Create new file"
+In the filename box at the top, type: index.html
+Now, copy ALL the code from the artifact I created above (the Wikipedia game) and paste it into the large text editor area
+Scroll down to the "Commit new file" section:
+In the first box, write: Initial commit - Wikipedia link game POC
+Leave the second box empty
+Make sure "Commit directly to the main branch" is selected
+Click the green "Commit new file" button
+Let me know when you've done this, and I'll show you how to view your live game!
+
+Is repository = project?
+
+Great question!
+
+Yes, essentially!
+
+Repository (repo) = Project
+
+A repository is where all the files, code, and history for one project live.
+
+Think of it like:
+
+Repository = A project folder
+It contains all your project's files (HTML, CSS, JavaScript, images, etc.)
+Plus the history of all changes you've made
+Examples:
+
+One repo = Your Wikipedia game
+Another repo = A different project (like a todo app)
+Another repo = Maybe a personal website
+So for your Wikipedia game:
+
+Repository name: wikipath-game
+This IS your project
+All files for this game go in this one repository
+Most developers have multiple repositories (one for each project they work on).
+
+Does that clarify it? Ready to continue with uploading the code?
+
+Ok i did add the file in GitHub
+
+Awesome! Now let's see your game live on the web.
+
+Step 4: Enable GitHub Pages (Free Hosting)
+
+In your repository, click on "Settings" (top menu bar, far right)
+In the left sidebar, scroll down and click "Pages" (under "Code and automation")
+Under "Source" or "Build and deployment":
+Set Source to: "Deploy from a branch"
+Set Branch to: "main"
+Leave the folder as: "/ (root)"
+Click "Save"
+Wait about 1-2 minutes, then refresh the page
+You should see a message at the top saying: "Your site is live at https://YOUR-USERNAME.github.io/wikipath-game/"
+Go to that URL and your Wikipedia game should be live!
+
+Let me know what happens - does it work?
+
+Why can’t i plug director Claude to GitHub?
+
+Excellent question! This touches on security, permissions, and how these systems work.
+
+Why Claude Can't Connect Directly to GitHub:
+1. Security & Authentication
+
+GitHub requires authentication (username + password or access tokens)
+Claude doesn't store your credentials (by design - for your safety!)
+Giving Claude access to your GitHub would mean giving it control over all your repositories
+This would be a significant security risk
+2. Permission Model
+
+Claude operates in a sandboxed environment (isolated, limited access)
+It can't make external API calls that require authentication
+This protects both you and other users
+3. No Persistent Sessions
+
+Claude doesn't maintain persistent connections between conversations
+Each conversation is isolated
+GitHub integration would require ongoing authentication
+4. Industry Standard Practice
+
+Most AI assistants don't have direct access to external accounts
+This prevents accidental deletions, unauthorized changes, or security breaches
+What DOES Exist (for reference):
+Some tools that bridge this gap:
+
+GitHub Copilot - AI coding assistant that works inside your code editor (not the same as Claude, but has tight GitHub integration)
+CI/CD pipelines - Automated deployment (we can set this up later!)
+GitHub Actions - Automated workflows you configure
+The Trade-off:
+Manual upload is slightly less convenient BUT much safer. You always have full control over what goes into your repository.
+
+Does this make sense? Is your game live on GitHub Pages now?
+
+I just pasted the code in index.html, give me next steps
+
+Perfect! Now let's get your game live on the web.
+
+Next Step: Enable GitHub Pages
+
+In your repository (wikipath-game), click "Settings" tab at the top
+In the left sidebar, scroll down to find "Pages" (it's under the "Code and automation" section)
+Under "Build and deployment":
+Source: Select "Deploy from a branch"
+Branch: Select "main" (and keep folder as "/ (root)")
+Click "Save"
+Wait 1-2 minutes for GitHub to build your site
+Refresh the Settings > Pages page
+You should see: "Your site is live at https://YOUR-USERNAME.github.io/wikipath-game/"
+Click that link to see your game live!
+Try it out and let me know if the game loads!
+
+cant find pages
+
+No problem! Let me help you find it more specifically.
+
+Here's exactly where to look:
+
+Make sure you're on your repository page: github.com/YOUR-USERNAME/wikipath-game
+Click the "Settings" tab (it's in the horizontal menu at the top, should be the last/rightmost option after "Insights")
+Once in Settings, look at the left sidebar
+Scroll down in that left sidebar - you should see sections like:
+General
+Access
+Code and automation ← Look here!
+Pages ← This is what you need
+If you still don't see "Pages":
+
+Is your repository Public? (Pages only works with public repos on free accounts)
+Try refreshing the page
+Can you see the Settings tab at all? Or are you stuck finding that?
+
+ok found it
+
+Awesome!
+
+Now follow these steps in the Pages section:
+
+Under "Build and deployment", find "Source"
+Click the dropdown and select: "Deploy from a branch"
+Under "Branch", select: "main" (and leave the folder as "/ (root)")
+Click the "Save" button
+Wait about 1-2 minutes
+Refresh the page
+You should see a green/blue box at the top that says: "Your site is live at https://YOUR-USERNAME.github.io/wikipath-game/"
+
+Let me know when you see that URL!
+
+can't see build and deployment
+
+Let me help troubleshoot this. Can you tell me:
+
+What DO you see on the Pages settings page?
+
+For example, do you see:
+
+Any text or options at all?
+A message saying Pages is disabled?
+Different dropdown menus?
+Something about "GitHub Pages is currently disabled"?
+Or can you describe what's visible on that Pages screen? This will help me guide you to the right setting.
+
+ok I changed to public
+
+Perfect! That was likely the issue - Pages requires public repositories on free GitHub accounts.
+
+Now go back to the Pages section:
+
+Go to Settings > Pages again
+You should now see the "Build and deployment" section
+Under "Source": Select "Deploy from a branch"
+Under "Branch": Select "main" and keep folder as "/ (root)"
+Click "Save"
+Wait 1-2 minutes, then refresh the page
+Do you see the deployment options now?
+
+yes
+
+Excellent!
+
+Now complete the deployment:
+
+Under "Source": Select "Deploy from a branch"
+Under "Branch": Click the dropdown and select "main"
+Make sure the folder dropdown shows "/ (root)"
+Click "Save"
+Wait about 1-2 minutes
+Refresh the Pages settings page
+You should see a message saying your site is live with a URL. Do you see it?
+
+yes i see it
+
+Fantastic! 🎉
+
+Now click on that URL (it should be something like https://YOUR-USERNAME.github.io/wikipath-game/)
+
+Does your Wikipedia game load and work? Try playing it - click through some links and see if it connects the pages!
+
+Let me know if it works or if you see any errors!
+
+I have a 404 page
+
+Okay, let's troubleshoot the 404 error.
+
+Can you check these things:
+
+Go back to your repository main page (github.com/YOUR-USERNAME/wikipath-game)
+Do you see a file called index.html listed there?
+If yes, click on index.html - does it show all the game code inside?
+What's the exact URL you're trying to visit? (the GitHub Pages URL)
+Let me know what you see - this will help me figure out what's wrong!
+
+I see a index.html
+
+Good! The file exists. Let's check a few more things:
+
+1. Click on the index.html file - does it show all the HTML code with the game (should be a long file with <!DOCTYPE html> at the top)?
+
+2. What is the exact URL you're trying to visit? (copy and paste the GitHub Pages URL)
+
+3. How long ago did you click "Save" in the Pages settings? Sometimes it takes 2-5 minutes for the first deployment.
+
+Let me know these details and we'll fix it!
+
+My file is named Index.html, can it have an impact?
+
+YES! That's the problem!
+
+GitHub Pages is case-sensitive. It needs to be index.html (lowercase "i"), not Index.html (uppercase "I").
+
+Let's fix it:
+
+Go to your repository main page
+Click on Index.html
+Click the pencil icon (top right) to edit
+At the top where it says the filename, change Index.html to index.html (lowercase)
+Scroll down and click "Commit changes"
+Wait 1-2 minutes
+Try your GitHub Pages URL again
+Let me know if that fixes it!
+
+yes it works!
+
+🎉 Congratulations! Your first web app is live on the internet!
+
+You now have:
+
+✅ A working Wikipedia link game
+✅ Code hosted on GitHub (version control)
+✅ A live website anyone can access
+✅ Following development best practices
+What would you like to do next?
+
+Here are some options:
+
+Add features - Daily challenge, better UI, difficulty levels?
+Add the leaderboard - Track high scores (we'll need to discuss storage options)
+Improve the game - Better page selection, hints, timer?
+Learn GitHub workflow - How to make changes and update your live site
+Something else - What's on your mind?
+What interests you most?
+
+Ok so the game works but I want it to display the actual wikipedia page, not only the links list
+
+Great idea! That would make the game feel much more authentic - like you're actually browsing Wikipedia.
+
+Before I implement this, I need to understand what you want:
+
+Do you want to:
+
+Option A: Display the full Wikipedia article content (text, images, formatting) inside your game - so it looks like you're reading the actual Wikipedia page?
+
+Option B: Keep it simpler but show some article preview/summary along with the links?
+
+Option C: Embed the actual Wikipedia page in an iframe (like a window showing the real Wikipedia site)?
+
+Each option has trade-offs in terms of complexity, user experience, and what's technically possible.
+
+Which sounds closest to what you're imagining?
+
+I'd say option C, but not sure
+
+Good instinct to be unsure! Let me explain the trade-offs so you can decide:
+
+Option C (iframe - actual Wikipedia page):
+
+✅ Looks exactly like Wikipedia
+✅ All formatting, images, references intact
+❌ Problem: Wikipedia blocks iframes for security reasons (won't work)
+❌ User might click away from your game accidentally
+Option A (Full article content in your game):
+
+✅ Feels like browsing Wikipedia
+✅ You control the experience (can't click away)
+✅ Can style it to look like Wikipedia
+✅ Works reliably
+⚠️ More complex to build (but doable!)
+Option B (Article summary + links):
+
+✅ Quick to implement
+✅ Shows context about the page
+❌ Less immersive than full article
+My recommendation: Option A - display the full article content styled to look like Wikipedia. It gives the best game experience.
+
+Does Option A sound good to you?
+
+option a then
+
+Perfect choice! Option A will give the best game experience.
+
+Let me update the game to display the full Wikipedia article content with proper formatting, images, and styling that looks like Wikipedia.
+
+Wikipedia Link Game - POC
+Interactive artifact ∙ Version 2 
+Perfect! I've updated the game to display the full Wikipedia article content just like browsing the actual Wikipedia site.
+
+What's new:
+
+✅ Full article display - Shows the complete Wikipedia page with text, formatting, headings ✅ Wikipedia styling - Looks like the real Wikipedia (fonts, colors, layout) ✅ All links work - Click any blue link to navigate (just like Wikipedia) ✅ Images & infoboxes - Displays pictures and info boxes from articles ✅ Better UX - Auto-scrolls to top when you click a link ✅ Pages visited counter - Now tracks how many different pages you've seen
+
+Now you need to update GitHub:
+
+Go to your repository
+Click on index.html
+Click the pencil icon (edit)
+Select all the old code and delete it
+Copy the new code from the artifact above and paste it
+Scroll down, add commit message: Added full Wikipedia article display
+Click "Commit changes"
+Wait 1-2 minutes, then refresh your live site
+Try it out and let me know how it looks!
+
+
+
+How can I help you today?
+
+
+
+
+
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,434 +583,574 @@
             box-sizing: border-box;
         }
 
-```
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 20px;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f6f6f6;
+            min-height: 100vh;
+        }
 
-    .container {
-        max-width: 900px;
-        margin: 0 auto;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        overflow: hidden;
-    }
+        .game-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-    .header {
-        background: #2c3e50;
-        color: white;
-        padding: 30px;
-        text-align: center;
-    }
+        .game-header h1 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
 
-    .header h1 {
-        font-size: 2.5em;
-        margin-bottom: 10px;
-    }
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 
-    .game-info {
-        display: flex;
-        justify-content: space-around;
-        background: #34495e;
-        padding: 20px;
-        color: white;
-    }
+        .info-box {
+            background: rgba(255,255,255,0.2);
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 150px;
+        }
 
-    .info-box {
-        text-align: center;
-    }
+        .info-box .label {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
 
-    .info-box .label {
-        font-size: 0.9em;
-        opacity: 0.8;
-        margin-bottom: 5px;
-    }
+        .info-box .value {
+            font-size: 1.4em;
+            font-weight: bold;
+        }
 
-    .info-box .value {
-        font-size: 1.8em;
-        font-weight: bold;
-    }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
 
-    .content {
-        padding: 30px;
-    }
+        /* Wikipedia-style article content */
+        .article-content {
+            padding: 30px;
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #202122;
+        }
 
-    .page-title {
-        font-size: 2em;
-        color: #2c3e50;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #667eea;
-    }
+        .article-title {
+            font-family: 'Linux Libertine', 'Georgia', serif;
+            font-size: 2.2em;
+            font-weight: normal;
+            border-bottom: 1px solid #a2a9b1;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #000;
+        }
 
-    .links-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 10px;
-        margin-top: 20px;
-    }
+        /* Wikipedia-style links */
+        .article-content a {
+            color: #0645ad;
+            text-decoration: none;
+            cursor: pointer;
+        }
 
-    .wiki-link {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 8px;
-        border: 2px solid #e9ecef;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        color: #495057;
-        display: block;
-    }
+        .article-content a:hover {
+            text-decoration: underline;
+        }
 
-    .wiki-link:hover {
-        background: #667eea;
-        color: white;
-        border-color: #667eea;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
+        .article-content a:visited {
+            color: #0b0080;
+        }
 
-    .loading {
-        text-align: center;
-        padding: 40px;
-        font-size: 1.2em;
-        color: #666;
-    }
+        /* Wikipedia-style paragraphs */
+        .article-content p {
+            margin-bottom: 0.5em;
+            text-align: justify;
+        }
 
-    .win-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
+        /* Wikipedia-style images */
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
 
-    .win-modal.active {
-        display: flex;
-    }
+        .article-content .thumb {
+            border: 1px solid #c8ccd1;
+            background-color: #f8f9fa;
+            padding: 3px;
+            margin: 10px;
+            float: right;
+            clear: right;
+            max-width: 300px;
+        }
 
-    .win-content {
-        background: white;
-        padding: 40px;
-        border-radius: 12px;
-        text-align: center;
-        max-width: 500px;
-    }
+        .article-content .thumbinner {
+            padding: 3px;
+            text-align: center;
+        }
 
-    .win-content h2 {
-        color: #27ae60;
-        font-size: 2.5em;
-        margin-bottom: 20px;
-    }
+        .article-content .thumbcaption {
+            font-size: 0.9em;
+            color: #54595d;
+            padding: 5px;
+            text-align: left;
+        }
 
-    .win-content p {
-        font-size: 1.2em;
-        margin: 10px 0;
-        color: #555;
-    }
+        /* Wikipedia-style headings */
+        .article-content h2 {
+            font-family: 'Linux Libertine', 'Georgia', serif;
+            font-size: 1.5em;
+            font-weight: normal;
+            border-bottom: 1px solid #a2a9b1;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: #000;
+        }
 
-    .btn {
-        background: #667eea;
-        color: white;
-        border: none;
-        padding: 15px 30px;
-        border-radius: 8px;
-        font-size: 1.1em;
-        cursor: pointer;
-        margin-top: 20px;
-        transition: background 0.3s ease;
-    }
+        .article-content h3 {
+            font-family: 'Linux Libertine', 'Georgia', serif;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            color: #000;
+        }
 
-    .btn:hover {
-        background: #5568d3;
-    }
+        /* Wikipedia-style lists */
+        .article-content ul, .article-content ol {
+            margin-left: 1.6em;
+            margin-bottom: 0.5em;
+        }
 
-    .path-history {
-        margin-top: 30px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
-    }
+        .article-content li {
+            margin-bottom: 0.3em;
+        }
 
-    .path-history h3 {
-        color: #2c3e50;
-        margin-bottom: 15px;
-    }
+        /* Wikipedia infobox style */
+        .infobox {
+            border: 1px solid #a2a9b1;
+            background-color: #f8f9fa;
+            float: right;
+            clear: right;
+            margin: 10px;
+            padding: 5px;
+            width: 280px;
+            font-size: 0.9em;
+        }
 
-    .path-item {
-        padding: 8px 0;
-        color: #666;
-        border-bottom: 1px solid #e9ecef;
-    }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2em;
+            color: #666;
+        }
 
-    .path-item:last-child {
-        border-bottom: none;
-    }
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
 
-    .error {
-        background: #fee;
-        color: #c33;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 20px 0;
-    }
-</style>
-```
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
 
+        .win-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .win-modal.active {
+            display: flex;
+        }
+
+        .win-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .win-content h2 {
+            color: #27ae60;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .win-content p {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: #555;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .path-history {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .path-history h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .path-item {
+            padding: 8px 0;
+            color: #666;
+            border-bottom: 1px solid #e9ecef;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .path-item:last-child {
+            border-bottom: none;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .wiki-notice {
+            background: #eaf3ff;
+            border: 1px solid #a8d1ff;
+            padding: 15px;
+            margin: 20px 30px;
+            border-radius: 4px;
+            font-size: 0.95em;
+            color: #0645ad;
+        }
+
+        @media (max-width: 768px) {
+            .article-content {
+                padding: 20px;
+            }
+            
+            .info-box {
+                min-width: 120px;
+            }
+            
+            .article-content .thumb,
+            .infobox {
+                float: none;
+                margin: 10px auto;
+                max-width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="game-header">
+        <h1>🔗 WikiPath - Connect the Pages</h1>
+        <div class="game-info">
+            <div class="info-box">
+                <div class="label">Target Page</div>
+                <div class="value" id="target-page-display">Loading...</div>
+            </div>
+            <div class="info-box">
+                <div class="label">Clicks</div>
+                <div class="value" id="click-counter">0</div>
+            </div>
+            <div class="info-box">
+                <div class="label">Pages Visited</div>
+                <div class="value" id="pages-visited">1</div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
-        <div class="header">
-            <h1>🔗 WikiPath</h1>
-            <p>Connect Wikipedia pages using only links!</p>
+        <div class="wiki-notice">
+            📖 <strong>How to play:</strong> Click on blue Wikipedia links to navigate between pages. Try to reach the target page in the fewest clicks possible!
         </div>
-
-```
-    <div class="game-info">
-        <div class="info-box">
-            <div class="label">Current Page</div>
-            <div class="value" id="current-page-display">-</div>
-        </div>
-        <div class="info-box">
-            <div class="label">Target Page</div>
-            <div class="value" id="target-page-display">-</div>
-        </div>
-        <div class="info-box">
-            <div class="label">Clicks</div>
-            <div class="value" id="click-counter">0</div>
-        </div>
-    </div>
-
-    <div class="content">
         <div id="game-area">
-            <div class="loading">Loading game...</div>
+            <div class="loading">Loading Wikipedia page</div>
         </div>
     </div>
-</div>
 
-<div class="win-modal" id="win-modal">
-    <div class="win-content">
-        <h2>🎉 You Won!</h2>
-        <p>You connected the pages in <strong id="final-clicks">0</strong> clicks!</p>
-        <div class="path-history" id="win-path"></div>
-        <button class="btn" onclick="location.reload()">Play Again</button>
+    <div class="win-modal" id="win-modal">
+        <div class="win-content">
+            <h2>🎉 Congratulations!</h2>
+            <p>You connected the pages in <strong id="final-clicks">0</strong> clicks!</p>
+            <div class="path-history" id="win-path"></div>
+            <button class="btn" onclick="location.reload()">Play Again</button>
+        </div>
     </div>
-</div>
 
-<script>
-    // ======================
-    // GAME STATE MANAGEMENT
-    // ======================
-    const gameState = {
-        currentPage: '',
-        targetPage: '',
-        clickCount: 0,
-        path: [],
-        started: false
-    };
+    <script>
+        // ======================
+        // GAME STATE MANAGEMENT
+        // ======================
+        const gameState = {
+            currentPage: '',
+            targetPage: '',
+            clickCount: 0,
+            path: [],
+            started: false
+        };
 
-    // ======================
-    // WIKIPEDIA API HANDLER
-    // ======================
-    class WikipediaAPI {
-        constructor() {
-            this.baseUrl = 'https://en.wikipedia.org/w/api.php';
-        }
-
-        // Fetch a random Wikipedia page title
-        async getRandomPage() {
-            const params = new URLSearchParams({
-                action: 'query',
-                format: 'json',
-                list: 'random',
-                rnnamespace: 0,
-                rnlimit: 1,
-                origin: '*'
-            });
-
-            const response = await fetch(`${this.baseUrl}?${params}`);
-            const data = await response.json();
-            return data.query.random[0].title;
-        }
-
-        // Fetch links from a Wikipedia page
-        async getPageLinks(pageTitle) {
-            const params = new URLSearchParams({
-                action: 'query',
-                format: 'json',
-                titles: pageTitle,
-                prop: 'links',
-                pllimit: 'max',
-                plnamespace: 0,
-                origin: '*'
-            });
-
-            const response = await fetch(`${this.baseUrl}?${params}`);
-            const data = await response.json();
-            
-            const pages = data.query.pages;
-            const pageId = Object.keys(pages)[0];
-            
-            if (pages[pageId].links) {
-                return pages[pageId].links.map(link => link.title);
+        // ======================
+        // WIKIPEDIA API HANDLER
+        // ======================
+        class WikipediaAPI {
+            constructor() {
+                this.baseUrl = 'https://en.wikipedia.org/w/api.php';
             }
-            return [];
-        }
-    }
 
-    // ======================
-    // GAME CONTROLLER
-    // ======================
-    class GameController {
-        constructor() {
-            this.api = new WikipediaAPI();
-            this.gameArea = document.getElementById('game-area');
-            this.clickCounter = document.getElementById('click-counter');
-            this.currentPageDisplay = document.getElementById('current-page-display');
-            this.targetPageDisplay = document.getElementById('target-page-display');
+            // Fetch a random Wikipedia page title
+            async getRandomPage() {
+                const params = new URLSearchParams({
+                    action: 'query',
+                    format: 'json',
+                    list: 'random',
+                    rnnamespace: 0,
+                    rnlimit: 1,
+                    origin: '*'
+                });
+
+                try {
+                    const response = await fetch(`${this.baseUrl}?${params}`);
+                    const data = await response.json();
+                    return data.query.random[0].title;
+                } catch (error) {
+                    console.error('Error fetching random page:', error);
+                    throw error;
+                }
+            }
+
+            // Fetch the full HTML content of a Wikipedia page
+            async getPageContent(pageTitle) {
+                const params = new URLSearchParams({
+                    action: 'parse',
+                    format: 'json',
+                    page: pageTitle,
+                    prop: 'text',
+                    disableeditsection: 1,
+                    disabletoc: 1,
+                    origin: '*'
+                });
+
+                try {
+                    const response = await fetch(`${this.baseUrl}?${params}`);
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error.info);
+                    }
+                    
+                    return {
+                        title: data.parse.title,
+                        content: data.parse.text['*']
+                    };
+                } catch (error) {
+                    console.error('Error fetching page content:', error);
+                    throw error;
+                }
+            }
         }
 
-        async initialize() {
-            try {
-                // Get random start and target pages
-                gameState.currentPage = await this.api.getRandomPage();
-                gameState.targetPage = await this.api.getRandomPage();
-                
-                // Make sure they're different
-                while (gameState.currentPage === gameState.targetPage) {
+        // ======================
+        // GAME CONTROLLER
+        // ======================
+        class GameController {
+            constructor() {
+                this.api = new WikipediaAPI();
+                this.gameArea = document.getElementById('game-area');
+                this.clickCounter = document.getElementById('click-counter');
+                this.pagesVisited = document.getElementById('pages-visited');
+                this.targetPageDisplay = document.getElementById('target-page-display');
+            }
+
+            async initialize() {
+                try {
+                    // Get random start and target pages
+                    gameState.currentPage = await this.api.getRandomPage();
                     gameState.targetPage = await this.api.getRandomPage();
+                    
+                    // Make sure they're different
+                    while (gameState.currentPage === gameState.targetPage) {
+                        gameState.targetPage = await this.api.getRandomPage();
+                    }
+
+                    gameState.path.push(gameState.currentPage);
+                    this.updateDisplay();
+                    await this.loadPage(gameState.currentPage);
+                } catch (error) {
+                    this.showError('Failed to initialize game. Please refresh the page.');
+                    console.error(error);
+                }
+            }
+
+            async loadPage(pageTitle) {
+                this.gameArea.innerHTML = '<div class="loading">Loading Wikipedia page</div>';
+
+                try {
+                    const pageData = await this.api.getPageContent(pageTitle);
+                    this.displayArticle(pageData);
+                } catch (error) {
+                    this.showError(`Failed to load page: ${pageTitle}. Please try clicking another link.`);
+                    console.error(error);
+                }
+            }
+
+            displayArticle(pageData) {
+                // Create article container
+                const articleDiv = document.createElement('div');
+                articleDiv.className = 'article-content';
+                
+                // Add title
+                const titleEl = document.createElement('h1');
+                titleEl.className = 'article-title';
+                titleEl.textContent = pageData.title;
+                articleDiv.appendChild(titleEl);
+                
+                // Add content
+                const contentDiv = document.createElement('div');
+                contentDiv.innerHTML = pageData.content;
+                articleDiv.appendChild(contentDiv);
+                
+                this.gameArea.innerHTML = '';
+                this.gameArea.appendChild(articleDiv);
+
+                // Process all links in the article
+                this.processLinks();
+            }
+
+            processLinks() {
+                const links = this.gameArea.querySelectorAll('a');
+                
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    
+                    // Only process internal Wikipedia article links
+                    if (href && href.startsWith('/wiki/') && !href.includes(':')) {
+                        // Extract page title from URL
+                        const pageTitle = decodeURIComponent(href.replace('/wiki/', ''));
+                        
+                        // Remove the original href to prevent navigation
+                        link.removeAttribute('href');
+                        link.style.cursor = 'pointer';
+                        
+                        // Add click handler
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            this.handleLinkClick(pageTitle);
+                        });
+                    } else {
+                        // Disable external links and special pages
+                        link.style.color = '#999';
+                        link.style.cursor = 'not-allowed';
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                        });
+                    }
+                });
+            }
+
+            async handleLinkClick(pageTitle) {
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                gameState.clickCount++;
+                gameState.currentPage = pageTitle;
+                gameState.path.push(pageTitle);
+                
+                this.updateDisplay();
+
+                // Check if target reached
+                if (pageTitle === gameState.targetPage) {
+                    this.showWinScreen();
+                    return;
                 }
 
-                gameState.path.push(gameState.currentPage);
-                this.updateDisplay();
-                await this.loadPage(gameState.currentPage);
-            } catch (error) {
-                this.showError('Failed to initialize game. Please refresh the page.');
-                console.error(error);
+                await this.loadPage(pageTitle);
             }
-        }
 
-        async loadPage(pageTitle) {
-            this.gameArea.innerHTML = '<div class="loading">Loading links...</div>';
-
-            try {
-                const links = await this.api.getPageLinks(pageTitle);
-                this.displayLinks(pageTitle, links);
-            } catch (error) {
-                this.showError('Failed to load page links.');
-                console.error(error);
+            updateDisplay() {
+                this.clickCounter.textContent = gameState.clickCount;
+                this.pagesVisited.textContent = gameState.path.length;
+                this.targetPageDisplay.textContent = this.truncateTitle(gameState.targetPage);
             }
-        }
 
-        displayLinks(pageTitle, links) {
-            // Filter out common navigation/meta links
-            const filteredLinks = links.filter(link => 
-                !link.includes(':') && 
-                !link.startsWith('List of') &&
-                link.length > 2
-            ).slice(0, 50); // Limit to 50 links for better UX
+            truncateTitle(title) {
+                return title.length > 25 ? title.substring(0, 25) + '...' : title;
+            }
 
-            let html = `
-                <h2 class="page-title">${pageTitle}</h2>
-                <p style="color: #666; margin-bottom: 20px;">
-                    Click on a link to navigate. Try to reach <strong>${gameState.targetPage}</strong>!
-                </p>
-                <div class="links-container">
-            `;
+            showWinScreen() {
+                const modal = document.getElementById('win-modal');
+                const finalClicksEl = document.getElementById('final-clicks');
+                const winPathEl = document.getElementById('win-path');
 
-            filteredLinks.forEach(link => {
-                html += `
-                    <a href="#" class="wiki-link" data-page="${link}">
-                        ${link}
-                    </a>
-                `;
-            });
+                finalClicksEl.textContent = gameState.clickCount;
 
-            html += '</div>';
-
-            // Add path history
-            if (gameState.path.length > 1) {
-                html += '<div class="path-history"><h3>Your Path:</h3>';
+                let pathHtml = '<h3>Your Journey:</h3>';
                 gameState.path.forEach((page, index) => {
-                    html += `<div class="path-item">${index + 1}. ${page}</div>`;
+                    pathHtml += `<div class="path-item">${index + 1}. ${page}</div>`;
                 });
-                html += '</div>';
+                winPathEl.innerHTML = pathHtml;
+
+                modal.classList.add('active');
             }
 
-            this.gameArea.innerHTML = html;
-
-            // Add click handlers to links
-            document.querySelectorAll('.wiki-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.handleLinkClick(e.target.dataset.page);
-                });
-            });
-        }
-
-        async handleLinkClick(pageTitle) {
-            gameState.clickCount++;
-            gameState.currentPage = pageTitle;
-            gameState.path.push(pageTitle);
-            
-            this.updateDisplay();
-
-            // Check if target reached
-            if (pageTitle === gameState.targetPage) {
-                this.showWinScreen();
-                return;
+            showError(message) {
+                this.gameArea.innerHTML = `<div class="error">${message}</div>`;
             }
-
-            await this.loadPage(pageTitle);
         }
 
-        updateDisplay() {
-            this.clickCounter.textContent = gameState.clickCount;
-            this.currentPageDisplay.textContent = this.truncateTitle(gameState.currentPage);
-            this.targetPageDisplay.textContent = this.truncateTitle(gameState.targetPage);
-        }
-
-        truncateTitle(title) {
-            return title.length > 20 ? title.substring(0, 20) + '...' : title;
-        }
-
-        showWinScreen() {
-            const modal = document.getElementById('win-modal');
-            const finalClicksEl = document.getElementById('final-clicks');
-            const winPathEl = document.getElementById('win-path');
-
-            finalClicksEl.textContent = gameState.clickCount;
-
-            let pathHtml = '<h3>Your Journey:</h3>';
-            gameState.path.forEach((page, index) => {
-                pathHtml += `<div class="path-item">${index + 1}. ${page}</div>`;
-            });
-            winPathEl.innerHTML = pathHtml;
-
-            modal.classList.add('active');
-        }
-
-        showError(message) {
-            this.gameArea.innerHTML = `<div class="error">${message}</div>`;
-        }
-    }
-
-    // ======================
-    // INITIALIZE GAME
-    // ======================
-    const game = new GameController();
-    game.initialize();
-</script>
-```
-
+        // ======================
+        // INITIALIZE GAME
+        // ======================
+        const game = new GameController();
+        game.initialize();
+    </script>
 </body>
 </html>
