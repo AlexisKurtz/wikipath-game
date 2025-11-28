@@ -372,7 +372,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.1.0</div>
+        <div class="version">v1.1.1</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -484,12 +484,12 @@
                     const data = await response.json();
                     
                     if (data.items && data.items[0] && data.items[0].articles) {
-                        // Filter out special pages and get random from top 8000
+                        // Filter out special pages and get random from top 15000
                         const articles = data.items[0].articles.filter(article => 
                             !article.article.includes(':') && 
                             article.article !== 'Main_Page' &&
                             article.article.length > 2
-                        ).slice(0, 8000); // Top 8000 articles
+                        ).slice(0, 15000); // Top 15000 articles
                         
                         if (articles.length > 0) {
                             const randomArticle = articles[Math.floor(Math.random() * articles.length)];
