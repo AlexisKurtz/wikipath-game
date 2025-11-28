@@ -59,6 +59,13 @@
         .info-box .value {
             font-size: 1.4em;
             font-weight: bold;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        #target-page-display {
+            font-size: 1em;
+            line-height: 1.3;
         }
 
         .container {
@@ -356,6 +363,9 @@
                 <div class="label">Pages Visited</div>
                 <div class="value" id="pages-visited">1</div>
             </div>
+            <div class="info-box">
+                <button class="btn" onclick="location.reload()" style="margin: 0; padding: 10px 20px; font-size: 0.9em;">New Game</button>
+            </div>
         </div>
     </div>
 
@@ -569,11 +579,7 @@
             updateDisplay() {
                 this.clickCounter.textContent = gameState.clickCount;
                 this.pagesVisited.textContent = gameState.path.length;
-                this.targetPageDisplay.textContent = this.truncateTitle(gameState.targetPage);
-            }
-
-            truncateTitle(title) {
-                return title.length > 25 ? title.substring(0, 25) + '...' : title;
+                this.targetPageDisplay.textContent = gameState.targetPage;
             }
 
             showWinScreen() {
