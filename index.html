@@ -372,7 +372,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.2.0</div>
+        <div class="version">v1.2.1</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -400,6 +400,9 @@
     <div class="container">
         <div class="wiki-notice">
             📖 <strong>How to play:</strong> Click on blue Wikipedia links to navigate between pages. Try to reach the target page in the fewest clicks possible!
+        </div>
+        <div class="disambiguation-warning" id="disambiguation-warning">
+            ⚠️ <strong>Warning:</strong> You're about to click a disambiguation page. These pages don't contain content, just links to other articles. Click "OK" to continue or "Cancel" to go back.
         </div>
         <div id="game-area">
             <div class="loading">Loading Wikipedia page</div>
@@ -536,7 +539,7 @@
                     action: 'parse',
                     format: 'json',
                     page: pageTitle,
-                    prop: 'text',
+                    prop: 'text|categories',
                     disableeditsection: 1,
                     disabletoc: 1,
                     redirects: 1, // Follow redirects automatically
@@ -551,11 +554,18 @@
                         throw new Error(data.error.info);
                     }
                     
+                    // Check if page is a disambiguation page
+                    const isDisambiguation = data.parse.categories?.some(cat => 
+                        cat.category === 'Disambiguation_pages' || 
+                        cat.category === 'All_disambiguation_pages'
+                    ) || false;
+                    
                     return {
                         title: data.parse.title,
                         content: data.parse.text['*'],
                         redirected: data.parse.redirects ? true : false,
-                        finalTitle: data.parse.title
+                        finalTitle: data.parse.title,
+                        isDisambiguation: isDisambiguation
                     };
                 } catch (error) {
                     console.error('Error fetching page content:', error);
@@ -781,9 +791,25 @@
                         link.removeAttribute('href');
                         link.style.cursor = 'pointer';
                         
+                        // Check if this might be a disambiguation page (rough heuristic)
+                        if (pageTitle.includes('(disambiguation)') || 
+                            link.textContent.toLowerCase().includes('disambiguation')) {
+                            link.classList.add('disambiguation-link');
+                        }
+                        
                         // Add click handler
-                        link.addEventListener('click', (e) => {
+                        link.addEventListener('click', async (e) => {
                             e.preventDefault();
+                            
+                            // Check if it's a disambiguation page and warn user
+                            if (link.classList.contains('disambiguation-link')) {
+                                const confirmed = confirm(`⚠️ WARNING: "${pageTitle}" appears to be a disambiguation page.\n\nDisambiguation pages don't contain actual content - they just list links to other articles with similar names.\n\nDo you want to continue?`);
+                                
+                                if (!confirmed) {
+                                    return; // User cancelled
+                                }
+                            }
+                            
                             this.handleLinkClick(pageTitle);
                         });
                     } else {
