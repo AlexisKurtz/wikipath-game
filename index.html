@@ -364,7 +364,7 @@
                 <div class="value" id="pages-visited">1</div>
             </div>
             <div class="info-box">
-                <button class="btn" onclick="location.reload()" style="margin: 0; padding: 10px 20px; font-size: 0.9em;">New Game</button>
+                <button class="btn" onclick="startNewGame()" style="margin: 0; padding: 10px 20px; font-size: 0.9em;">New Game</button>
             </div>
         </div>
     </div>
@@ -398,6 +398,37 @@
             path: [],
             started: false
         };
+
+        // Save game state to memory
+        function saveGameState() {
+            const state = {
+                currentPage: gameState.currentPage,
+                targetPage: gameState.targetPage,
+                clickCount: gameState.clickCount,
+                path: gameState.path,
+                started: gameState.started
+            };
+            window.gameStateBackup = state;
+        }
+
+        // Load game state from memory
+        function loadGameState() {
+            const saved = window.gameStateBackup;
+            if (saved) {
+                gameState.currentPage = saved.currentPage;
+                gameState.targetPage = saved.targetPage;
+                gameState.clickCount = saved.clickCount;
+                gameState.path = saved.path;
+                gameState.started = saved.started;
+                return true;
+            }
+            return false;
+        }
+
+        // Clear game state
+        function clearGameState() {
+            window.gameStateBackup = null;
+        }
 
         // ======================
         // WIKIPEDIA API HANDLER
@@ -473,18 +504,29 @@
 
             async initialize() {
                 try {
-                    // Get random start and target pages
-                    gameState.currentPage = await this.api.getRandomPage();
-                    gameState.targetPage = await this.api.getRandomPage();
+                    // Check if there's a saved game state
+                    const hasSavedGame = loadGameState();
                     
-                    // Make sure they're different
-                    while (gameState.currentPage === gameState.targetPage) {
+                    if (hasSavedGame && gameState.started) {
+                        // Resume existing game
+                        this.updateDisplay();
+                        await this.loadPage(gameState.currentPage);
+                    } else {
+                        // Start new game
+                        gameState.currentPage = await this.api.getRandomPage();
                         gameState.targetPage = await this.api.getRandomPage();
-                    }
+                        
+                        // Make sure they're different
+                        while (gameState.currentPage === gameState.targetPage) {
+                            gameState.targetPage = await this.api.getRandomPage();
+                        }
 
-                    gameState.path.push(gameState.currentPage);
-                    this.updateDisplay();
-                    await this.loadPage(gameState.currentPage);
+                        gameState.path = [gameState.currentPage];
+                        gameState.started = true;
+                        saveGameState();
+                        this.updateDisplay();
+                        await this.loadPage(gameState.currentPage);
+                    }
                 } catch (error) {
                     this.showError('Failed to initialize game. Please refresh the page.');
                     console.error(error);
@@ -565,6 +607,9 @@
                 gameState.currentPage = pageTitle;
                 gameState.path.push(pageTitle);
                 
+                // Save state after each move
+                saveGameState();
+                
                 this.updateDisplay();
 
                 // Check if target reached
@@ -608,6 +653,12 @@
         // ======================
         const game = new GameController();
         game.initialize();
+
+        // Function to start a new game
+        function startNewGame() {
+            clearGameState();
+            location.reload();
+        }
     </script>
 </body>
 </html>
