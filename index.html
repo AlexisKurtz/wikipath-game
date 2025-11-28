@@ -404,16 +404,20 @@
                 target: params.get('target'),
                 current: params.get('current'),
                 clicks: parseInt(params.get('clicks')) || 0,
+                totalClicks: parseInt(params.get('totalClicks')) || 0,
+                visited: params.get('visited') ? params.get('visited').split('|') : [],
                 path: params.get('path') ? params.get('path').split('|') : []
             };
         }
 
-        function updateUrl(start, target, current, clicks, path) {
+        function updateUrl(start, target, current, clicks, totalClicks, visited, path) {
             const params = new URLSearchParams();
             params.set('start', start);
             params.set('target', target);
             params.set('current', current);
             params.set('clicks', clicks.toString());
+            params.set('totalClicks', totalClicks.toString());
+            params.set('visited', visited.join('|'));
             params.set('path', path.join('|'));
             
             const newUrl = `${window.location.pathname}?${params.toString()}`;
@@ -433,6 +437,8 @@
             currentPage: '',
             targetPage: '',
             clickCount: 0,
+            totalClicks: 0, // Total clicks made (never decreases)
+            visitedPages: new Set(), // Track all unique pages visited
             path: []
         };
 
@@ -519,6 +525,8 @@
                         gameState.targetPage = urlParams.target;
                         gameState.currentPage = urlParams.current || urlParams.start;
                         gameState.clickCount = urlParams.clicks;
+                        gameState.totalClicks = urlParams.totalClicks;
+                        gameState.visitedPages = new Set(urlParams.visited);
                         gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
                         
                         this.updateDisplay();
@@ -536,6 +544,8 @@
                         gameState.currentPage = gameState.startPage;
                         gameState.path = [gameState.startPage];
                         gameState.clickCount = 0;
+                        gameState.totalClicks = 0;
+                        gameState.visitedPages = new Set([gameState.startPage]);
                         
                         // Save to URL
                         updateUrl(
@@ -543,6 +553,8 @@
                             gameState.targetPage,
                             gameState.currentPage,
                             gameState.clickCount,
+                            gameState.totalClicks,
+                            Array.from(gameState.visitedPages),
                             gameState.path
                         );
                         
@@ -625,6 +637,14 @@
                 // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 
+                // Only increment if this is a NEW page we haven't visited
+                const isNewPage = !gameState.visitedPages.has(pageTitle);
+                
+                if (isNewPage) {
+                    gameState.totalClicks++;
+                    gameState.visitedPages.add(pageTitle);
+                }
+                
                 gameState.clickCount++;
                 gameState.currentPage = pageTitle;
                 gameState.path.push(pageTitle);
@@ -635,6 +655,8 @@
                     gameState.targetPage,
                     gameState.currentPage,
                     gameState.clickCount,
+                    gameState.totalClicks,
+                    Array.from(gameState.visitedPages),
                     gameState.path
                 );
                 
@@ -650,7 +672,7 @@
             }
 
             updateDisplay() {
-                this.clickCounter.textContent = gameState.clickCount;
+                this.clickCounter.textContent = gameState.totalClicks; // Display total clicks
                 this.pagesVisited.textContent = gameState.path.length;
                 this.targetPageDisplay.textContent = gameState.targetPage;
             }
@@ -660,7 +682,7 @@
                 const finalClicksEl = document.getElementById('final-clicks');
                 const winPathEl = document.getElementById('win-path');
 
-                finalClicksEl.textContent = gameState.clickCount;
+                finalClicksEl.textContent = gameState.totalClicks; // Show total clicks in win screen
 
                 let pathHtml = '<h3>Your Journey:</h3>';
                 gameState.path.forEach((page, index) => {
@@ -689,6 +711,10 @@
                 gameState.targetPage = urlParams.target;
                 gameState.currentPage = urlParams.current || urlParams.start;
                 gameState.clickCount = urlParams.clicks;
+                // Keep totalClicks at its highest value (never decrease)
+                gameState.totalClicks = Math.max(gameState.totalClicks, urlParams.totalClicks);
+                // Update visited pages from URL
+                gameState.visitedPages = new Set(urlParams.visited);
                 gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
                 
                 // Update display and load the page
