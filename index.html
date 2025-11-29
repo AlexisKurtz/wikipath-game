@@ -523,7 +523,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.4.1</div>
+        <div class="version">v1.4.2</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -928,7 +928,7 @@
                 titleEl.textContent = pageData.title;
                 articleDiv.appendChild(titleEl);
                 
-                // Add content
+                // Create content div first to search for summary
                 const contentDiv = document.createElement('div');
                 contentDiv.innerHTML = pageData.content;
                 
@@ -945,20 +945,27 @@
                     }
                 }
                 
+                // Add summary BEFORE content if found
                 if (summaryParagraph) {
                     const summaryDiv = document.createElement('div');
                     summaryDiv.className = 'article-summary';
+                    summaryDiv.style.display = 'block'; // Force display
+                    summaryDiv.style.backgroundColor = '#f8f9fa'; // Force styling
+                    summaryDiv.style.borderLeft = '4px solid #667eea';
+                    summaryDiv.style.padding = '15px 20px';
+                    summaryDiv.style.marginBottom = '25px';
                     
                     // Clone the paragraph for the summary
                     const summaryContent = summaryParagraph.cloneNode(true);
                     summaryDiv.appendChild(summaryContent);
-                    articleDiv.appendChild(summaryDiv);
+                    articleDiv.appendChild(summaryDiv); // Add summary here
                     
-                    console.log('Summary added:', summaryContent.textContent.substring(0, 100));
+                    console.log('Summary added with inline styles');
                 } else {
                     console.log('No suitable summary paragraph found');
                 }
                 
+                // Now add the full content
                 articleDiv.appendChild(contentDiv);
                 
                 this.gameArea.innerHTML = '';
