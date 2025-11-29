@@ -180,6 +180,35 @@
             margin-bottom: 15px;
             padding-bottom: 5px;
             color: #000;
+            cursor: pointer;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .article-content h2::before {
+            content: '▼';
+            position: absolute;
+            left: 0;
+            font-size: 0.6em;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .article-content h2.collapsed::before {
+            transform: rotate(-90deg);
+        }
+
+        .article-content h2:hover {
+            color: #667eea;
+        }
+
+        .section-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .section-content.collapsed {
+            max-height: 0 !important;
         }
 
         .article-content h3 {
@@ -510,7 +539,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.4.3</div>
+        <div class="version">v1.5.0</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -923,8 +952,55 @@
                 this.gameArea.innerHTML = '';
                 this.gameArea.appendChild(articleDiv);
 
+                // Make sections collapsible
+                this.makeCollapsible();
+
                 // Process all links in the article
                 this.processLinks();
+            }
+
+            makeCollapsible() {
+                const h2Headers = this.gameArea.querySelectorAll('.article-content h2');
+                
+                h2Headers.forEach(header => {
+                    // Mark header as collapsed by default
+                    header.classList.add('collapsed');
+                    
+                    // Wrap content after this header until next h2
+                    const sectionContent = document.createElement('div');
+                    sectionContent.className = 'section-content collapsed';
+                    
+                    let nextElement = header.nextElementSibling;
+                    const elementsToWrap = [];
+                    
+                    while (nextElement && nextElement.tagName !== 'H2') {
+                        elementsToWrap.push(nextElement);
+                        nextElement = nextElement.nextElementSibling;
+                    }
+                    
+                    // Move elements into section content
+                    elementsToWrap.forEach(el => {
+                        sectionContent.appendChild(el);
+                    });
+                    
+                    // Insert section content after header
+                    header.parentNode.insertBefore(sectionContent, header.nextSibling);
+                    
+                    // Add click handler to toggle
+                    header.addEventListener('click', () => {
+                        header.classList.toggle('collapsed');
+                        sectionContent.classList.toggle('collapsed');
+                        
+                        if (!sectionContent.classList.contains('collapsed')) {
+                            sectionContent.style.maxHeight = sectionContent.scrollHeight + 'px';
+                        } else {
+                            sectionContent.style.maxHeight = '0';
+                        }
+                    });
+                    
+                    // Set initial max-height to 0 for collapsed state
+                    sectionContent.style.maxHeight = '0';
+                });
             }
 
             processLinks() {
