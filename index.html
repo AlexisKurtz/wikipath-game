@@ -120,6 +120,21 @@
             line-height: 1.7;
         }
 
+        .article-summary {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            font-size: 1.05em;
+            line-height: 1.7;
+            color: #202122;
+            border-radius: 4px;
+        }
+
+        .article-summary p {
+            margin: 0;
+        }
+
         /* Wikipedia-style links */
         .article-content a {
             color: #0645ad;
@@ -539,7 +554,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.5.0</div>
+        <div class="version">v1.5.1</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -944,15 +959,29 @@
                 titleEl.textContent = pageData.title;
                 articleDiv.appendChild(titleEl);
                 
-                // Add content (Wikipedia's natural layout with infobox floating right)
+                // Add content
                 const contentDiv = document.createElement('div');
                 contentDiv.innerHTML = pageData.content;
+                
+                // Extract and add summary BEFORE the full content
+                const allParagraphs = contentDiv.querySelectorAll('p');
+                for (let p of allParagraphs) {
+                    const text = p.textContent.trim();
+                    if (text.length > 100 && !p.classList.contains('mw-empty-elt')) {
+                        const summaryDiv = document.createElement('div');
+                        summaryDiv.className = 'article-summary';
+                        summaryDiv.innerHTML = p.innerHTML; // Use innerHTML to preserve links
+                        articleDiv.appendChild(summaryDiv);
+                        break;
+                    }
+                }
+                
                 articleDiv.appendChild(contentDiv);
                 
                 this.gameArea.innerHTML = '';
                 this.gameArea.appendChild(articleDiv);
 
-                // Make sections collapsible
+                // Make sections collapsible BEFORE processing links
                 this.makeCollapsible();
 
                 // Process all links in the article
@@ -963,43 +992,51 @@
                 const h2Headers = this.gameArea.querySelectorAll('.article-content h2');
                 
                 h2Headers.forEach(header => {
-                    // Mark header as collapsed by default
+                    // Start with header collapsed
                     header.classList.add('collapsed');
                     
-                    // Wrap content after this header until next h2
-                    const sectionContent = document.createElement('div');
-                    sectionContent.className = 'section-content collapsed';
-                    
-                    let nextElement = header.nextElementSibling;
+                    // Collect all elements until next h2
                     const elementsToWrap = [];
+                    let nextElement = header.nextElementSibling;
                     
                     while (nextElement && nextElement.tagName !== 'H2') {
                         elementsToWrap.push(nextElement);
                         nextElement = nextElement.nextElementSibling;
                     }
                     
-                    // Move elements into section content
+                    if (elementsToWrap.length === 0) return; // Skip if no content
+                    
+                    // Create wrapper for section content
+                    const sectionContent = document.createElement('div');
+                    sectionContent.className = 'section-content collapsed';
+                    sectionContent.style.maxHeight = '0';
+                    sectionContent.style.overflow = 'hidden';
+                    
+                    // Move elements into wrapper
                     elementsToWrap.forEach(el => {
                         sectionContent.appendChild(el);
                     });
                     
-                    // Insert section content after header
-                    header.parentNode.insertBefore(sectionContent, header.nextSibling);
+                    // Insert wrapper after header
+                    header.after(sectionContent);
                     
-                    // Add click handler to toggle
-                    header.addEventListener('click', () => {
-                        header.classList.toggle('collapsed');
-                        sectionContent.classList.toggle('collapsed');
+                    // Add click handler
+                    header.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isCollapsed = header.classList.contains('collapsed');
                         
-                        if (!sectionContent.classList.contains('collapsed')) {
-                            sectionContent.style.maxHeight = sectionContent.scrollHeight + 'px';
+                        if (isCollapsed) {
+                            // Expand
+                            header.classList.remove('collapsed');
+                            sectionContent.classList.remove('collapsed');
+                            sectionContent.style.maxHeight = sectionContent.scrollHeight + 500 + 'px'; // Extra space for safety
                         } else {
+                            // Collapse
+                            header.classList.add('collapsed');
+                            sectionContent.classList.add('collapsed');
                             sectionContent.style.maxHeight = '0';
                         }
                     });
-                    
-                    // Set initial max-height to 0 for collapsed state
-                    sectionContent.style.maxHeight = '0';
                 });
             }
 
