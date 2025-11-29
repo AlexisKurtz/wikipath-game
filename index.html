@@ -523,7 +523,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.4.0</div>
+        <div class="version">v1.4.1</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -932,16 +932,31 @@
                 const contentDiv = document.createElement('div');
                 contentDiv.innerHTML = pageData.content;
                 
-                // Extract first paragraph as summary
-                const firstParagraph = contentDiv.querySelector('p');
-                if (firstParagraph && firstParagraph.textContent.trim().length > 50) {
+                // Extract first meaningful paragraph as summary
+                const allParagraphs = contentDiv.querySelectorAll('p');
+                let summaryParagraph = null;
+                
+                for (let p of allParagraphs) {
+                    const text = p.textContent.trim();
+                    // Find first paragraph with substantial content (more than 100 characters)
+                    if (text.length > 100 && !p.classList.contains('mw-empty-elt')) {
+                        summaryParagraph = p;
+                        break;
+                    }
+                }
+                
+                if (summaryParagraph) {
                     const summaryDiv = document.createElement('div');
                     summaryDiv.className = 'article-summary';
                     
-                    // Clone the first paragraph for the summary
-                    const summaryContent = firstParagraph.cloneNode(true);
+                    // Clone the paragraph for the summary
+                    const summaryContent = summaryParagraph.cloneNode(true);
                     summaryDiv.appendChild(summaryContent);
                     articleDiv.appendChild(summaryDiv);
+                    
+                    console.log('Summary added:', summaryContent.textContent.substring(0, 100));
+                } else {
+                    console.log('No suitable summary paragraph found');
                 }
                 
                 articleDiv.appendChild(contentDiv);
