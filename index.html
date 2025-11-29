@@ -491,7 +491,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.3.2</div>
+        <div class="version">v1.3.3</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -866,6 +866,16 @@
                             gameState.path,
                             gameState.startTime
                         );
+                        
+                        // Check if we reached target after redirect
+                        const normalizedCurrent = gameState.currentPage.trim().toLowerCase().replace(/_/g, ' ');
+                        const normalizedTarget = gameState.targetPage.trim().toLowerCase().replace(/_/g, ' ');
+                        
+                        if (normalizedCurrent === normalizedTarget) {
+                            this.displayArticle(pageData);
+                            this.showWinScreen();
+                            return;
+                        }
                     }
                     
                     this.displayArticle(pageData);
@@ -975,8 +985,11 @@
                 
                 this.updateDisplay();
 
-                // Check if target reached
-                if (pageTitle === gameState.targetPage) {
+                // Check if target reached - normalize both titles for comparison
+                const normalizedCurrent = pageTitle.trim().toLowerCase().replace(/_/g, ' ');
+                const normalizedTarget = gameState.targetPage.trim().toLowerCase().replace(/_/g, ' ');
+                
+                if (normalizedCurrent === normalizedTarget) {
                     this.showWinScreen();
                     return;
                 }
