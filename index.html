@@ -20,68 +20,77 @@
         .game-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 20px;
+            padding: 10px 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
+            max-height: 20vh;
+            overflow: hidden;
         }
 
         .game-header h1 {
-            font-size: 1.5em;
-            margin-bottom: 3px;
+            font-size: 1.3em;
+            margin-bottom: 2px;
             text-align: center;
         }
 
         .version {
             text-align: center;
-            font-size: 0.7em;
+            font-size: 0.65em;
             opacity: 0.8;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .game-info {
-            display: flex;
-            justify-content: space-around;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
             max-width: 1200px;
             margin: 0 auto;
-            flex-wrap: wrap;
-            gap: 10px;
+            gap: 8px;
         }
 
         .info-box {
             background: rgba(255,255,255,0.2);
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
             text-align: center;
-            min-width: 140px;
         }
 
         .info-box .label {
-            font-size: 0.75em;
+            font-size: 0.7em;
             opacity: 0.9;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .info-box .value {
-            font-size: 1.2em;
+            font-size: 1em;
             font-weight: bold;
             word-wrap: break-word;
             overflow-wrap: break-word;
         }
 
         #target-page-display {
-            font-size: 0.9em;
-            line-height: 1.2;
+            font-size: 0.85em;
+            line-height: 1.1;
         }
 
         .target-description {
-            font-size: 0.65em;
+            font-size: 0.6em;
             font-weight: normal;
-            opacity: 0.9;
-            margin-top: 3px;
-            line-height: 1.2;
+            opacity: 0.85;
+            margin-top: 2px;
+            line-height: 1.1;
             font-style: italic;
+            max-height: 2.2em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8em;
+            margin: 0;
         }
 
         .container {
@@ -104,14 +113,14 @@
         }
 
         .article-title {
-            font-family: 'Linux Libertine', 'Georgia', serif;
-            font-size: 2.5em;
-            font-weight: 400;
-            border-bottom: 2px solid #a2a9b1;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            color: #000;
-            line-height: 1.3;
+            font-family: 'Linux Libertine', 'Georgia', serif !important;
+            font-size: 2.5em !important;
+            font-weight: 400 !important;
+            border-bottom: 2px solid #a2a9b1 !important;
+            padding-bottom: 15px !important;
+            margin-bottom: 20px !important;
+            color: #000 !important;
+            line-height: 1.3 !important;
         }
 
         /* Style the first paragraph to stand out slightly like Wikipedia does */
@@ -130,10 +139,60 @@
             color: #202122 !important;
             border-radius: 4px !important;
             display: block !important;
+            min-height: 50px !important;
         }
 
         .article-summary p {
             margin: 0 !important;
+        }
+
+        .article-summary a {
+            color: #0645ad !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+        }
+
+        /* Table of Contents */
+        .table-of-contents {
+            background: #f8f9fa;
+            border: 1px solid #a2a9b1;
+            padding: 15px;
+            margin: 20px 20px 20px 0;
+            float: left;
+            min-width: 200px;
+            max-width: 300px;
+        }
+
+        .toc-title {
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #a2a9b1;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .toc-list li {
+            padding: 5px 0;
+            cursor: pointer;
+            color: #0645ad;
+        }
+
+        .toc-list li:hover {
+            text-decoration: underline;
+        }
+
+        /* Clear float after TOC */
+        .article-content::after {
+            content: "";
+            display: table;
+            clear: both;
         }
 
         /* Wikipedia-style links */
@@ -365,12 +424,6 @@
             background: #5568d3;
         }
 
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 0.85em;
-            margin: 0;
-        }
-
         .path-history {
             margin-top: 30px;
             padding: 20px;
@@ -413,6 +466,31 @@
             border-radius: 4px;
             font-size: 0.95em;
             color: #0645ad;
+        }
+
+        .article-content a.disambiguation-link {
+            color: #d9534f;
+            position: relative;
+        }
+
+        .article-content a.disambiguation-link::after {
+            content: ' ⚠️';
+            font-size: 0.8em;
+        }
+
+        .disambiguation-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 30px;
+            font-size: 0.95em;
+            display: none;
+        }
+
+        .disambiguation-warning.show {
+            display: block;
         }
 
         @media (max-width: 768px) {
@@ -636,7 +714,6 @@
             }
             
             const newUrl = `${window.location.pathname}?${params.toString()}`;
-            // Use pushState instead of replaceState to enable browser back button
             window.history.pushState({ gameState: true }, '', newUrl);
         }
 
@@ -652,11 +729,11 @@
             currentPage: '',
             targetPage: '',
             clickCount: 0,
-            totalClicks: 0, // Total clicks made (never decreases)
-            visitedPages: new Set(), // Track all unique pages visited
+            totalClicks: 0,
+            visitedPages: new Set(),
             path: [],
-            startTime: null, // Timer start
-            elapsedTime: 0 // Time in seconds
+            startTime: null,
+            elapsedTime: 0
         };
 
         // ======================
@@ -667,13 +744,10 @@
                 this.baseUrl = 'https://en.wikipedia.org/w/api.php';
             }
 
-            // Fetch a random Wikipedia page title
             async getRandomPage() {
-                // Try to get a popular page from most viewed articles
                 try {
-                    // Get top viewed articles from the past week
                     const date = new Date();
-                    date.setDate(date.getDate() - 1); // Yesterday
+                    date.setDate(date.getDate() - 1);
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
@@ -683,12 +757,11 @@
                     const data = await response.json();
                     
                     if (data.items && data.items[0] && data.items[0].articles) {
-                        // Filter out special pages and get random from top 15000
                         const articles = data.items[0].articles.filter(article => 
                             !article.article.includes(':') && 
                             article.article !== 'Main_Page' &&
                             article.article.length > 2
-                        ).slice(0, 15000); // Top 15000 articles
+                        ).slice(0, 15000);
                         
                         if (articles.length > 0) {
                             const randomArticle = articles[Math.floor(Math.random() * articles.length)];
@@ -699,7 +772,6 @@
                     console.log('Could not fetch popular pages, using fallback');
                 }
                 
-                // Fallback to random page if popular pages fail
                 const params = new URLSearchParams({
                     action: 'query',
                     format: 'json',
@@ -719,7 +791,6 @@
                 }
             }
 
-            // Fetch the full HTML content of a Wikipedia page
             async getPageContent(pageTitle) {
                 const params = new URLSearchParams({
                     action: 'parse',
@@ -728,7 +799,7 @@
                     prop: 'text|categories',
                     disableeditsection: 1,
                     disabletoc: 1,
-                    redirects: 1, // Follow redirects automatically
+                    redirects: 1,
                     origin: '*'
                 });
 
@@ -740,7 +811,6 @@
                         throw new Error(data.error.info);
                     }
                     
-                    // Check if page is a disambiguation page
                     const isDisambiguation = data.parse.categories?.some(cat => 
                         cat.category === 'Disambiguation_pages' || 
                         cat.category === 'All_disambiguation_pages'
@@ -759,7 +829,6 @@
                 }
             }
 
-            // Fetch a short description/extract for a page
             async getPageDescription(pageTitle) {
                 const params = new URLSearchParams({
                     action: 'query',
@@ -808,9 +877,7 @@
                 try {
                     const urlParams = getUrlParams();
                     
-                    // Check if we have a game in progress (URL has parameters)
                     if (urlParams.start && urlParams.target) {
-                        // Resume existing game from URL
                         gameState.startPage = urlParams.start;
                         gameState.targetPage = urlParams.target;
                         gameState.currentPage = urlParams.current || urlParams.start;
@@ -820,7 +887,6 @@
                         gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
                         gameState.startTime = urlParams.startTime;
                         
-                        // Fetch description for target page
                         const targetDesc = await this.api.getPageDescription(gameState.targetPage);
                         this.targetDescription.textContent = targetDesc;
                         
@@ -828,11 +894,9 @@
                         this.startTimer();
                         await this.loadPage(gameState.currentPage);
                     } else {
-                        // Start new game
                         gameState.startPage = await this.api.getRandomPage();
                         gameState.targetPage = await this.api.getRandomPage();
                         
-                        // Make sure they're different
                         while (gameState.startPage === gameState.targetPage) {
                             gameState.targetPage = await this.api.getRandomPage();
                         }
@@ -844,11 +908,9 @@
                         gameState.visitedPages = new Set([gameState.startPage]);
                         gameState.startTime = Date.now();
                         
-                        // Fetch description for target page
                         const targetDesc = await this.api.getPageDescription(gameState.targetPage);
                         this.targetDescription.textContent = targetDesc;
                         
-                        // Save to URL
                         updateUrl(
                             gameState.startPage,
                             gameState.targetPage,
@@ -871,12 +933,10 @@
             }
 
             startTimer() {
-                // Clear any existing timer
                 if (this.timerInterval) {
                     clearInterval(this.timerInterval);
                 }
                 
-                // Update timer every second
                 this.timerInterval = setInterval(() => {
                     if (gameState.startTime) {
                         gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
@@ -884,7 +944,6 @@
                     }
                 }, 1000);
                 
-                // Initial display
                 this.updateTimerDisplay();
             }
 
@@ -907,330 +966,5 @@
                 try {
                     const pageData = await this.api.getPageContent(pageTitle);
                     
-                    // If this was a redirect, update the current page to the final title
-                    // but don't count it as a separate navigation
                     if (pageData.redirected && pageData.finalTitle !== pageTitle) {
                         gameState.currentPage = pageData.finalTitle;
-                        // Update the last item in path to the final title (not the redirect)
-                        if (gameState.path.length > 0 && gameState.path[gameState.path.length - 1] === pageTitle) {
-                            gameState.path[gameState.path.length - 1] = pageData.finalTitle;
-                        }
-                        // Update visited pages
-                        gameState.visitedPages.delete(pageTitle);
-                        gameState.visitedPages.add(pageData.finalTitle);
-                        
-                        // Update URL with corrected state
-                        updateUrl(
-                            gameState.startPage,
-                            gameState.targetPage,
-                            gameState.currentPage,
-                            gameState.clickCount,
-                            gameState.totalClicks,
-                            Array.from(gameState.visitedPages),
-                            gameState.path,
-                            gameState.startTime
-                        );
-                        
-                        // Check if we reached target after redirect
-                        const normalizedCurrent = gameState.currentPage.trim().toLowerCase().replace(/_/g, ' ');
-                        const normalizedTarget = gameState.targetPage.trim().toLowerCase().replace(/_/g, ' ');
-                        
-                        if (normalizedCurrent === normalizedTarget) {
-                            this.displayArticle(pageData);
-                            this.showWinScreen();
-                            return;
-                        }
-                    }
-                    
-                    this.displayArticle(pageData);
-                } catch (error) {
-                    this.showError(`Failed to load page: ${pageTitle}. Please try clicking another link.`);
-                    console.error(error);
-                }
-            }
-
-            displayArticle(pageData) {
-                // Create article container
-                const articleDiv = document.createElement('div');
-                articleDiv.className = 'article-content';
-                
-                // Add title
-                const titleEl = document.createElement('h1');
-                titleEl.className = 'article-title';
-                titleEl.textContent = pageData.title;
-                articleDiv.appendChild(titleEl);
-                
-                // Add content
-                const contentDiv = document.createElement('div');
-                contentDiv.innerHTML = pageData.content;
-                
-                // Extract and add summary BEFORE the full content
-                const allParagraphs = contentDiv.querySelectorAll('p');
-                for (let p of allParagraphs) {
-                    const text = p.textContent.trim();
-                    if (text.length > 100 && !p.classList.contains('mw-empty-elt')) {
-                        const summaryDiv = document.createElement('div');
-                        summaryDiv.className = 'article-summary';
-                        summaryDiv.innerHTML = p.innerHTML; // Use innerHTML to preserve links
-                        articleDiv.appendChild(summaryDiv);
-                        break;
-                    }
-                }
-                
-                articleDiv.appendChild(contentDiv);
-                
-                this.gameArea.innerHTML = '';
-                this.gameArea.appendChild(articleDiv);
-
-                // Make sections collapsible BEFORE processing links
-                this.makeCollapsible();
-
-                // Process all links in the article
-                this.processLinks();
-            }
-
-            makeCollapsible() {
-                const h2Headers = this.gameArea.querySelectorAll('.article-content h2');
-                
-                h2Headers.forEach(header => {
-                    // Start with header collapsed
-                    header.classList.add('collapsed');
-                    
-                    // Collect all elements until next h2
-                    const elementsToWrap = [];
-                    let nextElement = header.nextElementSibling;
-                    
-                    while (nextElement && nextElement.tagName !== 'H2') {
-                        elementsToWrap.push(nextElement);
-                        nextElement = nextElement.nextElementSibling;
-                    }
-                    
-                    if (elementsToWrap.length === 0) return; // Skip if no content
-                    
-                    // Create wrapper for section content
-                    const sectionContent = document.createElement('div');
-                    sectionContent.className = 'section-content collapsed';
-                    sectionContent.style.maxHeight = '0';
-                    sectionContent.style.overflow = 'hidden';
-                    
-                    // Move elements into wrapper
-                    elementsToWrap.forEach(el => {
-                        sectionContent.appendChild(el);
-                    });
-                    
-                    // Insert wrapper after header
-                    header.after(sectionContent);
-                    
-                    // Add click handler
-                    header.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isCollapsed = header.classList.contains('collapsed');
-                        
-                        if (isCollapsed) {
-                            // Expand
-                            header.classList.remove('collapsed');
-                            sectionContent.classList.remove('collapsed');
-                            sectionContent.style.maxHeight = sectionContent.scrollHeight + 500 + 'px'; // Extra space for safety
-                        } else {
-                            // Collapse
-                            header.classList.add('collapsed');
-                            sectionContent.classList.add('collapsed');
-                            sectionContent.style.maxHeight = '0';
-                        }
-                    });
-                });
-            }
-
-            processLinks() {
-                const links = this.gameArea.querySelectorAll('a');
-                
-                links.forEach(link => {
-                    const href = link.getAttribute('href');
-                    
-                    // Only process internal Wikipedia article links
-                    if (href && href.startsWith('/wiki/') && !href.includes(':')) {
-                        // Extract page title from URL
-                        const pageTitle = decodeURIComponent(href.replace('/wiki/', ''));
-                        
-                        // Remove the original href to prevent navigation
-                        link.removeAttribute('href');
-                        link.style.cursor = 'pointer';
-                        
-                        // Check if this might be a disambiguation page (rough heuristic)
-                        if (pageTitle.includes('(disambiguation)') || 
-                            link.textContent.toLowerCase().includes('disambiguation')) {
-                            link.classList.add('disambiguation-link');
-                        }
-                        
-                        // Add click handler
-                        link.addEventListener('click', async (e) => {
-                            e.preventDefault();
-                            
-                            // Check if it's a disambiguation page and warn user
-                            if (link.classList.contains('disambiguation-link')) {
-                                const confirmed = confirm(`⚠️ WARNING: "${pageTitle}" appears to be a disambiguation page.\n\nDisambiguation pages don't contain actual content - they just list links to other articles with similar names.\n\nDo you want to continue?`);
-                                
-                                if (!confirmed) {
-                                    return; // User cancelled
-                                }
-                            }
-                            
-                            this.handleLinkClick(pageTitle);
-                        });
-                    } else {
-                        // Disable external links and special pages
-                        link.style.color = '#999';
-                        link.style.cursor = 'not-allowed';
-                        link.addEventListener('click', (e) => {
-                            e.preventDefault();
-                        });
-                    }
-                });
-            }
-
-            async handleLinkClick(pageTitle) {
-                // Scroll to top
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                // Only increment if this is a NEW page we haven't visited
-                const isNewPage = !gameState.visitedPages.has(pageTitle);
-                
-                if (isNewPage) {
-                    gameState.totalClicks++;
-                    gameState.visitedPages.add(pageTitle);
-                }
-                
-                gameState.clickCount++;
-                gameState.currentPage = pageTitle;
-                gameState.path.push(pageTitle);
-                
-                // Update URL with new state
-                updateUrl(
-                    gameState.startPage,
-                    gameState.targetPage,
-                    gameState.currentPage,
-                    gameState.clickCount,
-                    gameState.totalClicks,
-                    Array.from(gameState.visitedPages),
-                    gameState.path,
-                    gameState.startTime
-                );
-                
-                this.updateDisplay();
-
-                // Check if target reached - normalize both titles for comparison
-                const normalizedCurrent = pageTitle.trim().toLowerCase().replace(/_/g, ' ');
-                const normalizedTarget = gameState.targetPage.trim().toLowerCase().replace(/_/g, ' ');
-                
-                if (normalizedCurrent === normalizedTarget) {
-                    this.showWinScreen();
-                    return;
-                }
-
-                await this.loadPage(pageTitle);
-            }
-
-            updateDisplay() {
-                this.clickCounter.textContent = gameState.totalClicks; // Display total clicks
-                this.pagesVisited.textContent = gameState.path.length;
-                this.targetPageDisplay.textContent = gameState.targetPage;
-            }
-
-            showWinScreen() {
-                this.stopTimer(); // Stop the timer when game is won
-                
-                const modal = document.getElementById('win-modal');
-                const finalClicksEl = document.getElementById('final-clicks');
-                const winPathEl = document.getElementById('win-path');
-
-                finalClicksEl.textContent = gameState.totalClicks; // Show total clicks in win screen
-
-                let pathHtml = '<h3>Your Journey:</h3>';
-                pathHtml += `<p style="margin-bottom: 15px;">Time: ${this.timerDisplay.textContent}</p>`;
-                gameState.path.forEach((page, index) => {
-                    pathHtml += `<div class="path-item">${index + 1}. ${page}</div>`;
-                });
-                winPathEl.innerHTML = pathHtml;
-
-                modal.classList.add('active');
-            }
-
-            showError(message) {
-                this.gameArea.innerHTML = `<div class="error">${message}</div>`;
-            }
-        }
-
-        // ======================
-        // BROWSER BACK BUTTON HANDLER
-        // ======================
-        window.addEventListener('popstate', function(event) {
-            // When user clicks back button, reload the game state from URL
-            const urlParams = getUrlParams();
-            
-            if (urlParams.start && urlParams.target) {
-                // Update game state from URL
-                gameState.startPage = urlParams.start;
-                gameState.targetPage = urlParams.target;
-                gameState.currentPage = urlParams.current || urlParams.start;
-                gameState.clickCount = urlParams.clicks;
-                // Keep totalClicks at its highest value (never decrease)
-                gameState.totalClicks = Math.max(gameState.totalClicks, urlParams.totalClicks);
-                // Update visited pages from URL
-                gameState.visitedPages = new Set(urlParams.visited);
-                gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
-                
-                // Update display and load the page
-                game.updateDisplay();
-                game.loadPage(gameState.currentPage);
-            }
-        });
-
-        // ======================
-        // INITIALIZE GAME
-        // ======================
-        const game = new GameController();
-        game.initialize();
-
-        // Function to start a new game
-        function startNewGame() {
-            clearUrl();
-            location.reload();
-        }
-
-        // Function to retry the same game
-        function retryGame() {
-            if (!gameState.startPage || !gameState.targetPage) {
-                return;
-            }
-            
-            // Keep the same start and target pages
-            const start = gameState.startPage;
-            const target = gameState.targetPage;
-            
-            // Reset game state
-            gameState.currentPage = start;
-            gameState.clickCount = 0;
-            gameState.totalClicks = 0;
-            gameState.visitedPages = new Set([start]);
-            gameState.path = [start];
-            gameState.startTime = Date.now();
-            gameState.elapsedTime = 0;
-            
-            // Update URL with reset state
-            updateUrl(
-                start,
-                target,
-                start,
-                0,
-                0,
-                [start],
-                [start],
-                gameState.startTime
-            );
-            
-            // Reload the page to refresh
-            location.reload();
-        }
-    </script>
-</body>
-</html>
