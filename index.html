@@ -196,35 +196,6 @@
             margin-bottom: 15px;
             padding-bottom: 5px;
             color: #000;
-            cursor: pointer;
-            position: relative;
-            padding-left: 25px;
-        }
-
-        .article-content h2::before {
-            content: '▼';
-            position: absolute;
-            left: 0;
-            font-size: 0.6em;
-            color: #667eea;
-            transition: transform 0.3s ease;
-        }
-
-        .article-content h2.collapsed::before {
-            transform: rotate(-90deg);
-        }
-
-        .article-content h2:hover {
-            color: #667eea;
-        }
-
-        .section-content {
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .section-content.collapsed {
-            max-height: 0 !important;
         }
 
         .article-content h3 {
@@ -555,7 +526,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.6.3 - DEBUG</div>
+        <div class="version">v1.7.0</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
