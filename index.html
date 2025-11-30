@@ -91,6 +91,73 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
+            display: flex;
+            position: relative;
+        }
+
+        /* Table of Contents */
+        .toc-container {
+            width: 250px;
+            background: #f8f9fa;
+            border-right: 1px solid #a2a9b1;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .toc-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #a2a9b1;
+            color: #202122;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            margin-bottom: 8px;
+        }
+
+        .toc-link {
+            color: #0645ad;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: block;
+            padding: 4px 0;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        .toc-link:hover {
+            text-decoration: underline;
+        }
+
+        .toc-link.active {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .toc-subsection {
+            padding-left: 15px;
+            margin-top: 5px;
+        }
+
+        .toc-subsection .toc-link {
+            font-size: 0.85em;
+        }
+
+        /* Main content area */
+        .content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
         }
 
         /* Wikipedia-style article content */
@@ -196,6 +263,7 @@
             margin-bottom: 15px;
             padding-bottom: 5px;
             color: #000;
+            scroll-margin-top: 20px;
         }
 
         .article-content h3 {
@@ -205,6 +273,7 @@
             margin-top: 25px;
             margin-bottom: 10px;
             color: #000;
+            scroll-margin-top: 20px;
         }
 
         .article-content h4 {
@@ -214,6 +283,7 @@
             margin-top: 20px;
             margin-bottom: 8px;
             color: #000;
+            scroll-margin-top: 20px;
         }
 
         /* Wikipedia-style lists */
@@ -387,6 +457,18 @@
         }
 
         @media (max-width: 768px) {
+            .toc-container {
+                display: none;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+
+            .content-wrapper {
+                max-height: none;
+            }
+
             .game-header {
                 padding: 15px;
             }
@@ -526,7 +608,7 @@
 <body>
     <div class="game-header">
         <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v1.7.1</div>
+        <div class="version">v1.8.0</div>
         <div class="game-info">
             <div class="info-box">
                 <div class="label">Target Page</div>
@@ -555,14 +637,23 @@
     </div>
 
     <div class="container">
-        <div class="wiki-notice">
-            📖 <strong>How to play:</strong> Click on blue Wikipedia links to navigate between pages. Try to reach the target page in the fewest clicks possible!
+        <div class="toc-container" id="toc-container">
+            <div class="toc-title">Contents</div>
+            <ul class="toc-list" id="toc-list">
+                <!-- Table of contents will be generated here -->
+            </ul>
         </div>
-        <div class="disambiguation-warning" id="disambiguation-warning">
-            ⚠️ <strong>Warning:</strong> You're about to click a disambiguation page. These pages don't contain content, just links to other articles. Click "OK" to continue or "Cancel" to go back.
-        </div>
-        <div id="game-area">
-            <div class="loading">Loading Wikipedia page</div>
+        
+        <div class="content-wrapper">
+            <div class="wiki-notice">
+                📖 <strong>How to play:</strong> Click on blue Wikipedia links to navigate between pages. Try to reach the target page in the fewest clicks possible!
+            </div>
+            <div class="disambiguation-warning" id="disambiguation-warning">
+                ⚠️ <strong>Warning:</strong> You're about to click a disambiguation page. These pages don't contain content, just links to other articles. Click "OK" to continue or "Cancel" to go back.
+            </div>
+            <div id="game-area">
+                <div class="loading">Loading Wikipedia page</div>
+            </div>
         </div>
     </div>
 
@@ -773,6 +864,8 @@
                 this.targetDescription = document.getElementById('target-description');
                 this.timerDisplay = document.getElementById('timer-display');
                 this.timerInterval = null;
+                this.tocContainer = document.getElementById('toc-container');
+                this.tocList = document.getElementById('toc-list');
             }
 
             async initialize() {
@@ -872,6 +965,93 @@
                 }
             }
 
+            generateTableOfContents() {
+                // Clear existing TOC
+                this.tocList.innerHTML = '';
+                
+                // Get all h2 and h3 headers
+                const headers = this.gameArea.querySelectorAll('.article-content h2, .article-content h3');
+                
+                if (headers.length === 0) {
+                    this.tocContainer.style.display = 'none';
+                    return;
+                }
+                
+                this.tocContainer.style.display = 'block';
+                
+                let currentH2Item = null;
+                
+                headers.forEach((header, index) => {
+                    // Create unique ID for the header if it doesn't have one
+                    if (!header.id) {
+                        header.id = `section-${index}`;
+                    }
+                    
+                    const tocItem = document.createElement('li');
+                    tocItem.className = 'toc-item';
+                    
+                    const tocLink = document.createElement('a');
+                    tocLink.className = 'toc-link';
+                    tocLink.textContent = header.textContent;
+                    tocLink.href = `#${header.id}`;
+                    
+                    tocLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        
+                        // Update active state
+                        document.querySelectorAll('.toc-link').forEach(link => {
+                            link.classList.remove('active');
+                        });
+                        tocLink.classList.add('active');
+                    });
+                    
+                    tocItem.appendChild(tocLink);
+                    
+                    if (header.tagName === 'H2') {
+                        this.tocList.appendChild(tocItem);
+                        currentH2Item = tocItem;
+                    } else if (header.tagName === 'H3' && currentH2Item) {
+                        // Create subsection list if it doesn't exist
+                        let subsectionList = currentH2Item.querySelector('.toc-subsection');
+                        if (!subsectionList) {
+                            subsectionList = document.createElement('ul');
+                            subsectionList.className = 'toc-list toc-subsection';
+                            currentH2Item.appendChild(subsectionList);
+                        }
+                        subsectionList.appendChild(tocItem);
+                    }
+                });
+                
+                // Highlight TOC items on scroll
+                this.setupScrollSpy();
+            }
+
+            setupScrollSpy() {
+                const contentWrapper = document.querySelector('.content-wrapper');
+                const headers = this.gameArea.querySelectorAll('.article-content h2, .article-content h3');
+                
+                contentWrapper.addEventListener('scroll', () => {
+                    let currentSection = null;
+                    
+                    headers.forEach(header => {
+                        const rect = header.getBoundingClientRect();
+                        if (rect.top <= 100) {
+                            currentSection = header.id;
+                        }
+                    });
+                    
+                    if (currentSection) {
+                        document.querySelectorAll('.toc-link').forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${currentSection}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }
+
             async loadPage(pageTitle) {
                 this.gameArea.innerHTML = '<div class="loading">Loading Wikipedia page</div>';
 
@@ -914,6 +1094,7 @@
                     }
                     
                     this.displayArticle(pageData);
+                    this.generateTableOfContents();
                 } catch (error) {
                     this.showError(`Failed to load page: ${pageTitle}. Please try clicking another link.`);
                     console.error(error);
@@ -953,63 +1134,8 @@
                 this.gameArea.innerHTML = '';
                 this.gameArea.appendChild(articleDiv);
 
-                // Make sections collapsible BEFORE processing links
-                this.makeCollapsible();
-
                 // Process all links in the article
                 this.processLinks();
-            }
-
-            makeCollapsible() {
-                const h2Headers = this.gameArea.querySelectorAll('.article-content h2');
-                
-                h2Headers.forEach(header => {
-                    // Start with header collapsed
-                    header.classList.add('collapsed');
-                    
-                    // Collect all elements until next h2
-                    const elementsToWrap = [];
-                    let nextElement = header.nextElementSibling;
-                    
-                    while (nextElement && nextElement.tagName !== 'H2') {
-                        elementsToWrap.push(nextElement);
-                        nextElement = nextElement.nextElementSibling;
-                    }
-                    
-                    if (elementsToWrap.length === 0) return; // Skip if no content
-                    
-                    // Create wrapper for section content
-                    const sectionContent = document.createElement('div');
-                    sectionContent.className = 'section-content collapsed';
-                    sectionContent.style.maxHeight = '0';
-                    sectionContent.style.overflow = 'hidden';
-                    
-                    // Move elements into wrapper
-                    elementsToWrap.forEach(el => {
-                        sectionContent.appendChild(el);
-                    });
-                    
-                    // Insert wrapper after header
-                    header.after(sectionContent);
-                    
-                    // Add click handler
-                    header.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isCollapsed = header.classList.contains('collapsed');
-                        
-                        if (isCollapsed) {
-                            // Expand
-                            header.classList.remove('collapsed');
-                            sectionContent.classList.remove('collapsed');
-                            sectionContent.style.maxHeight = sectionContent.scrollHeight + 500 + 'px'; // Extra space for safety
-                        } else {
-                            // Collapse
-                            header.classList.add('collapsed');
-                            sectionContent.classList.add('collapsed');
-                            sectionContent.style.maxHeight = '0';
-                        }
-                    });
-                });
             }
 
             processLinks() {
