@@ -2,10 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.8.0
+    Version: 3.8.2
     Last Updated: 2024-12-01
     
     Changelog:
+    - v3.8.2: Fixed image loading - now fixes URLs in HTML before DOM insertion
+    - v3.8.1: Fixed broken images, added Wikipedia autocomplete, added Fill Random for page preview
     - v3.8.0: Debug Mode Lite - Custom game setup, page preview, feature flag
     - v3.7.0: Added keyboard shortcuts for New Game - 'N' or Ctrl+N (Explore mode only)
     - v3.6.9: Fixed notice icon positioning (now with H1, not in green banner), more specific verification detection
@@ -1065,6 +1067,46 @@
             display: block;
         }
 
+        .debug-autocomplete {
+            position: absolute;
+            background: white;
+            border: 2px solid #ff9800;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .debug-autocomplete.active {
+            display: block;
+        }
+
+        .debug-autocomplete-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9em;
+        }
+
+        .debug-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .debug-autocomplete-item:hover {
+            background: #fff3e0;
+        }
+
+        .debug-autocomplete-item.selected {
+            background: #ffe0b2;
+        }
+
+        .debug-input-wrapper {
+            position: relative;
+        }
+
         .loading {
             text-align: center;
             padding: 60px 40px;
@@ -1757,7 +1799,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.8.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.8.2</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1815,8 +1857,14 @@
         
         <div class="debug-section">
             <h4>🎮 Custom Game Setup</h4>
-            <input type="text" class="debug-input" id="debug-start-page" placeholder="Start Page (e.g., Albert Einstein)">
-            <input type="text" class="debug-input" id="debug-target-page" placeholder="Target Page (e.g., Physics)">
+            <div class="debug-input-wrapper">
+                <input type="text" class="debug-input" id="debug-start-page" placeholder="Start Page (e.g., Albert Einstein)" autocomplete="off">
+                <div class="debug-autocomplete" id="autocomplete-start"></div>
+            </div>
+            <div class="debug-input-wrapper">
+                <input type="text" class="debug-input" id="debug-target-page" placeholder="Target Page (e.g., Physics)" autocomplete="off">
+                <div class="debug-autocomplete" id="autocomplete-target"></div>
+            </div>
             <div class="debug-error" id="debug-game-error"></div>
             <button class="debug-button" onclick="startDebugGame()">Start Custom Game</button>
             <button class="debug-button secondary" onclick="fillRandomPages()">Fill Random</button>
@@ -1824,9 +1872,13 @@
 
         <div class="debug-section">
             <h4>🔍 Page Preview</h4>
-            <input type="text" class="debug-input" id="debug-preview-page" placeholder="Page Name (e.g., Mainframe)">
+            <div class="debug-input-wrapper">
+                <input type="text" class="debug-input" id="debug-preview-page" placeholder="Page Name (e.g., Mainframe)" autocomplete="off">
+                <div class="debug-autocomplete" id="autocomplete-preview"></div>
+            </div>
             <div class="debug-error" id="debug-preview-error"></div>
             <button class="debug-button" onclick="loadDebugPreview()">Load Preview</button>
+            <button class="debug-button secondary" onclick="fillRandomPreview()">Fill Random</button>
         </div>
     </div>
 
@@ -2014,6 +2066,11 @@
                     document.getElementById('debug-toggle').classList.add('active');
                     document.getElementById('debug-panel').classList.add('active');
                 }
+                
+                // Setup autocomplete for debug inputs
+                setupAutocomplete('debug-start-page', 'autocomplete-start');
+                setupAutocomplete('debug-target-page', 'autocomplete-target');
+                setupAutocomplete('debug-preview-page', 'autocomplete-preview');
             });
         }
         
@@ -2838,7 +2895,19 @@
             renderPage(pageData) {
                 const articleDiv = document.createElement('div');
                 articleDiv.className = 'wikipedia-article';
-                articleDiv.innerHTML = pageData.text['*'];
+                
+                // Fix image URLs in HTML before inserting
+                let htmlContent = pageData.text['*'];
+                
+                // Fix protocol-relative URLs
+                htmlContent = htmlContent.replace(/src="\/\//g, 'src="https://');
+                htmlContent = htmlContent.replace(/srcset="\/\//g, 'srcset="https://');
+                
+                // Fix relative URLs (but not protocol-relative ones)
+                htmlContent = htmlContent.replace(/src="\/(?!\/)/g, 'src="https://en.wikipedia.org/');
+                htmlContent = htmlContent.replace(/srcset="\/(?!\/)/g, 'srcset="https://en.wikipedia.org/');
+                
+                articleDiv.innerHTML = htmlContent;
 
                 // Remove unwanted elements
                 // Remove "This article needs additional citations" and similar boxes
@@ -2945,6 +3014,41 @@
                 this.gameArea.appendChild(articleDiv);
 
                 this.processLinks();
+                this.fixImages(); // Fix broken Wikipedia images
+            }
+
+            fixImages() {
+                // Fix Wikipedia image sources
+                const images = this.gameArea.querySelectorAll('img');
+                images.forEach(img => {
+                    const src = img.getAttribute('src');
+                    
+                    if (!src) return;
+                    
+                    // Case 1: Protocol-relative URLs (//upload.wikimedia.org/...)
+                    if (src.startsWith('//')) {
+                        img.setAttribute('src', 'https:' + src);
+                    } 
+                    // Case 2: Relative URLs starting with / (/static/images/...)
+                    else if (src.startsWith('/') && !src.startsWith('//')) {
+                        img.setAttribute('src', 'https://en.wikipedia.org' + src);
+                    }
+                    // Case 3: Data URIs or already absolute URLs - leave as is
+                    else if (src.startsWith('data:') || src.startsWith('http:') || src.startsWith('https:')) {
+                        // Already valid, do nothing
+                    }
+                    // Case 4: Relative URLs without leading slash
+                    else if (!src.includes('://')) {
+                        img.setAttribute('src', 'https://en.wikipedia.org/' + src);
+                    }
+                    
+                    // Add error handler
+                    img.onerror = function() {
+                        console.warn('Failed to load image:', this.src);
+                        // Hide broken images
+                        this.style.display = 'none';
+                    };
+                });
             }
 
             processLinks() {
@@ -3857,6 +3961,133 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             
             document.getElementById('debug-start-page').value = randomStart;
             document.getElementById('debug-target-page').value = randomTarget;
+        }
+        
+        function fillRandomPreview() {
+            // Fill with random page from our list
+            const randomPage = ALL_PAGES[Math.floor(Math.random() * ALL_PAGES.length)];
+            document.getElementById('debug-preview-page').value = randomPage;
+        }
+        
+        // ======================
+        // WIKIPEDIA AUTOCOMPLETE
+        // ======================
+        
+        let autocompleteTimeout = null;
+        
+        function setupAutocomplete(inputId, dropdownId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            let selectedIndex = -1;
+            
+            input.addEventListener('input', async (e) => {
+                const query = e.target.value.trim();
+                
+                // Clear previous timeout
+                clearTimeout(autocompleteTimeout);
+                
+                // Hide dropdown if query is too short
+                if (query.length < 2) {
+                    dropdown.classList.remove('active');
+                    dropdown.innerHTML = '';
+                    return;
+                }
+                
+                // Debounce API calls
+                autocompleteTimeout = setTimeout(async () => {
+                    const suggestions = await getWikipediaSuggestions(query);
+                    
+                    if (suggestions.length > 0) {
+                        dropdown.innerHTML = '';
+                        selectedIndex = -1;
+                        
+                        suggestions.forEach((suggestion, index) => {
+                            const item = document.createElement('div');
+                            item.className = 'debug-autocomplete-item';
+                            item.textContent = suggestion;
+                            
+                            // Click to select
+                            item.addEventListener('click', () => {
+                                input.value = suggestion;
+                                dropdown.classList.remove('active');
+                                dropdown.innerHTML = '';
+                            });
+                            
+                            dropdown.appendChild(item);
+                        });
+                        
+                        dropdown.classList.add('active');
+                    } else {
+                        dropdown.classList.remove('active');
+                        dropdown.innerHTML = '';
+                    }
+                }, 300); // 300ms debounce
+            });
+            
+            // Keyboard navigation
+            input.addEventListener('keydown', (e) => {
+                const items = dropdown.querySelectorAll('.debug-autocomplete-item');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                    updateSelection(items, selectedIndex);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    updateSelection(items, selectedIndex);
+                } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    input.value = items[selectedIndex].textContent;
+                    dropdown.classList.remove('active');
+                    dropdown.innerHTML = '';
+                } else if (e.key === 'Escape') {
+                    dropdown.classList.remove('active');
+                    dropdown.innerHTML = '';
+                }
+            });
+            
+            // Close on click outside
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                    dropdown.innerHTML = '';
+                }
+            });
+        }
+        
+        function updateSelection(items, index) {
+            items.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+        
+        async function getWikipediaSuggestions(query) {
+            try {
+                const endpoint = 'https://en.wikipedia.org/w/api.php';
+                const params = new URLSearchParams({
+                    action: 'opensearch',
+                    search: query,
+                    limit: 8,
+                    namespace: 0,
+                    format: 'json',
+                    origin: '*'
+                });
+                
+                const response = await fetch(`${endpoint}?${params}`);
+                const data = await response.json();
+                
+                // OpenSearch API returns: [query, [titles], [descriptions], [urls]]
+                return data[1] || [];
+            } catch (error) {
+                console.error('Autocomplete error:', error);
+                return [];
+            }
         }
 
     </script>
