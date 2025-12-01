@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.2.0
+    Version: 3.3.0
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.3.0: Statistics Dashboard with tracking, personal bests, daily streak, recent games
     - v3.2.0: Disabled New Game in Daily mode, Explore mode persistence across mode switches
     - v3.1.0: Enhanced link visibility, hover previews, FAB menu redesign, fixed Give Up
     - v3.0.0: Complete UI overhaul, centered target, Explore mode, compact header
@@ -777,6 +778,132 @@
             display: flex;
         }
 
+        /* Statistics Modal */
+        .stats-modal .modal-content {
+            max-width: 700px;
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .stats-header h2 {
+            margin: 0;
+        }
+
+        .reset-stats-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .reset-stats-btn:hover {
+            background: #d32f2f;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-card.highlight {
+            border-color: #0645ad;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+        }
+
+        .stat-card-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #0645ad;
+            margin-bottom: 5px;
+        }
+
+        .stat-card-label {
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-card-sublabel {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .recent-games-section {
+            margin-top: 25px;
+        }
+
+        .recent-games-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .recent-game-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #0645ad;
+        }
+
+        .recent-game-item.gave-up {
+            border-left-color: #f44336;
+            opacity: 0.7;
+        }
+
+        .recent-game-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .recent-game-result {
+            font-weight: 600;
+            color: #0645ad;
+        }
+
+        .recent-game-result.gave-up {
+            color: #f44336;
+        }
+
+        .recent-game-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .recent-game-date {
+            font-size: 0.8em;
+            color: #999;
+        }
+
         .modal-content {
             background: white;
             border-radius: 16px;
@@ -1147,7 +1274,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.2.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.3.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1221,6 +1348,10 @@
                 <span class="emoji">🔍</span>
                 <span>Search (Ctrl+F)</span>
             </button>
+            <button class="fab-menu-item" onclick="openStats(); closeFabMenu();">
+                <span class="emoji">📊</span>
+                <span>Statistics</span>
+            </button>
             <div class="fab-menu-divider"></div>
             <button class="fab-menu-item danger" onclick="giveUp(); closeFabMenu();">
                 <span class="emoji">🏳️</span>
@@ -1266,6 +1397,60 @@
                 <button class="modal-btn secondary" onclick="retryGame()">🔄 Retry</button>
                 <button class="modal-btn primary" onclick="shareResult()">📤 Share</button>
                 <button class="modal-btn secondary" onclick="startNewGame()">🎮 New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div class="modal-overlay stats-modal" id="stats-modal">
+        <div class="modal-content">
+            <div class="stats-header">
+                <h2>📊 Your Statistics</h2>
+                <button class="reset-stats-btn" onclick="stats.reset()">Reset Stats</button>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card highlight">
+                    <div class="stat-card-value" id="stat-streak">0</div>
+                    <div class="stat-card-label">Daily Streak</div>
+                    <div class="stat-card-sublabel">🔥 days in a row</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-games">0</div>
+                    <div class="stat-card-label">Games Played</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-wins">0</div>
+                    <div class="stat-card-label">Wins</div>
+                    <div class="stat-card-sublabel" id="stat-winrate">0% win rate</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-card-value" id="stat-best-clicks">-</div>
+                    <div class="stat-card-label">Best Clicks</div>
+                    <div class="stat-card-sublabel">🏆 personal record</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-card-value" id="stat-best-time">-</div>
+                    <div class="stat-card-label">Best Time</div>
+                    <div class="stat-card-sublabel">⚡ fastest win</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-avg-clicks">-</div>
+                    <div class="stat-card-label">Avg Clicks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value" id="stat-avg-time">-</div>
+                    <div class="stat-card-label">Avg Time</div>
+                </div>
+            </div>
+
+            <div class="recent-games-section">
+                <h3>📜 Recent Games</h3>
+                <div id="recent-games-list"></div>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 25px;">
+                <button class="modal-btn secondary" onclick="closeStats()">Close</button>
             </div>
         </div>
     </div>
@@ -1399,6 +1584,135 @@
             if (avgScore <= 3.5) return 'hard';
             return 'expert';
         }
+
+        // ======================
+        // STATISTICS SYSTEM
+        // ======================
+        const stats = {
+            totalGamesPlayed: 0,
+            totalWins: 0,
+            totalGiveUps: 0,
+            bestClicks: null,
+            bestTime: null,
+            averageClicks: 0,
+            averageTime: 0,
+            dailyStreak: 0,
+            lastDailyDate: null,
+            recentGames: [], // Last 10 games
+            
+            load() {
+                const saved = localStorage.getItem('wikipath_stats');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    Object.assign(this, data);
+                }
+            },
+            
+            save() {
+                const data = {
+                    totalGamesPlayed: this.totalGamesPlayed,
+                    totalWins: this.totalWins,
+                    totalGiveUps: this.totalGiveUps,
+                    bestClicks: this.bestClicks,
+                    bestTime: this.bestTime,
+                    averageClicks: this.averageClicks,
+                    averageTime: this.averageTime,
+                    dailyStreak: this.dailyStreak,
+                    lastDailyDate: this.lastDailyDate,
+                    recentGames: this.recentGames
+                };
+                localStorage.setItem('wikipath_stats', JSON.stringify(data));
+            },
+            
+            recordGame(won, clicks, timeInSeconds, path, mode, gaveUp = false) {
+                this.totalGamesPlayed++;
+                
+                if (won) {
+                    this.totalWins++;
+                    
+                    // Update best clicks
+                    if (this.bestClicks === null || clicks < this.bestClicks) {
+                        this.bestClicks = clicks;
+                    }
+                    
+                    // Update best time
+                    if (this.bestTime === null || timeInSeconds < this.bestTime) {
+                        this.bestTime = timeInSeconds;
+                    }
+                    
+                    // Update daily streak
+                    if (mode === 'daily') {
+                        const today = getTodayDateString();
+                        if (this.lastDailyDate) {
+                            const yesterday = new Date();
+                            yesterday.setDate(yesterday.getDate() - 1);
+                            const yesterdayStr = yesterday.toISOString().split('T')[0];
+                            
+                            if (this.lastDailyDate === yesterdayStr) {
+                                this.dailyStreak++;
+                            } else if (this.lastDailyDate !== today) {
+                                this.dailyStreak = 1;
+                            }
+                        } else {
+                            this.dailyStreak = 1;
+                        }
+                        this.lastDailyDate = today;
+                    }
+                }
+                
+                if (gaveUp) {
+                    this.totalGiveUps++;
+                }
+                
+                // Calculate averages
+                if (won) {
+                    const totalClicksSum = this.averageClicks * (this.totalWins - 1) + clicks;
+                    this.averageClicks = Math.round(totalClicksSum / this.totalWins * 10) / 10;
+                    
+                    const totalTimeSum = this.averageTime * (this.totalWins - 1) + timeInSeconds;
+                    this.averageTime = Math.round(totalTimeSum / this.totalWins);
+                }
+                
+                // Add to recent games
+                this.recentGames.unshift({
+                    date: new Date().toISOString(),
+                    won,
+                    clicks,
+                    time: timeInSeconds,
+                    pathLength: path.length,
+                    mode,
+                    gaveUp
+                });
+                
+                // Keep only last 10 games
+                if (this.recentGames.length > 10) {
+                    this.recentGames = this.recentGames.slice(0, 10);
+                }
+                
+                this.save();
+            },
+            
+            reset() {
+                if (confirm('Are you sure you want to reset all statistics? This cannot be undone.')) {
+                    localStorage.removeItem('wikipath_stats');
+                    this.totalGamesPlayed = 0;
+                    this.totalWins = 0;
+                    this.totalGiveUps = 0;
+                    this.bestClicks = null;
+                    this.bestTime = null;
+                    this.averageClicks = 0;
+                    this.averageTime = 0;
+                    this.dailyStreak = 0;
+                    this.lastDailyDate = null;
+                    this.recentGames = [];
+                    this.save();
+                    alert('Statistics reset successfully!');
+                }
+            }
+        };
+
+        // Load stats on page load
+        stats.load();
 
         // ======================
         // GAME STATE
@@ -2033,6 +2347,13 @@
                 this.stopTimer();
                 gameState.hasWon = true;
                 
+                // Calculate time in seconds
+                const timeInSeconds = Math.floor((Date.now() - gameState.startTime) / 1000);
+                
+                // Record statistics
+                const mode = gameState.isDailyMode ? 'daily' : 'explore';
+                stats.recordGame(true, gameState.totalClicks, timeInSeconds, gameState.path, mode, false);
+                
                 const modal = document.getElementById('win-modal');
                 const finalClicksEl = document.getElementById('final-clicks');
                 const finalTimeEl = document.getElementById('final-time');
@@ -2061,6 +2382,12 @@
                 }
 
                 let pathHtml = `<div class="performance-rating ${ratingClass}">${rating}</div>`;
+                
+                // Show personal best if achieved
+                if (stats.bestClicks === gameState.totalClicks && stats.totalWins > 1) {
+                    pathHtml += '<div style="text-align: center; background: #fff3cd; padding: 10px; border-radius: 8px; margin-bottom: 15px; color: #856404;"><strong>🎉 New Personal Best!</strong></div>';
+                }
+                
                 pathHtml += '<h3>🗺️ Your Journey:</h3>';
                 gameState.path.forEach((page, index) => {
                     pathHtml += `<div class="path-item">
@@ -2192,6 +2519,79 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         });
 
         // ======================
+        // STATISTICS MODAL
+        // ======================
+        function openStats() {
+            updateStatsDisplay();
+            const modal = document.getElementById('stats-modal');
+            modal.classList.add('active');
+        }
+
+        function closeStats() {
+            const modal = document.getElementById('stats-modal');
+            modal.classList.remove('active');
+        }
+
+        function updateStatsDisplay() {
+            // Update stat cards
+            document.getElementById('stat-streak').textContent = stats.dailyStreak;
+            document.getElementById('stat-games').textContent = stats.totalGamesPlayed;
+            document.getElementById('stat-wins').textContent = stats.totalWins;
+            
+            const winRate = stats.totalGamesPlayed > 0 
+                ? Math.round((stats.totalWins / stats.totalGamesPlayed) * 100) 
+                : 0;
+            document.getElementById('stat-winrate').textContent = `${winRate}% win rate`;
+            
+            document.getElementById('stat-best-clicks').textContent = 
+                stats.bestClicks !== null ? stats.bestClicks : '-';
+            
+            document.getElementById('stat-best-time').textContent = 
+                stats.bestTime !== null ? formatTime(stats.bestTime) : '-';
+            
+            document.getElementById('stat-avg-clicks').textContent = 
+                stats.totalWins > 0 ? stats.averageClicks : '-';
+            
+            document.getElementById('stat-avg-time').textContent = 
+                stats.totalWins > 0 ? formatTime(stats.averageTime) : '-';
+            
+            // Update recent games
+            const recentGamesList = document.getElementById('recent-games-list');
+            if (stats.recentGames.length === 0) {
+                recentGamesList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No games played yet</p>';
+            } else {
+                recentGamesList.innerHTML = stats.recentGames.map(game => {
+                    const date = new Date(game.date);
+                    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    
+                    const resultText = game.gaveUp ? 'Gave Up' : (game.won ? 'Won' : 'Lost');
+                    const resultClass = game.gaveUp ? 'gave-up' : '';
+                    
+                    return `
+                        <div class="recent-game-item ${resultClass}">
+                            <div class="recent-game-info">
+                                <div class="recent-game-result ${resultClass}">${resultText}</div>
+                                <div class="recent-game-stats">
+                                    <span>🎯 ${game.clicks} clicks</span>
+                                    <span>⏱️ ${formatTime(game.time)}</span>
+                                    <span>${game.mode === 'daily' ? '📅 Daily' : '🧭 Explore'}</span>
+                                </div>
+                            </div>
+                            <div class="recent-game-date">${dateStr} ${timeStr}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // ======================
         // FAB MENU TOGGLE
         // ======================
         function toggleFabMenu() {
@@ -2236,6 +2636,11 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 globalGameController.stopTimer();
             }
             gameState.gaveUp = true;
+            
+            // Record statistics for give up
+            const timeInSeconds = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const mode = gameState.isDailyMode ? 'daily' : 'explore';
+            stats.recordGame(false, gameState.totalClicks, timeInSeconds, gameState.path, mode, true);
             
             const modal = document.getElementById('win-modal');
             const modalContent = modal.querySelector('.modal-content');
