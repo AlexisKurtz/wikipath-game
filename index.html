@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.5.3
+    Version: 3.6.0
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.6.0: Added starting page indicator, TOC collapsed by default, collapse/expand all buttons
     - v3.5.3: Fixed redirect pages, made article title bigger (2.8em like Wikipedia)
     - v3.5.2: Fixed FAB menu click interaction, improved menu item clickability
     - v3.5.1: Fixed preview tooltip positioning, removed disclaimer boxes, removed redirect hatnotes
@@ -585,6 +586,31 @@
             padding-bottom: 10px;
             border-bottom: 2px solid #0645ad;
             color: #202122;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toc-collapse-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .toc-collapse-btn {
+            background: transparent;
+            border: 1px solid #0645ad;
+            color: #0645ad;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .toc-collapse-btn:hover {
+            background: #0645ad;
+            color: white;
         }
 
         .toc-current-page {
@@ -803,6 +829,39 @@
         .wikipedia-article .hatnote,
         .wikipedia-article .dablink {
             display: none !important;
+        }
+
+        /* Starting Page Indicator */
+        .starting-page-indicator {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+        }
+
+        .starting-page-indicator .icon {
+            font-size: 1.5em;
+        }
+
+        .starting-page-indicator .text {
+            flex: 1;
+        }
+
+        .starting-page-indicator .label {
+            font-weight: 700;
+            color: #2e7d32;
+            font-size: 0.9em;
+            margin-bottom: 2px;
+        }
+
+        .starting-page-indicator .description {
+            font-size: 0.85em;
+            color: #1b5e20;
         }
 
         /* Compact notice icons */
@@ -1537,7 +1596,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.5.3</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1629,7 +1688,13 @@
 
     <div class="container">
         <div class="toc-container" id="toc-container">
-            <div class="toc-title">Contents</div>
+            <div class="toc-title">
+                <span>Contents</span>
+                <div class="toc-collapse-controls">
+                    <button class="toc-collapse-btn" onclick="collapseAllTOC()">Collapse All</button>
+                    <button class="toc-collapse-btn" onclick="expandAllTOC()">Expand All</button>
+                </div>
+            </div>
             <div class="toc-current-page" id="toc-current-page">Loading...</div>
             <ul class="toc-list" id="toc-list"></ul>
         </div>
@@ -2504,7 +2569,7 @@
                     
                     // H1 header (collapsible)
                     const header = document.createElement('div');
-                    header.className = 'toc-section-header';
+                    header.className = 'toc-section-header collapsed'; // Start collapsed
                     header.innerHTML = `
                         <span class="toc-collapse-icon">▼</span>
                         <span>${h1Title}</span>
@@ -2512,7 +2577,7 @@
                     
                     // Subsections list
                     const subsectionsList = document.createElement('ul');
-                    subsectionsList.className = 'toc-subsections';
+                    subsectionsList.className = 'toc-subsections collapsed'; // Start collapsed
                     
                     // Add click to H1 to scroll
                     header.addEventListener('click', (e) => {
@@ -2580,6 +2645,27 @@
                     notice.textContent = '⚠️';
                     notice.setAttribute('data-tooltip', 'This article may need additional verification');
                     h1.appendChild(notice);
+                }
+
+                // Add starting page indicator (only for the first page)
+                if (gameState.currentPage === gameState.startPage && gameState.path.length === 1) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'starting-page-indicator';
+                    indicator.innerHTML = `
+                        <div class="icon">🚀</div>
+                        <div class="text">
+                            <div class="label">Starting Page</div>
+                            <div class="description">This is where your journey begins! Navigate to "${gameState.targetPage}"</div>
+                        </div>
+                    `;
+                    
+                    // Insert before the first element
+                    const firstElement = articleDiv.firstElementChild;
+                    if (firstElement) {
+                        articleDiv.insertBefore(indicator, firstElement);
+                    } else {
+                        articleDiv.appendChild(indicator);
+                    }
                 }
 
                 this.gameArea.innerHTML = '';
@@ -3074,6 +3160,27 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 menu.classList.remove('open');
             }
         });
+
+        // ======================
+        // TOC COLLAPSE CONTROLS
+        // ======================
+        function collapseAllTOC() {
+            document.querySelectorAll('.toc-section-header').forEach(header => {
+                header.classList.add('collapsed');
+            });
+            document.querySelectorAll('.toc-subsections').forEach(list => {
+                list.classList.add('collapsed');
+            });
+        }
+
+        function expandAllTOC() {
+            document.querySelectorAll('.toc-section-header').forEach(header => {
+                header.classList.remove('collapsed');
+            });
+            document.querySelectorAll('.toc-subsections').forEach(list => {
+                list.classList.remove('collapsed');
+            });
+        }
 
         // ======================
         // PATH PANEL TOGGLE
