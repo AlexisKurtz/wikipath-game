@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.7.0
-    Last Updated: 2024-11-30
+    Version: 3.8.0
+    Last Updated: 2024-12-01
     
     Changelog:
+    - v3.8.0: Debug Mode Lite - Custom game setup, page preview, feature flag
     - v3.7.0: Added keyboard shortcuts for New Game - 'N' or Ctrl+N (Explore mode only)
     - v3.6.9: Fixed notice icon positioning (now with H1, not in green banner), more specific verification detection
     - v3.6.8: Fixed notice icon position below green banner, improved starting text, removed TOC arrows for sections without children
@@ -951,6 +952,119 @@
             position: relative;
         }
 
+        /* ======================
+           DEBUG MODE (LITE)
+           ====================== */
+        
+        .debug-toggle {
+            display: none; /* Hidden by default - controlled by JS */
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .debug-toggle:hover {
+            background: #f57c00;
+        }
+
+        .debug-toggle.active {
+            background: #4caf50;
+        }
+
+        .debug-panel {
+            display: none;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 2px solid #ff9800;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.2);
+        }
+
+        .debug-panel.active {
+            display: block;
+        }
+
+        .debug-panel h3 {
+            margin: 0 0 15px 0;
+            color: #e65100;
+            font-size: 1.1em;
+        }
+
+        .debug-section {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .debug-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .debug-section h4 {
+            margin: 0 0 10px 0;
+            color: #f57c00;
+            font-size: 0.95em;
+        }
+
+        .debug-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .debug-input:focus {
+            outline: none;
+            border-color: #ff9800;
+        }
+
+        .debug-button {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-right: 8px;
+            transition: background 0.2s;
+        }
+
+        .debug-button:hover {
+            background: #f57c00;
+        }
+
+        .debug-button.secondary {
+            background: #757575;
+        }
+
+        .debug-button.secondary:hover {
+            background: #616161;
+        }
+
+        .debug-error {
+            color: #d32f2f;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .debug-error.active {
+            display: block;
+        }
+
         .loading {
             text-align: center;
             padding: 60px 40px;
@@ -1643,7 +1757,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.7.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.8.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1677,6 +1791,9 @@
 
             <!-- Right: Mode Switch -->
             <div class="header-right">
+                <button class="debug-toggle" id="debug-toggle" onclick="toggleDebugMode()">
+                    🐛 Debug
+                </button>
                 <div class="mode-switch-container">
                     <div class="mode-switch-label">Mode</div>
                     <div class="mode-switch">
@@ -1689,6 +1806,27 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Debug Panel -->
+    <div class="debug-panel" id="debug-panel">
+        <h3>🐛 Debug Mode</h3>
+        
+        <div class="debug-section">
+            <h4>🎮 Custom Game Setup</h4>
+            <input type="text" class="debug-input" id="debug-start-page" placeholder="Start Page (e.g., Albert Einstein)">
+            <input type="text" class="debug-input" id="debug-target-page" placeholder="Target Page (e.g., Physics)">
+            <div class="debug-error" id="debug-game-error"></div>
+            <button class="debug-button" onclick="startDebugGame()">Start Custom Game</button>
+            <button class="debug-button secondary" onclick="fillRandomPages()">Fill Random</button>
+        </div>
+
+        <div class="debug-section">
+            <h4>🔍 Page Preview</h4>
+            <input type="text" class="debug-input" id="debug-preview-page" placeholder="Page Name (e.g., Mainframe)">
+            <div class="debug-error" id="debug-preview-error"></div>
+            <button class="debug-button" onclick="loadDebugPreview()">Load Preview</button>
         </div>
     </div>
 
@@ -1858,6 +1996,27 @@
     </div>
 
     <script>
+        // ======================
+        // CONFIGURATION
+        // ======================
+        
+        // Feature Flags
+        const SHOW_DEBUG_MODE = true; // Set to false for production
+        
+        // Initialize debug mode visibility
+        if (SHOW_DEBUG_MODE) {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('debug-toggle').style.display = 'inline-block';
+                
+                // Restore debug panel state from localStorage
+                const debugMode = localStorage.getItem('wikipath_debug_mode') === 'true';
+                if (debugMode) {
+                    document.getElementById('debug-toggle').classList.add('active');
+                    document.getElementById('debug-panel').classList.add('active');
+                }
+            });
+        }
+        
         // ======================
         // DAILY CHALLENGE SYSTEM
         // ======================
@@ -3562,6 +3721,144 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             
             location.reload();
         }
+        // ======================
+        // DEBUG MODE FUNCTIONS
+        // ======================
+        
+        function toggleDebugMode() {
+            const toggle = document.getElementById('debug-toggle');
+            const panel = document.getElementById('debug-panel');
+            const isActive = toggle.classList.toggle('active');
+            panel.classList.toggle('active');
+            
+            // Save state
+            localStorage.setItem('wikipath_debug_mode', isActive);
+        }
+        
+        async function startDebugGame() {
+            const startPage = document.getElementById('debug-start-page').value.trim();
+            const targetPage = document.getElementById('debug-target-page').value.trim();
+            const errorEl = document.getElementById('debug-game-error');
+            
+            // Clear previous errors
+            errorEl.classList.remove('active');
+            
+            // Validate inputs
+            if (!startPage || !targetPage) {
+                errorEl.textContent = '❌ Please enter both start and target pages';
+                errorEl.classList.add('active');
+                return;
+            }
+            
+            if (startPage.toLowerCase() === targetPage.toLowerCase()) {
+                errorEl.textContent = '❌ Start and target must be different';
+                errorEl.classList.add('active');
+                return;
+            }
+            
+            // Validate pages exist
+            const startValid = await validateWikipediaPage(startPage);
+            const targetValid = await validateWikipediaPage(targetPage);
+            
+            if (!startValid) {
+                errorEl.textContent = `❌ Start page "${startPage}" not found`;
+                errorEl.classList.add('active');
+                return;
+            }
+            
+            if (!targetValid) {
+                errorEl.textContent = `❌ Target page "${targetPage}" not found`;
+                errorEl.classList.add('active');
+                return;
+            }
+            
+            // Start custom game
+            const normalizedStart = startPage.replace(/ /g, '_');
+            const normalizedTarget = targetPage.replace(/ /g, '_');
+            
+            // Switch to explore mode and start custom game
+            gameState.isDailyMode = false;
+            updateModeUI();
+            
+            // Navigate to game with custom pages
+            window.location.href = `?start=${encodeURIComponent(normalizedStart)}&target=${encodeURIComponent(normalizedTarget)}`;
+        }
+        
+        async function loadDebugPreview() {
+            const pageName = document.getElementById('debug-preview-page').value.trim();
+            const errorEl = document.getElementById('debug-preview-error');
+            
+            // Clear previous errors
+            errorEl.classList.remove('active');
+            
+            if (!pageName) {
+                errorEl.textContent = '❌ Please enter a page name';
+                errorEl.classList.add('active');
+                return;
+            }
+            
+            // Validate page exists
+            const valid = await validateWikipediaPage(pageName);
+            
+            if (!valid) {
+                errorEl.textContent = `❌ Page "${pageName}" not found`;
+                errorEl.classList.add('active');
+                return;
+            }
+            
+            // Load the page in preview mode
+            const normalizedPage = pageName.replace(/ /g, '_');
+            gameState.currentPage = normalizedPage;
+            
+            try {
+                const pageData = await fetchWikipediaPage(normalizedPage);
+                globalGameController.renderPage(pageData);
+                globalGameController.buildTableOfContents(pageData.sections || []);
+                
+                // Scroll to content
+                document.getElementById('game-container').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                errorEl.textContent = `❌ Error loading page: ${error.message}`;
+                errorEl.classList.add('active');
+            }
+        }
+        
+        async function validateWikipediaPage(pageName) {
+            try {
+                const endpoint = 'https://en.wikipedia.org/w/api.php';
+                const params = new URLSearchParams({
+                    action: 'query',
+                    titles: pageName,
+                    format: 'json',
+                    origin: '*'
+                });
+                
+                const response = await fetch(`${endpoint}?${params}`);
+                const data = await response.json();
+                
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                
+                // Page exists if ID is not -1
+                return pageId !== '-1';
+            } catch (error) {
+                console.error('Page validation error:', error);
+                return false;
+            }
+        }
+        
+        function fillRandomPages() {
+            // Fill with random pages from our list
+            const randomStart = ALL_PAGES[Math.floor(Math.random() * ALL_PAGES.length)];
+            let randomTarget;
+            do {
+                randomTarget = ALL_PAGES[Math.floor(Math.random() * ALL_PAGES.length)];
+            } while (randomTarget === randomStart);
+            
+            document.getElementById('debug-start-page').value = randomStart;
+            document.getElementById('debug-target-page').value = randomTarget;
+        }
+
     </script>
 </body>
 </html>
