@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.6.2
+    Version: 3.6.3
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.6.3: Fixed missing article titles - now always displays page title at top
     - v3.6.2: Increased article title size to 3.5em (much bigger and more prominent)
     - v3.6.1: Removed article title from TOC (now only shown in main article)
     - v3.6.0: Added starting page indicator, TOC collapsed by default, collapse/expand all buttons
@@ -1587,7 +1588,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.2</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.3</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2621,8 +2622,22 @@
                 // Remove "For other uses" and redirect messages
                 articleDiv.querySelectorAll('.hatnote, [class*="hatnote"]').forEach(el => el.remove());
                 
+                // Check if H1 exists, if not create one
+                let h1 = articleDiv.querySelector('h1');
+                if (!h1) {
+                    h1 = document.createElement('h1');
+                    h1.textContent = pageData.title;
+                    
+                    // Insert at the very beginning
+                    const firstElement = articleDiv.firstElementChild;
+                    if (firstElement) {
+                        articleDiv.insertBefore(h1, firstElement);
+                    } else {
+                        articleDiv.appendChild(h1);
+                    }
+                }
+                
                 // Check if article has issues and add compact notice
-                const h1 = articleDiv.querySelector('h1');
                 if (h1 && pageData.text['*'].includes('citation')) {
                     const notice = document.createElement('span');
                     notice.className = 'article-notice verification';
@@ -2643,10 +2658,9 @@
                         </div>
                     `;
                     
-                    // Insert before the first element
-                    const firstElement = articleDiv.firstElementChild;
-                    if (firstElement) {
-                        articleDiv.insertBefore(indicator, firstElement);
+                    // Insert after H1
+                    if (h1.nextSibling) {
+                        articleDiv.insertBefore(indicator, h1.nextSibling);
                     } else {
                         articleDiv.appendChild(indicator);
                     }
