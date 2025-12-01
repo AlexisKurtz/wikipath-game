@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.6.3
+    Version: 3.6.4
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.6.4: Replaced TOC buttons with smaller +/- symbols (expand/collapse all)
     - v3.6.3: Fixed missing article titles - now always displays page title at top
     - v3.6.2: Increased article title size to 3.5em (much bigger and more prominent)
     - v3.6.1: Removed article title from TOC (now only shown in main article)
@@ -603,12 +604,14 @@
             background: transparent;
             border: 1px solid #0645ad;
             color: #0645ad;
-            padding: 3px 8px;
+            padding: 2px 8px;
             border-radius: 4px;
-            font-size: 0.7em;
+            font-size: 1.1em;
             cursor: pointer;
             transition: all 0.2s;
-            font-weight: 600;
+            font-weight: 700;
+            line-height: 1;
+            min-width: 28px;
         }
 
         .toc-collapse-btn:hover {
@@ -1588,7 +1591,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.3</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.4</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1683,8 +1686,8 @@
             <div class="toc-title">
                 <span>Contents</span>
                 <div class="toc-collapse-controls">
-                    <button class="toc-collapse-btn" onclick="collapseAllTOC()">Collapse All</button>
-                    <button class="toc-collapse-btn" onclick="expandAllTOC()">Expand All</button>
+                    <button class="toc-collapse-btn" onclick="expandAllTOC()" title="Expand All">+</button>
+                    <button class="toc-collapse-btn" onclick="collapseAllTOC()" title="Collapse All">−</button>
                 </div>
             </div>
             <ul class="toc-list" id="toc-list"></ul>
