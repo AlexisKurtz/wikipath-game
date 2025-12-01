@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.6.4
+    Version: 3.6.5
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.6.5: Moved article notices to top-right corner, smaller icons, horizontal stacking
     - v3.6.4: Replaced TOC buttons with smaller +/- symbols (expand/collapse all)
     - v3.6.3: Fixed missing article titles - now always displays page title at top
     - v3.6.2: Increased article title size to 3.5em (much bigger and more prominent)
@@ -859,16 +860,28 @@
             color: #1b5e20;
         }
 
-        /* Compact notice icons */
+        /* Article Notice Icons - Top Right Corner */
+        .article-notices-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+        }
+
         .article-notice {
-            display: inline-block;
-            margin-left: 8px;
-            padding: 4px 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 6px;
             border-radius: 4px;
-            font-size: 0.75em;
+            font-size: 0.65em;
             font-weight: 600;
             cursor: help;
             position: relative;
+            min-width: 24px;
+            height: 24px;
         }
 
         .article-notice.verification {
@@ -883,20 +896,37 @@
             border: 1px solid #f5c6cb;
         }
 
+        .article-notice.recent-changes {
+            background: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #2196f3;
+        }
+
+        .article-notice.recent-death {
+            background: #f3e5f5;
+            color: #4a148c;
+            border: 1px solid #9c27b0;
+        }
+
         .article-notice:hover::after {
             content: attr(data-tooltip);
             position: absolute;
             top: 100%;
-            left: 0;
+            right: 0;
             margin-top: 5px;
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: #333;
             color: white;
             border-radius: 4px;
-            font-size: 0.9em;
+            font-size: 0.85em;
             white-space: nowrap;
             z-index: 1000;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Make article title area have relative positioning for notices */
+        .wikipedia-article {
+            position: relative;
         }
 
         .loading {
@@ -1591,7 +1621,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.4</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.5</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2640,13 +2670,40 @@
                     }
                 }
                 
-                // Check if article has issues and add compact notice
-                if (h1 && pageData.text['*'].includes('citation')) {
+                // Create notices container for icons
+                const noticesContainer = document.createElement('div');
+                noticesContainer.className = 'article-notices-container';
+                
+                // Check for verification needs
+                if (pageData.text['*'].includes('citation') || pageData.text['*'].includes('verification')) {
                     const notice = document.createElement('span');
                     notice.className = 'article-notice verification';
                     notice.textContent = '⚠️';
                     notice.setAttribute('data-tooltip', 'This article may need additional verification');
-                    h1.appendChild(notice);
+                    noticesContainer.appendChild(notice);
+                }
+                
+                // Check for recent changes (if template is present)
+                if (pageData.text['*'].includes('current event') || pageData.text['*'].includes('recently updated')) {
+                    const notice = document.createElement('span');
+                    notice.className = 'article-notice recent-changes';
+                    notice.textContent = '📝';
+                    notice.setAttribute('data-tooltip', 'This article has been recently updated');
+                    noticesContainer.appendChild(notice);
+                }
+                
+                // Check for recent death notice
+                if (pageData.text['*'].includes('recently died') || pageData.text['*'].includes('recent death')) {
+                    const notice = document.createElement('span');
+                    notice.className = 'article-notice recent-death';
+                    notice.textContent = '🕊️';
+                    notice.setAttribute('data-tooltip', 'Subject recently deceased');
+                    noticesContainer.appendChild(notice);
+                }
+                
+                // Add notices container if it has any notices
+                if (noticesContainer.children.length > 0) {
+                    articleDiv.appendChild(noticesContainer);
                 }
 
                 // Add starting page indicator (only for the first page)
