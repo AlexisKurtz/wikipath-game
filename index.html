@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.6.9
+    Version: 3.7.0
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.7.0: Added keyboard shortcuts for New Game - 'N' or Ctrl+N (Explore mode only)
     - v3.6.9: Fixed notice icon positioning (now with H1, not in green banner), more specific verification detection
     - v3.6.8: Fixed notice icon position below green banner, improved starting text, removed TOC arrows for sections without children
     - v3.6.7: Made article notice icons larger (28px), standardized tooltip font size (0.9em)
@@ -536,6 +537,18 @@
             transition: background 0.2s;
             font-weight: 500;
             user-select: none;
+            position: relative;
+        }
+
+        .fab-menu-item .keyboard-shortcut {
+            margin-left: auto;
+            font-size: 0.75em;
+            padding: 2px 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            color: #666;
+            font-family: monospace;
+            font-weight: 600;
         }
 
         .fab-menu-item:hover {
@@ -1630,7 +1643,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.9</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.7.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1716,6 +1729,7 @@
             <button class="fab-menu-item" id="new-game-btn" onclick="handleNewGame(); closeFabMenu();">
                 <span class="emoji">🎮</span>
                 <span>New Game</span>
+                <span class="keyboard-shortcut">N</span>
             </button>
         </div>
     </div>
@@ -3366,11 +3380,30 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             
             // Keyboard shortcut
             document.addEventListener('keydown', (e) => {
+                // Ctrl/Cmd+F to open search
                 if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
                     e.preventDefault();
                     openSearch();
                 }
                 
+                // Ctrl/Cmd+N or just 'N' to create new game (Explore mode only)
+                if (((e.ctrlKey || e.metaKey) && e.key === 'n') || (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey)) {
+                    // Don't trigger if user is typing in an input field
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                        return;
+                    }
+                    
+                    e.preventDefault();
+                    
+                    // Only allow in Explore mode
+                    if (!gameState.isDailyMode) {
+                        handleNewGame();
+                    } else {
+                        showNotification('New Game shortcut is only available in Explore mode');
+                    }
+                }
+                
+                // Escape to close search
                 if (e.key === 'Escape' && searchOverlay.classList.contains('active')) {
                     closeSearch();
                 }
