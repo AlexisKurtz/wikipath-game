@@ -2,10 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.6.5
+    Version: 3.6.7
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.6.7: Made article notice icons larger (28px), standardized tooltip font size (0.9em)
+    - v3.6.6: Reduced title size to 3em, moved starting page indicator before title
     - v3.6.5: Moved article notices to top-right corner, smaller icons, horizontal stacking
     - v3.6.4: Replaced TOC buttons with smaller +/- symbols (expand/collapse all)
     - v3.6.3: Fixed missing article titles - now always displays page title at top
@@ -702,7 +704,7 @@
         }
 
         .wikipedia-article h1 {
-            font-size: 3.5em;
+            font-size: 3em;
             margin-bottom: 0.3em;
             margin-top: 0.2em;
             padding-bottom: 0.2em;
@@ -874,14 +876,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 4px 6px;
+            padding: 5px 7px;
             border-radius: 4px;
-            font-size: 0.65em;
+            font-size: 0.85em;
             font-weight: 600;
             cursor: help;
             position: relative;
-            min-width: 24px;
-            height: 24px;
+            min-width: 28px;
+            height: 28px;
         }
 
         .article-notice.verification {
@@ -914,11 +916,11 @@
             top: 100%;
             right: 0;
             margin-top: 5px;
-            padding: 6px 10px;
+            padding: 8px 12px;
             background: #333;
             color: white;
             border-radius: 4px;
-            font-size: 0.85em;
+            font-size: 0.9em;
             white-space: nowrap;
             z-index: 1000;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
@@ -1621,7 +1623,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.5</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.7</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2655,18 +2657,46 @@
                 // Remove "For other uses" and redirect messages
                 articleDiv.querySelectorAll('.hatnote, [class*="hatnote"]').forEach(el => el.remove());
                 
+                // Add starting page indicator FIRST (only for the first page)
+                if (gameState.currentPage === gameState.startPage && gameState.path.length === 1) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'starting-page-indicator';
+                    indicator.innerHTML = `
+                        <div class="icon">🚀</div>
+                        <div class="text">
+                            <div class="label">Starting Page</div>
+                            <div class="description">This is where your journey begins! Navigate to "${gameState.targetPage}"</div>
+                        </div>
+                    `;
+                    
+                    // Insert at the very beginning
+                    const firstElement = articleDiv.firstElementChild;
+                    if (firstElement) {
+                        articleDiv.insertBefore(indicator, firstElement);
+                    } else {
+                        articleDiv.appendChild(indicator);
+                    }
+                }
+                
                 // Check if H1 exists, if not create one
                 let h1 = articleDiv.querySelector('h1');
                 if (!h1) {
                     h1 = document.createElement('h1');
                     h1.textContent = pageData.title;
                     
-                    // Insert at the very beginning
-                    const firstElement = articleDiv.firstElementChild;
-                    if (firstElement) {
-                        articleDiv.insertBefore(h1, firstElement);
-                    } else {
+                    // Insert after starting indicator if it exists, otherwise at beginning
+                    const startingIndicator = articleDiv.querySelector('.starting-page-indicator');
+                    if (startingIndicator && startingIndicator.nextSibling) {
+                        articleDiv.insertBefore(h1, startingIndicator.nextSibling);
+                    } else if (startingIndicator) {
                         articleDiv.appendChild(h1);
+                    } else {
+                        const firstElement = articleDiv.firstElementChild;
+                        if (firstElement) {
+                            articleDiv.insertBefore(h1, firstElement);
+                        } else {
+                            articleDiv.appendChild(h1);
+                        }
                     }
                 }
                 
@@ -2704,26 +2734,6 @@
                 // Add notices container if it has any notices
                 if (noticesContainer.children.length > 0) {
                     articleDiv.appendChild(noticesContainer);
-                }
-
-                // Add starting page indicator (only for the first page)
-                if (gameState.currentPage === gameState.startPage && gameState.path.length === 1) {
-                    const indicator = document.createElement('div');
-                    indicator.className = 'starting-page-indicator';
-                    indicator.innerHTML = `
-                        <div class="icon">🚀</div>
-                        <div class="text">
-                            <div class="label">Starting Page</div>
-                            <div class="description">This is where your journey begins! Navigate to "${gameState.targetPage}"</div>
-                        </div>
-                    `;
-                    
-                    // Insert after H1
-                    if (h1.nextSibling) {
-                        articleDiv.insertBefore(indicator, h1.nextSibling);
-                    } else {
-                        articleDiv.appendChild(indicator);
-                    }
                 }
 
                 this.gameArea.innerHTML = '';
