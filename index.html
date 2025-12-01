@@ -26,7 +26,7 @@
         .game-header {
             background: white;
             color: #202122;
-            padding: 12px 20px;
+            padding: 15px 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             border-bottom: 3px solid #0645ad;
             position: sticky;
@@ -41,13 +41,20 @@
             max-width: 1400px;
             margin: 0 auto;
             gap: 20px;
-            flex-wrap: wrap;
+        }
+
+        /* Left Side - Branding & Stats */
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
         }
 
         .game-branding {
             display: flex;
             align-items: center;
             gap: 12px;
+            white-space: nowrap;
         }
 
         .game-branding h1 {
@@ -60,138 +67,150 @@
             font-size: 1.8em;
         }
 
-        /* Compact Mode Toggle */
-        .mode-toggle {
+        .header-stats {
             display: flex;
-            background: #f0f0f0;
-            border-radius: 20px;
-            padding: 3px;
-            gap: 3px;
-        }
-
-        .mode-toggle-btn {
-            background: transparent;
-            border: none;
-            color: #666;
-            padding: 6px 16px;
-            border-radius: 17px;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .mode-toggle-btn:hover {
-            background: rgba(6, 69, 173, 0.1);
-        }
-
-        .mode-toggle-btn.active {
-            background: #0645ad;
-            color: white;
-        }
-
-        /* Compact Stats Bar */
-        .stats-bar {
-            display: flex;
-            gap: 25px;
+            gap: 20px;
             align-items: center;
-            flex-wrap: wrap;
         }
 
-        .stat-item {
+        .stat-item-compact {
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
 
-        .stat-item.target {
-            flex: 1;
-            min-width: 200px;
-            position: relative;
-        }
-
-        .stat-item.target:hover {
-            cursor: pointer;
-        }
-
-        /* Target Page Hover Tooltip */
-        .target-tooltip {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-top: 10px;
-            background: white;
-            color: #333;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            z-index: 1000;
-            min-width: 300px;
-            max-width: 400px;
-            text-align: left;
-        }
-
-        .stat-item.target:hover .target-tooltip {
-            display: block;
-        }
-
-        .target-tooltip::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 8px solid white;
-        }
-
-        .target-tooltip h4 {
-            margin-bottom: 8px;
-            color: #0645ad;
-            font-size: 1em;
-        }
-
-        .target-tooltip p {
-            font-size: 0.9em;
-            line-height: 1.5;
-            color: #555;
-        }
-
-        .stat-label {
-            font-size: 0.7em;
+        .stat-label-compact {
+            font-size: 0.65em;
             color: #666;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
         }
 
-        .stat-item.target .stat-label {
-            font-size: 0.75em;
-            color: #0645ad;
+        .stat-value-compact {
+            font-size: 1em;
             font-weight: 700;
+            color: #0645ad;
         }
 
-        .stat-value {
-            font-size: 1.1em;
-            font-weight: 700;
-            color: #202122;
+        /* Center - Target Page (Prominent) */
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
 
-        .stat-value.highlight {
+        .target-display {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border: 2px solid #0645ad;
+            border-radius: 12px;
+            padding: 12px 24px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(6, 69, 173, 0.15);
+        }
+
+        .target-display:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(6, 69, 173, 0.25);
+            border-color: #0b0080;
+        }
+
+        .target-label {
+            font-size: 0.7em;
             color: #0645ad;
-            font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         #target-page-display {
-            font-size: 1.15em;
+            font-size: 1.3em;
             line-height: 1.3;
-            color: #0645ad;
+            color: #0b0080;
             font-weight: 700;
+        }
+
+        /* Right Side - Mode Switch */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Compact Mode Switch */
+        .mode-switch-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .mode-switch-label {
+            font-size: 0.65em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .mode-switch {
+            display: flex;
+            background: #e0e0e0;
+            border-radius: 20px;
+            padding: 3px;
+            gap: 3px;
+            position: relative;
+        }
+
+        .mode-switch-btn {
+            background: transparent;
+            border: none;
+            color: #666;
+            padding: 6px 14px;
+            border-radius: 17px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .mode-switch-btn:hover {
+            color: #333;
+        }
+
+        .mode-switch-btn.active {
+            background: white;
+            color: #0645ad;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Old Mode Toggle - Remove */
+        .mode-toggle {
+            display: none;
+        }
+
+        /* Old Stats Bar - Remove */
+        .stats-bar {
+            display: none;
+        }
+
+        .stat-item {
+            display: none;
+        }
+
+        .stat-item.target {
+            display: none;
         }
 
         /* Difficulty Badge */
@@ -228,6 +247,54 @@
             background: #f3e5f5;
             color: #6a1b9a;
             border: 1.5px solid #9c27b0;
+        }
+
+        /* Target Tooltip */
+        .target-tooltip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 10px;
+            background: white;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 300px;
+            max-width: 400px;
+            text-align: left;
+        }
+
+        .target-display:hover .target-tooltip {
+            display: block;
+        }
+
+        .target-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        .target-tooltip h4 {
+            margin-bottom: 8px;
+            color: #0645ad;
+            font-size: 1em;
+        }
+
+        .target-tooltip p {
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #555;
         }
 
         /* Settings Menu */
@@ -371,69 +438,97 @@
             font-weight: 500;
         }
 
-        /* Floating Action Buttons */
-        .fab-container {
+        /* Floating Action Menu */
+        .fab-menu {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
             z-index: 150;
         }
 
-        .fab {
-            width: 56px;
-            height: 56px;
+        .fab-menu-button {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
+            background: #0645ad;
+            color: white;
             border: none;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(6, 69, 173, 0.4);
             font-size: 1.5em;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
             position: relative;
         }
 
-        .fab:hover {
+        .fab-menu-button:hover {
             transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(6, 69, 173, 0.5);
         }
 
-        .fab-primary {
-            background: #0645ad;
-            color: white;
+        .fab-menu-button.active {
+            background: #0b0080;
         }
 
-        .fab-secondary {
-            background: white;
-            color: #666;
-            border: 2px solid #e0e0e0;
-        }
-
-        .fab-danger {
-            background: #f44336;
-            color: white;
-        }
-
-        .fab-tooltip {
+        .fab-menu-items {
             position: absolute;
-            right: 70px;
-            background: #333;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            white-space: nowrap;
+            bottom: 75px;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            padding: 8px;
+            min-width: 200px;
             opacity: 0;
+            transform: translateY(10px);
             pointer-events: none;
-            transition: opacity 0.2s;
+            transition: all 0.3s ease;
         }
 
-        .fab:hover .fab-tooltip {
+        .fab-menu.open .fab-menu-items {
             opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        .fab-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 0.95em;
+            color: #333;
+            transition: background 0.2s;
+            font-weight: 500;
+        }
+
+        .fab-menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .fab-menu-item.danger:hover {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .fab-menu-item .emoji {
+            font-size: 1.3em;
+            width: 24px;
+            text-align: center;
+        }
+
+        .fab-menu-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 4px 0;
         }
 
         /* Container with TOC */
@@ -542,21 +637,79 @@
             color: #0645ad;
             text-decoration: none;
             cursor: pointer;
-            transition: color 0.2s;
+            transition: all 0.2s;
+            font-weight: 500;
+            border-bottom: 1px solid transparent;
+            position: relative;
         }
 
         .wikipedia-article a:hover {
-            text-decoration: underline;
+            color: #0b0080;
+            border-bottom: 1px solid #0645ad;
+            background: rgba(6, 69, 173, 0.05);
+            padding: 2px 4px;
+            margin: -2px -4px;
+            border-radius: 3px;
         }
 
         .wikipedia-article a.visited-link {
-            color: #0b0080;
-            opacity: 0.8;
+            color: #7c3aed;
+            opacity: 0.85;
+        }
+
+        .wikipedia-article a.visited-link:hover {
+            color: #6d28d9;
+            border-bottom-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.05);
         }
 
         .wikipedia-article a.disambiguation-link {
-            color: #dd3333;
+            color: #dc2626;
             font-style: italic;
+            font-weight: 600;
+        }
+
+        .wikipedia-article a.disambiguation-link:hover {
+            color: #991b1b;
+            border-bottom-color: #dc2626;
+            background: rgba(220, 38, 38, 0.05);
+        }
+
+        /* Link Preview Tooltip */
+        .link-preview {
+            display: none;
+            position: fixed;
+            background: white;
+            border: 2px solid #0645ad;
+            border-radius: 8px;
+            padding: 12px 16px;
+            max-width: 350px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        .link-preview.active {
+            display: block;
+        }
+
+        .link-preview-title {
+            font-weight: 700;
+            color: #0645ad;
+            margin-bottom: 6px;
+            font-size: 1.05em;
+        }
+
+        .link-preview-text {
+            color: #333;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .link-preview-loading {
+            color: #666;
+            font-style: italic;
+            font-size: 0.85em;
         }
 
         .wikipedia-article ul, .wikipedia-article ol {
@@ -878,6 +1031,29 @@
 
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
+            .header-top {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .header-left {
+                flex: 1 1 100%;
+                justify-content: space-between;
+            }
+
+            .header-center {
+                flex: 1 1 100%;
+                order: 3;
+            }
+
+            .header-right {
+                order: 2;
+            }
+
+            .target-display {
+                width: 100%;
+            }
+
             .container {
                 flex-direction: column;
             }
@@ -894,28 +1070,19 @@
                 padding: 20px;
             }
 
-            .header-top {
-                gap: 10px;
-            }
-
-            .stats-bar {
-                gap: 15px;
-                font-size: 0.9em;
-            }
-
             .path-panel {
                 width: 100%;
                 right: -100%;
             }
 
-            .fab-container {
+            .fab-menu {
                 bottom: 15px;
                 right: 15px;
             }
 
-            .fab {
-                width: 50px;
-                height: 50px;
+            .fab-menu-button {
+                width: 55px;
+                height: 55px;
             }
 
             .modal-content {
@@ -934,6 +1101,21 @@
                 font-size: 1.1em;
             }
 
+            .header-stats {
+                gap: 12px;
+            }
+
+            .stat-value-compact {
+                font-size: 0.9em;
+            }
+
+            #target-page-display {
+                font-size: 1.1em;
+            }
+        }
+                font-size: 1.1em;
+            }
+
             .stat-value {
                 font-size: 0.95em;
             }
@@ -947,31 +1129,31 @@
 <body>
     <div class="game-header" id="game-header">
         <div class="header-top">
-            <div class="game-branding">
-                <span class="logo">🌐</span>
-                <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.0.0</span></h1>
+            <!-- Left: Branding & Stats -->
+            <div class="header-left">
+                <div class="game-branding">
+                    <span class="logo">🌐</span>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.0.0</span></h1>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item-compact">
+                        <div class="stat-label-compact">Clicks</div>
+                        <div class="stat-value-compact" id="click-counter">0</div>
+                    </div>
+                    <div class="stat-item-compact">
+                        <div class="stat-label-compact">Time</div>
+                        <div class="stat-value-compact" id="timer">0:00</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="mode-toggle">
-                <button class="mode-toggle-btn" id="random-mode-btn" onclick="switchToRandomMode()">
-                    🎲 Random
-                </button>
-                <button class="mode-toggle-btn active" id="daily-mode-btn" onclick="switchToDailyMode()">
-                    📅 Daily
-                </button>
-            </div>
-
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <div class="stat-label">Clicks</div>
-                    <div class="stat-value highlight" id="click-counter">0</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Time</div>
-                    <div class="stat-value" id="timer">0:00</div>
-                </div>
-                <div class="stat-item target">
-                    <div class="stat-label">🎯 Target Page</div>
+            <!-- Center: Target Page (Prominent) -->
+            <div class="header-center">
+                <div class="target-display">
+                    <div class="target-label">
+                        <span>🎯</span>
+                        <span>TARGET</span>
+                    </div>
                     <div>
                         <span id="target-page-display">Loading...</span>
                         <span class="difficulty-badge" id="difficulty-badge"></span>
@@ -979,6 +1161,21 @@
                     <div class="target-tooltip" id="target-tooltip">
                         <h4 id="tooltip-title"></h4>
                         <p id="tooltip-description"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Mode Switch -->
+            <div class="header-right">
+                <div class="mode-switch-container">
+                    <div class="mode-switch-label">Mode</div>
+                    <div class="mode-switch">
+                        <button class="mode-switch-btn" id="explore-mode-btn" onclick="switchToExploreMode()">
+                            Explore
+                        </button>
+                        <button class="mode-switch-btn active" id="daily-mode-btn" onclick="switchToDailyMode()">
+                            Daily
+                        </button>
                     </div>
                 </div>
             </div>
@@ -996,24 +1193,30 @@
         </div>
     </div>
 
-    <!-- Floating Action Buttons -->
-    <div class="fab-container">
-        <button class="fab fab-primary" onclick="togglePathPanel()" title="View Path">
-            <span>🗺️</span>
-            <span class="fab-tooltip">View Path</span>
+    <!-- Floating Action Menu -->
+    <div class="fab-menu" id="fab-menu">
+        <button class="fab-menu-button" onclick="toggleFabMenu()">
+            ⚡
         </button>
-        <button class="fab fab-secondary" onclick="openSearch()" title="Search (Ctrl+F)">
-            <span>🔍</span>
-            <span class="fab-tooltip">Search (Ctrl+F)</span>
-        </button>
-        <button class="fab fab-danger" onclick="giveUp()" title="Give Up">
-            <span>🏳️</span>
-            <span class="fab-tooltip">Give Up</span>
-        </button>
-        <button class="fab fab-secondary" onclick="startNewGame()" title="New Game">
-            <span>🎮</span>
-            <span class="fab-tooltip">New Game</span>
-        </button>
+        <div class="fab-menu-items">
+            <button class="fab-menu-item" onclick="togglePathPanel(); closeFabMenu();">
+                <span class="emoji">🗺️</span>
+                <span>View Path</span>
+            </button>
+            <button class="fab-menu-item" onclick="openSearch(); closeFabMenu();">
+                <span class="emoji">🔍</span>
+                <span>Search (Ctrl+F)</span>
+            </button>
+            <div class="fab-menu-divider"></div>
+            <button class="fab-menu-item danger" onclick="giveUp(); closeFabMenu();">
+                <span class="emoji">🏳️</span>
+                <span>Give Up</span>
+            </button>
+            <button class="fab-menu-item" onclick="startNewGame();">
+                <span class="emoji">🎮</span>
+                <span>New Game</span>
+            </button>
+        </div>
     </div>
 
     <div class="container">
@@ -1065,6 +1268,12 @@
             <div class="search-results" id="search-results"></div>
             <div class="search-hint">Press Ctrl+F to search • ESC to close</div>
         </div>
+    </div>
+
+    <!-- Link Preview Tooltip -->
+    <div class="link-preview" id="link-preview">
+        <div class="link-preview-title" id="preview-title"></div>
+        <div class="link-preview-text" id="preview-text"></div>
     </div>
 
     <script>
@@ -1190,13 +1399,15 @@
             path: [],
             startTime: null,
             elapsedTime: 0,
-            isDailyMode: localStorage.getItem('wikipath_mode') === 'random' ? false : true,
+            isDailyMode: localStorage.getItem('wikipath_mode') === 'explore' ? false : true,
             dailyDate: getTodayDateString(),
             startDescription: '',
             targetDescription: '',
             hasWon: false,
             gaveUp: false,
-            difficulty: 'medium'
+            difficulty: 'medium',
+            exploreStartPage: localStorage.getItem('wikipath_explore_start') || '',
+            exploreTargetPage: localStorage.getItem('wikipath_explore_target') || ''
         };
 
         // ======================
@@ -1243,10 +1454,18 @@
         // ======================
         // MODE SWITCHING
         // ======================
-        function switchToRandomMode() {
+        function switchToExploreMode() {
             gameState.isDailyMode = false;
-            localStorage.setItem('wikipath_mode', 'random');
+            localStorage.setItem('wikipath_mode', 'explore');
             updateModeUI();
+            
+            // If there's a saved explore game, load it; otherwise start new
+            if (gameState.exploreStartPage && gameState.exploreTargetPage) {
+                // Just switch mode, don't reload - game will continue
+                return;
+            }
+            
+            // No saved explore game, start new one
             clearUrl();
             location.reload();
         }
@@ -1256,20 +1475,27 @@
             gameState.dailyDate = getTodayDateString();
             localStorage.setItem('wikipath_mode', 'daily');
             updateModeUI();
+            
+            // Check if we're already on today's daily challenge
+            const urlParams = getUrlParams();
+            if (urlParams.daily === getTodayDateString()) {
+                // Already on today's daily, just update UI
+                return;
+            }
+            
             clearUrl();
             location.reload();
         }
 
         function updateModeUI() {
-            const header = document.getElementById('game-header');
-            const randomBtn = document.getElementById('random-mode-btn');
+            const exploreBtn = document.getElementById('explore-mode-btn');
             const dailyBtn = document.getElementById('daily-mode-btn');
 
             if (gameState.isDailyMode) {
-                randomBtn.classList.remove('active');
+                exploreBtn.classList.remove('active');
                 dailyBtn.classList.add('active');
             } else {
-                randomBtn.classList.add('active');
+                exploreBtn.classList.add('active');
                 dailyBtn.classList.remove('active');
             }
         }
@@ -1412,7 +1638,7 @@
                     if (gameState.isDailyMode) {
                         await this.startNewDailyChallenge();
                     } else {
-                        await this.startNewRandomGame();
+                        await this.startNewExploreGame();
                     }
                 }
             }
@@ -1455,7 +1681,7 @@
                 await this.loadPage(startPage);
             }
 
-            async startNewRandomGame() {
+            async startNewExploreGame() {
                 const startPage = await getRandomWikipediaPage();
                 let targetPage;
                 do {
@@ -1473,6 +1699,12 @@
                 gameState.hasWon = false;
                 gameState.gaveUp = false;
                 gameState.difficulty = calculateChallengeDifficulty(startPage, targetPage);
+                
+                // Save explore pages to localStorage so they persist when switching modes
+                gameState.exploreStartPage = startPage;
+                gameState.exploreTargetPage = targetPage;
+                localStorage.setItem('wikipath_explore_start', startPage);
+                localStorage.setItem('wikipath_explore_target', targetPage);
 
                 updateModeUI();
 
@@ -1604,13 +1836,64 @@
                         link.removeAttribute('href');
                         link.style.cursor = 'pointer';
                         
+                        // Mark visited links
+                        if (gameState.visitedPages.has(pageTitle)) {
+                            link.classList.add('visited-link');
+                        }
+                        
                         if (pageTitle.includes('(disambiguation)') || 
                             link.textContent.toLowerCase().includes('disambiguation')) {
                             link.classList.add('disambiguation-link');
                         }
                         
+                        // Add hover preview
+                        let previewTimeout = null;
+                        let previewCache = {};
+                        
+                        link.addEventListener('mouseenter', async (e) => {
+                            previewTimeout = setTimeout(async () => {
+                                const preview = document.getElementById('link-preview');
+                                const previewTitle = document.getElementById('preview-title');
+                                const previewText = document.getElementById('preview-text');
+                                
+                                // Position preview near cursor
+                                const rect = link.getBoundingClientRect();
+                                preview.style.left = Math.min(e.clientX + 15, window.innerWidth - 370) + 'px';
+                                preview.style.top = (rect.bottom + 10) + 'px';
+                                
+                                previewTitle.textContent = pageTitle;
+                                previewText.innerHTML = '<span class="link-preview-loading">Loading preview...</span>';
+                                preview.classList.add('active');
+                                
+                                // Fetch preview if not cached
+                                if (!previewCache[pageTitle]) {
+                                    try {
+                                        const description = await fetchPageDescription(pageTitle);
+                                        previewCache[pageTitle] = description || 'No preview available.';
+                                    } catch (error) {
+                                        previewCache[pageTitle] = 'Preview unavailable.';
+                                    }
+                                }
+                                
+                                // Show cached preview
+                                if (preview.classList.contains('active')) {
+                                    previewText.textContent = previewCache[pageTitle].substring(0, 200) + '...';
+                                }
+                            }, 500); // Delay before showing preview
+                        });
+                        
+                        link.addEventListener('mouseleave', () => {
+                            clearTimeout(previewTimeout);
+                            const preview = document.getElementById('link-preview');
+                            preview.classList.remove('active');
+                        });
+                        
                         link.addEventListener('click', async (e) => {
                             e.preventDefault();
+                            
+                            // Hide preview on click
+                            const preview = document.getElementById('link-preview');
+                            preview.classList.remove('active');
                             
                             if (link.classList.contains('disambiguation-link')) {
                                 const confirmed = confirm(`⚠️ WARNING: "${pageTitle}" appears to be a disambiguation page.\n\nDisambiguation pages don't contain actual content - they just list links to other articles with similar names.\n\nDo you want to continue?`);
@@ -1748,7 +2031,7 @@
                 const options = { month: 'short', day: 'numeric', year: 'numeric' };
                 modeText = `📅 Daily Challenge - ${date.toLocaleDateString('en-US', options)}\n`;
             } else {
-                modeText = `🎲 Random Challenge\n`;
+                modeText = `🧭 Explore Mode\n`;
             }
             
             return `${emoji} WikiPath ${emoji}
@@ -1850,6 +2133,27 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         });
 
         // ======================
+        // FAB MENU TOGGLE
+        // ======================
+        function toggleFabMenu() {
+            const menu = document.getElementById('fab-menu');
+            menu.classList.toggle('open');
+        }
+
+        function closeFabMenu() {
+            const menu = document.getElementById('fab-menu');
+            menu.classList.remove('open');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('fab-menu');
+            if (menu && !menu.contains(e.target)) {
+                menu.classList.remove('open');
+            }
+        });
+
+        // ======================
         // PATH PANEL TOGGLE
         // ======================
         function togglePathPanel() {
@@ -1860,6 +2164,8 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         // ======================
         // GIVE UP FUNCTIONALITY
         // ======================
+        let globalGameController = null; // Store global reference
+
         function giveUp() {
             const confirmed = confirm(`Are you sure you want to give up?\n\nThis will show you the target page but won't count as a win.`);
             
@@ -1867,7 +2173,9 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 return;
             }
             
-            game.stopTimer();
+            if (globalGameController) {
+                globalGameController.stopTimer();
+            }
             gameState.gaveUp = true;
             
             const modal = document.getElementById('win-modal');
@@ -1886,7 +2194,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                     </div>
                     <div class="stat-row">
                         <span class="stat-label">Time Spent:</span>
-                        <span class="stat-value">${game.timerDisplay.textContent}</span>
+                        <span class="stat-value">${document.getElementById('timer').textContent}</span>
                     </div>
                 </div>
                 <div class="win-path">
@@ -2041,6 +2349,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         // INITIALIZE GAME
         // ======================
         const game = new GameController();
+        globalGameController = game; // Store in global for giveUp function
         game.initialize();
         initializeSearch();
 
