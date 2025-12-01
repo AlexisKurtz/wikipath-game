@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.6.8
+    Version: 3.6.9
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.6.9: Fixed notice icon positioning (now with H1, not in green banner), more specific verification detection
     - v3.6.8: Fixed notice icon position below green banner, improved starting text, removed TOC arrows for sections without children
     - v3.6.7: Made article notice icons larger (28px), standardized tooltip font size (0.9em)
     - v3.6.6: Reduced title size to 3em, moved starting page indicator before title
@@ -1629,7 +1630,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.8</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.9</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2720,8 +2721,15 @@
                 const noticesContainer = document.createElement('div');
                 noticesContainer.className = 'article-notices-container';
                 
-                // Check for verification needs
-                if (pageData.text['*'].includes('citation') || pageData.text['*'].includes('verification')) {
+                // Check for verification needs - be more specific about what we're looking for
+                const hasVerificationIssue = 
+                    pageData.text['*'].includes('This article needs additional citations') ||
+                    pageData.text['*'].includes('needs additional verification') ||
+                    pageData.text['*'].includes('lacks sufficient inline citations') ||
+                    pageData.text['*'].includes('cite check') ||
+                    (pageData.text['*'].includes('ambox-content') && pageData.text['*'].includes('citation'));
+                
+                if (hasVerificationIssue) {
                     const notice = document.createElement('span');
                     notice.className = 'article-notice verification';
                     notice.textContent = '⚠️';
@@ -2747,9 +2755,17 @@
                     noticesContainer.appendChild(notice);
                 }
                 
-                // Add notices container if it has any notices
-                if (noticesContainer.children.length > 0) {
-                    articleDiv.appendChild(noticesContainer);
+                // Add notices container right after H1 if it has any notices
+                if (noticesContainer.children.length > 0 && h1) {
+                    // Wrap H1 in a container for relative positioning
+                    const h1Container = document.createElement('div');
+                    h1Container.style.position = 'relative';
+                    
+                    // Move H1 into container
+                    const h1Parent = h1.parentNode;
+                    h1Parent.insertBefore(h1Container, h1);
+                    h1Container.appendChild(h1);
+                    h1Container.appendChild(noticesContainer);
                 }
 
                 this.gameArea.innerHTML = '';
