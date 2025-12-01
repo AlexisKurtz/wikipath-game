@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.6.0
+    Version: 3.6.1
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.6.1: Removed article title from TOC (now only shown in main article)
     - v3.6.0: Added starting page indicator, TOC collapsed by default, collapse/expand all buttons
     - v3.5.3: Fixed redirect pages, made article title bigger (2.8em like Wikipedia)
     - v3.5.2: Fixed FAB menu click interaction, improved menu item clickability
@@ -611,17 +612,6 @@
         .toc-collapse-btn:hover {
             background: #0645ad;
             color: white;
-        }
-
-        .toc-current-page {
-            font-size: 0.85em;
-            color: #0645ad;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #e3f2fd;
-            border-radius: 6px;
-            border-left: 3px solid #0645ad;
-            font-weight: 600;
         }
 
         .toc-list {
@@ -1596,7 +1586,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.1</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1695,7 +1685,6 @@
                     <button class="toc-collapse-btn" onclick="expandAllTOC()">Expand All</button>
                 </div>
             </div>
-            <div class="toc-current-page" id="toc-current-page">Loading...</div>
             <ul class="toc-list" id="toc-list"></ul>
         </div>
         <div class="content-area" id="game-area">
@@ -2533,12 +2522,6 @@
             }
 
             buildTableOfContents(sections) {
-                // Update current page display
-                const currentPageEl = document.getElementById('toc-current-page');
-                if (currentPageEl) {
-                    currentPageEl.textContent = `📄 ${gameState.currentPage}`;
-                }
-
                 if (!sections || sections.length === 0) {
                     this.tocContainer.innerHTML = '<li style="color: #999; font-size: 0.9em;">No sections available</li>';
                     return;
