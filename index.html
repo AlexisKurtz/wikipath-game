@@ -27,6 +27,10 @@
             z-index: 100;
         }
 
+        .game-header.daily-mode {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
         .game-header h1 {
             font-size: 1.5em;
             margin-bottom: 3px;
@@ -38,6 +42,57 @@
             font-size: 0.7em;
             opacity: 0.8;
             margin-bottom: 10px;
+        }
+
+        /* Mode Selector */
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .mode-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: rgba(255,255,255,0.4);
+            border-color: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+
+        .daily-indicator {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            text-align: center;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .daily-indicator .emoji {
+            font-size: 1.2em;
         }
 
         .game-info {
@@ -252,246 +307,125 @@
 
         .toc-link.active {
             font-weight: bold;
-            color: #000;
-        }
-
-        .toc-subsection {
-            padding-left: 15px;
-            margin-top: 5px;
-        }
-
-        .toc-subsection .toc-link {
-            font-size: 0.85em;
-        }
-
-        /* Main content area */
-        .content-wrapper {
-            flex: 1;
-            overflow-y: auto;
-            max-height: calc(100vh - 200px);
-        }
-
-        /* Wikipedia-style article content */
-        .article-content {
-            padding: 30px;
-            font-family: 'Georgia', serif;
-            line-height: 1.6;
-            color: #202122;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .article-title {
-            font-family: 'Linux Libertine', 'Georgia', serif;
-            font-size: 2.5em;
-            font-weight: 400;
-            border-bottom: 2px solid #a2a9b1;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            color: #000;
-            line-height: 1.3;
-        }
-
-        .article-content > div > p:first-of-type {
-            font-size: 1.1em;
-            line-height: 1.7;
-        }
-
-        .article-summary {
-            background: #f8f9fa !important;
-            border-left: 4px solid #667eea !important;
-            padding: 15px 20px !important;
-            margin-bottom: 25px !important;
-            font-size: 1.05em !important;
-            line-height: 1.7 !important;
-            color: #202122 !important;
-            border-radius: 4px !important;
-            display: block !important;
-        }
-
-        .article-summary p {
-            margin: 0 !important;
-        }
-
-        .article-content a {
-            color: #0645ad;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .article-content a:hover {
-            text-decoration: underline;
-        }
-
-        .article-content a:visited {
             color: #0b0080;
         }
 
-        .article-content p {
-            margin-bottom: 0.5em;
-            text-align: justify;
+        /* Main content area */
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
         }
 
-        .article-content img {
+        .wikipedia-article {
+            font-family: 'Linux Libertine', Georgia, Times, serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #202122;
+        }
+
+        .wikipedia-article h1 {
+            font-size: 2em;
+            margin-bottom: 0.5em;
+            padding-bottom: 0.3em;
+            border-bottom: 1px solid #a2a9b1;
+            font-family: 'Linux Libertine', Georgia, Times, serif;
+        }
+
+        .wikipedia-article h2 {
+            font-size: 1.5em;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            padding-bottom: 0.2em;
+            border-bottom: 1px solid #a2a9b1;
+        }
+
+        .wikipedia-article h3 {
+            font-size: 1.2em;
+            margin-top: 0.8em;
+            margin-bottom: 0.4em;
+        }
+
+        .wikipedia-article p {
+            margin-bottom: 0.8em;
+        }
+
+        .wikipedia-article a {
+            color: #0645ad;
+            text-decoration: none;
+        }
+
+        .wikipedia-article a:hover {
+            text-decoration: underline;
+        }
+
+        .wikipedia-article a.visited-link {
+            color: #0b0080;
+        }
+
+        .wikipedia-article a.disambiguation-link {
+            color: #dd3333;
+            font-style: italic;
+        }
+
+        .wikipedia-article ul, .wikipedia-article ol {
+            margin-left: 1.6em;
+            margin-bottom: 0.8em;
+        }
+
+        .wikipedia-article img {
             max-width: 100%;
             height: auto;
-            margin: 10px 0;
-        }
-
-        .article-content .thumb {
-            border: 1px solid #c8ccd1;
-            background-color: #f8f9fa;
-            padding: 3px;
-            margin: 10px;
-            float: right;
-            clear: right;
-            max-width: 300px;
-        }
-
-        .article-content .thumbinner {
-            padding: 3px;
-            text-align: center;
-        }
-
-        .article-content .thumbcaption {
-            font-size: 0.9em;
-            color: #54595d;
-            padding: 5px;
-            text-align: left;
-        }
-
-        .article-content h2 {
-            font-family: 'Linux Libertine', 'Georgia', serif;
-            font-size: 1.8em;
-            font-weight: 400;
-            border-bottom: 1px solid #a2a9b1;
-            margin-top: 35px;
-            margin-bottom: 15px;
-            padding-bottom: 5px;
-            color: #000;
-            scroll-margin-top: 20px;
-        }
-
-        .article-content h3 {
-            font-family: 'Linux Libertine', 'Georgia', serif;
-            font-size: 1.4em;
-            font-weight: 600;
-            margin-top: 25px;
-            margin-bottom: 10px;
-            color: #000;
-            scroll-margin-top: 20px;
-        }
-
-        .article-content h4 {
-            font-family: 'Linux Libertine', 'Georgia', serif;
-            font-size: 1.2em;
-            font-weight: 600;
-            margin-top: 20px;
-            margin-bottom: 8px;
-            color: #000;
-            scroll-margin-top: 20px;
-        }
-
-        .article-content ul, .article-content ol {
-            margin-left: 1.6em;
-            margin-bottom: 0.5em;
-        }
-
-        .article-content li {
-            margin-bottom: 0.3em;
-        }
-
-        .infobox {
-            border: 1px solid #a2a9b1;
-            background-color: #f8f9fa;
-            float: right;
-            clear: right;
-            margin: 0 0 10px 10px;
-            padding: 5px;
-            width: 280px;
-            font-size: 0.9em;
-        }
-
-        .article-content table.infobox {
-            border: 1px solid #a2a9b1;
-            background-color: #f8f9fa;
-            float: right;
-            clear: right;
-            margin: 0 0 10px 10px;
-            padding: 3px;
-            width: 280px;
-            font-size: 0.9em;
-            border-spacing: 3px;
-        }
-
-        .article-content .infobox td,
-        .article-content .infobox th {
-            padding: 4px;
-            vertical-align: top;
-        }
-
-        .article-content .infobox-image {
-            text-align: center;
         }
 
         .loading {
             text-align: center;
-            padding: 60px;
+            padding: 40px;
             font-size: 1.2em;
             color: #666;
         }
 
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #c00;
         }
 
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
-
-        /* Enhanced Win Modal */
-        .win-modal {
+        /* Win Modal */
+        .modal-overlay {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .win-modal.active {
+        .modal-overlay.active {
             display: flex;
         }
 
-        .win-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 50px 40px;
-            border-radius: 20px;
-            text-align: center;
-            max-width: 700px;
-            max-height: 85vh;
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 600px;
+            max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.4s ease;
-            color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
         }
 
-        @keyframes slideUp {
+        @keyframes modalSlideIn {
             from {
-                transform: translateY(50px);
+                transform: translateY(-50px);
                 opacity: 0;
             }
             to {
@@ -500,212 +434,147 @@
             }
         }
 
-        .win-content h2 {
-            color: white;
-            font-size: 3em;
+        .modal-content h2 {
+            color: #667eea;
+            font-size: 2em;
             margin-bottom: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-align: center;
         }
 
         .win-stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 30px 0;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .win-stat {
-            background: rgba(255,255,255,0.2);
+            background: #f0f0f0;
+            border-radius: 8px;
             padding: 20px;
-            border-radius: 12px;
-            min-width: 120px;
-            backdrop-filter: blur(10px);
+            margin: 20px 0;
         }
 
-        .win-stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .win-stat-label {
-            font-size: 0.9em;
-            opacity: 0.95;
-            margin-top: 5px;
-        }
-
-        .path-history {
-            margin-top: 30px;
-            padding: 25px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 12px;
-            text-align: left;
-            backdrop-filter: blur(10px);
-        }
-
-        .path-history h3 {
-            color: white;
-            margin-bottom: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            font-size: 1.3em;
-        }
-
-        .path-item {
-            padding: 12px 15px;
-            color: white;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        .stat-row {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.05em;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
         }
 
-        .path-item:last-child {
+        .stat-row:last-child {
             border-bottom: none;
         }
 
+        .stat-label {
+            font-weight: bold;
+            color: #555;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .win-path {
+            margin: 20px 0;
+        }
+
+        .win-path h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .path-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            margin: 5px 0;
+            background: #f8f8f8;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
         .path-item-number {
-            background: rgba(255,255,255,0.3);
-            width: 30px;
-            height: 30px;
+            background: #667eea;
+            color: white;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-
-        .btn {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 1.1em;
-            cursor: pointer;
-            margin: 10px;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .btn-small {
-            padding: 8px 16px;
             font-size: 0.85em;
-            margin: 0;
+            font-weight: bold;
+            flex-shrink: 0;
         }
 
-        .btn-share {
-            background: #25D366;
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
-        .btn-share:hover {
-            background: #20BA5A;
+        .modal-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
-        .share-buttons {
-            margin-top: 25px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
+        .modal-btn.secondary {
+            background: #f0f0f0;
+            color: #333;
         }
 
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px;
-            text-align: center;
+        .modal-btn.secondary:hover {
+            background: #e0e0e0;
         }
 
-        .wiki-notice {
-            background: #eaf3ff;
-            border: 1px solid #a8d1ff;
-            padding: 15px;
-            margin: 20px 30px;
-            border-radius: 4px;
-            font-size: 0.95em;
-            color: #0645ad;
-        }
-
-        /* Share notification */
         .share-notification {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: #27ae60;
+            background: #4caf50;
             color: white;
             padding: 15px 25px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
             z-index: 2000;
-            animation: slideInRight 0.3s ease;
-            display: none;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
         }
 
         .share-notification.show {
-            display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        /* Mobile Responsiveness Improvements */
-        @media (max-width: 968px) {
-            .toc-container {
-                width: 200px;
-                padding: 15px;
-            }
-
-            .article-content {
-                padding: 20px;
-            }
-        }
-
+        /* Mobile Responsiveness */
         @media (max-width: 768px) {
-            .toc-container {
-                display: none;
-            }
-
             .container {
                 flex-direction: column;
             }
 
-            .content-wrapper {
-                max-height: none;
+            .toc-container {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+                position: relative;
             }
 
-            .game-header {
-                padding: 12px 15px;
-            }
-
-            .game-header h1 {
-                font-size: 1.3em;
-                margin-bottom: 5px;
-            }
-
-            .version {
-                font-size: 0.65em;
+            .content-area {
+                padding: 20px;
             }
 
             .game-info {
@@ -713,283 +582,230 @@
             }
 
             .info-box {
-                min-width: calc(50% - 4px);
-                padding: 8px 10px;
-                font-size: 0.85em;
-            }
-
-            .info-box .label {
-                font-size: 0.75em;
-            }
-
-            .info-box .value {
-                font-size: 1em;
-            }
-
-            #target-page-display {
-                font-size: 0.85em;
-            }
-
-            .target-description {
-                font-size: 0.65em;
-            }
-
-            .target-tooltip {
-                min-width: 250px;
-                max-width: calc(100vw - 40px);
-                left: 0;
-                transform: translateX(0);
-            }
-
-            .btn-small {
-                padding: 6px 10px;
-                font-size: 0.8em;
-            }
-
-            .path-display {
-                padding: 10px;
-                margin-top: 10px;
-            }
-
-            .path-display-title {
-                font-size: 0.75em;
+                min-width: 100px;
+                font-size: 0.9em;
             }
 
             .path-chain {
-                gap: 5px;
+                justify-content: flex-start;
             }
 
-            .path-item-visual {
-                font-size: 0.7em;
-                padding: 4px 8px;
-                max-width: 100px;
-            }
-
-            .path-arrow {
-                font-size: 0.7em;
-            }
-
-            .container {
-                margin: 10px;
-                border-radius: 8px;
-            }
-
-            .article-content {
-                padding: 15px;
-                font-size: 0.95em;
-            }
-
-            .article-title {
-                font-size: 1.5em;
-            }
-
-            .article-content h2 {
-                font-size: 1.3em;
-            }
-
-            .article-content h3 {
-                font-size: 1.1em;
-            }
-            
-            .article-content .thumb,
-            .infobox,
-            .article-content table.infobox {
-                float: none;
-                margin: 15px auto;
-                max-width: 100%;
-                width: 100%;
-            }
-
-            .wiki-notice {
-                margin: 15px;
-                padding: 12px;
-                font-size: 0.9em;
-            }
-
-            .win-content {
-                padding: 30px 20px;
+            .modal-content {
+                padding: 20px;
                 margin: 20px;
-                max-width: calc(100% - 40px);
-                border-radius: 15px;
+                max-width: 90%;
             }
 
-            .win-content h2 {
-                font-size: 2em;
-            }
-
-            .win-stats {
-                gap: 15px;
-            }
-
-            .win-stat {
-                padding: 15px;
-                min-width: 100px;
-            }
-
-            .win-stat-value {
-                font-size: 2em;
-            }
-
-            .win-stat-label {
-                font-size: 0.85em;
-            }
-
-            .path-history {
-                padding: 15px;
-                font-size: 0.9em;
-            }
-
-            .path-item {
-                font-size: 0.95em;
-                padding: 10px 12px;
-            }
-
-            .btn {
-                padding: 12px 20px;
-                font-size: 1em;
-            }
-
-            .share-buttons {
+            .mode-selector {
                 flex-direction: column;
                 gap: 8px;
             }
 
-            .share-notification {
-                bottom: 10px;
-                right: 10px;
-                left: 10px;
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .game-header h1 {
-                font-size: 1.1em;
-            }
-
-            .info-box {
-                min-width: 100%;
-            }
-
-            .article-content {
-                padding: 12px;
-                font-size: 0.9em;
-            }
-
-            .article-title {
-                font-size: 1.3em;
-            }
-
-            .win-content h2 {
-                font-size: 1.8em;
-            }
-
-            .path-item-visual {
-                max-width: 80px;
-                font-size: 0.65em;
+            .mode-btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
-    <div class="game-header">
-        <h1>🔗 WikiPath - Connect the Pages</h1>
-        <div class="version">v2.0.0</div>
+    <div class="game-header" id="game-header">
+        <h1>🌐 WikiPath</h1>
+        <div class="version">v2.1.0 - Daily Challenge Edition</div>
+        
+        <!-- Mode Selector -->
+        <div class="mode-selector">
+            <button class="mode-btn" id="random-mode-btn" onclick="switchToRandomMode()">
+                <span>🎲</span>
+                <span>Random Challenge</span>
+            </button>
+            <button class="mode-btn active" id="daily-mode-btn" onclick="switchToDailyMode()">
+                <span>📅</span>
+                <span>Daily Challenge</span>
+            </button>
+        </div>
+
+        <!-- Daily Challenge Indicator -->
+        <div class="daily-indicator" id="daily-indicator" style="display: none;">
+            <span class="emoji">🗓️</span>
+            <span id="daily-date"></span>
+        </div>
+
         <div class="game-info">
-            <div class="info-box">
-                <div class="label">Target Page</div>
-                <div class="value" id="target-page-display">Loading...</div>
-                <div class="target-description" id="target-description"></div>
-                <div class="target-tooltip">
-                    <h4 id="tooltip-title">Target Page</h4>
-                    <p id="tooltip-description">Hover to see more details about your target...</p>
-                </div>
-            </div>
             <div class="info-box">
                 <div class="label">Clicks</div>
                 <div class="value" id="click-counter">0</div>
+            </div>
+            <div class="info-box">
+                <div class="label">Time</div>
+                <div class="value" id="timer">0:00</div>
             </div>
             <div class="info-box">
                 <div class="label">Pages Visited</div>
                 <div class="value" id="pages-visited">1</div>
             </div>
             <div class="info-box">
-                <div class="label">Timer</div>
-                <div class="value" id="timer-display">0:00</div>
-            </div>
-            <div class="info-box">
-                <button class="btn btn-small" onclick="retryGame()">Retry</button>
-            </div>
-            <div class="info-box">
-                <button class="btn btn-small" onclick="startNewGame()">New Game</button>
+                <div class="label">Target Page</div>
+                <div class="value">
+                    <div id="target-page-display">Loading...</div>
+                    <div class="target-description" id="target-description"></div>
+                </div>
+                <div class="target-tooltip" id="target-tooltip">
+                    <h4 id="tooltip-title"></h4>
+                    <p id="tooltip-description"></p>
+                </div>
             </div>
         </div>
-        
+
         <!-- Visual Path Display -->
-        <div class="path-display" id="path-display">
-            <div class="path-display-title">Your Journey:</div>
-            <div class="path-chain" id="path-chain">
-                <!-- Path will be dynamically added here -->
-            </div>
+        <div class="path-display">
+            <div class="path-display-title">🗺️ Your Journey</div>
+            <div class="path-chain" id="path-chain"></div>
         </div>
     </div>
 
     <div class="container">
         <div class="toc-container" id="toc-container">
             <div class="toc-title">Contents</div>
-            <ul class="toc-list" id="toc-list">
-                <!-- Table of contents will be generated here -->
-            </ul>
+            <ul class="toc-list" id="toc-list"></ul>
         </div>
-        
-        <div class="content-wrapper">
-            <div class="wiki-notice">
-                📖 <strong>How to play:</strong> Click on blue Wikipedia links to navigate between pages. Try to reach the target page in the fewest clicks possible!
-            </div>
-            <div id="game-area">
-                <div class="loading">Loading Wikipedia page</div>
-            </div>
+        <div class="content-area" id="game-area">
+            <div class="loading">Loading Wikipedia article...</div>
         </div>
     </div>
 
-    <div class="win-modal" id="win-modal">
-        <div class="win-content">
-            <h2>🎉 Victory!</h2>
+    <!-- Win Modal -->
+    <div class="modal-overlay" id="win-modal">
+        <div class="modal-content">
+            <h2>🎉 Congratulations! 🎉</h2>
             <div class="win-stats">
-                <div class="win-stat">
-                    <div class="win-stat-value" id="final-clicks">0</div>
-                    <div class="win-stat-label">Clicks</div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Clicks:</span>
+                    <span class="stat-value" id="final-clicks">0</span>
                 </div>
-                <div class="win-stat">
-                    <div class="win-stat-value" id="final-time">0:00</div>
-                    <div class="win-stat-label">Time</div>
+                <div class="stat-row">
+                    <span class="stat-label">Time Taken:</span>
+                    <span class="stat-value" id="final-time">0:00</span>
                 </div>
-                <div class="win-stat">
-                    <div class="win-stat-value" id="final-pages">0</div>
-                    <div class="win-stat-label">Pages</div>
+                <div class="stat-row">
+                    <span class="stat-label">Pages Visited:</span>
+                    <span class="stat-value" id="final-pages">0</span>
                 </div>
             </div>
-            
-            <div class="path-history" id="win-path">
-                <!-- Path will be shown here -->
-            </div>
-            
-            <div class="share-buttons">
-                <button class="btn" onclick="startNewGame()">Play Again</button>
-                <button class="btn btn-share" onclick="shareResult()">📤 Share Result</button>
-                <button class="btn" onclick="copyResultToClipboard()">📋 Copy to Clipboard</button>
+            <div class="win-path" id="win-path"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="retryGame()">🔄 Retry</button>
+                <button class="modal-btn primary" onclick="shareResult()">📤 Share</button>
+                <button class="modal-btn secondary" onclick="startNewGame()">🎮 New Game</button>
             </div>
         </div>
     </div>
 
+    <!-- Share Notification -->
     <div class="share-notification" id="share-notification">
         ✓ Copied to clipboard!
     </div>
 
     <script>
         // ======================
+        // DAILY CHALLENGE SYSTEM
+        // ======================
+        
+        // Get today's date in YYYY-MM-DD format
+        function getTodayDateString() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        // Simple seeded random number generator
+        function seededRandom(seed) {
+            let x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        // Convert date string to seed number
+        function dateToSeed(dateString) {
+            return dateString.split('-').map(Number).reduce((acc, val) => acc * 100 + val, 0);
+        }
+
+        // Get seeded random index from array
+        function getSeededRandomIndex(array, seed, offset = 0) {
+            const adjustedSeed = seed + offset;
+            return Math.floor(seededRandom(adjustedSeed) * array.length);
+        }
+
+        // Popular Wikipedia pages pool
+        const POPULAR_PAGES = [
+            "Albert Einstein", "World War II", "United States", "Python (programming language)",
+            "William Shakespeare", "Leonardo da Vinci", "Solar System", "DNA",
+            "Ancient Rome", "Climate change", "Artificial intelligence", "The Beatles",
+            "Moon", "Mars", "Isaac Newton", "Charles Darwin", "Quantum mechanics",
+            "Renaissance", "French Revolution", "Industrial Revolution", "Tiger",
+            "Lion", "Elephant", "Blue whale", "Amazon rainforest", "Mount Everest",
+            "Pacific Ocean", "European Union", "United Nations", "Olympic Games",
+            "Football", "Basketball", "Chess", "Guitar", "Piano", "Vincent van Gogh",
+            "Pablo Picasso", "Mona Lisa", "Beethoven", "Mozart", "Star Wars",
+            "Harry Potter", "The Lord of the Rings", "Game of Thrones", "Netflix",
+            "Google", "Apple Inc.", "Microsoft", "Facebook", "Twitter",
+            "COVID-19 pandemic", "Great Wall of China", "Eiffel Tower", "Statue of Liberty",
+            "Pyramids of Giza", "Taj Mahal", "Machu Picchu", "Colosseum",
+            "Democracy", "Capitalism", "Socialism", "Philosophy", "Psychology",
+            "Mathematics", "Physics", "Chemistry", "Biology", "Medicine",
+            "Internet", "Computer", "Smartphone", "Electric car", "Space exploration",
+            "International Space Station", "Hubble Space Telescope", "Big Bang",
+            "Black hole", "Galaxy", "Milky Way", "Sun", "Earth", "Jupiter",
+            "Saturn", "Dinosaur", "Evolution", "Photosynthesis", "Periodic table",
+            "Napoleon", "Julius Caesar", "Cleopatra", "Alexander the Great",
+            "Genghis Khan", "Abraham Lincoln", "George Washington", "Martin Luther King Jr.",
+            "Mahatma Gandhi", "Nelson Mandela", "Adolf Hitler", "Winston Churchill",
+            "Coffee", "Tea", "Chocolate", "Pizza", "Sushi", "Pasta",
+            "Rice", "Bread", "Potato", "Tomato", "Wine", "Beer",
+            "New York City", "London", "Paris", "Tokyo", "Beijing",
+            "Rome", "Athens", "Cairo", "Istanbul", "Moscow",
+            "Amazon (company)", "Tesla, Inc.", "SpaceX", "NASA", "Nobel Prize"
+        ];
+
+        // ======================
+        // GAME STATE
+        // ======================
+        const gameState = {
+            startPage: '',
+            targetPage: '',
+            currentPage: '',
+            clickCount: 0,
+            totalClicks: 0,
+            visitedPages: new Set(),
+            path: [],
+            startTime: null,
+            elapsedTime: 0,
+            isDailyMode: true,
+            dailyDate: getTodayDateString(),
+            startDescription: '',
+            targetDescription: ''
+        };
+
+        // ======================
         // URL STATE MANAGEMENT
         // ======================
+        function updateUrl(start, target, current, clicks, totalClicks, visited, path, startTime) {
+            const params = new URLSearchParams();
+            params.set('start', start);
+            params.set('target', target);
+            params.set('current', current);
+            params.set('clicks', clicks);
+            params.set('totalClicks', totalClicks);
+            params.set('visited', visited.join(','));
+            params.set('path', path.join(','));
+            params.set('startTime', startTime);
+            
+            if (gameState.isDailyMode) {
+                params.set('daily', gameState.dailyDate);
+            }
+            
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.pushState({}, '', newUrl);
+        }
+
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
             return {
@@ -998,168 +814,138 @@
                 current: params.get('current'),
                 clicks: parseInt(params.get('clicks')) || 0,
                 totalClicks: parseInt(params.get('totalClicks')) || 0,
-                visited: params.get('visited') ? params.get('visited').split('|') : [],
-                path: params.get('path') ? params.get('path').split('|') : [],
-                startTime: params.get('startTime') || null
+                visited: params.get('visited') ? params.get('visited').split(',') : [],
+                path: params.get('path') ? params.get('path').split(',') : [],
+                startTime: parseInt(params.get('startTime')) || Date.now(),
+                daily: params.get('daily')
             };
         }
 
-        function updateUrl(start, target, current, clicks, totalClicks, visited, path, startTime) {
-            const params = new URLSearchParams();
-            params.set('start', start);
-            params.set('target', target);
-            params.set('current', current);
-            params.set('clicks', clicks.toString());
-            params.set('totalClicks', totalClicks.toString());
-            params.set('visited', visited.join('|'));
-            params.set('path', path.join('|'));
-            if (startTime) {
-                params.set('startTime', startTime);
-            }
-            
-            const newUrl = `${window.location.pathname}?${params.toString()}`;
-            window.history.pushState({ gameState: true }, '', newUrl);
-        }
-
         function clearUrl() {
-            window.history.replaceState({}, '', window.location.pathname);
+            window.history.pushState({}, '', window.location.pathname);
         }
 
         // ======================
-        // GAME STATE MANAGEMENT
+        // MODE SWITCHING
         // ======================
-        const gameState = {
-            startPage: '',
-            currentPage: '',
-            targetPage: '',
-            clickCount: 0,
-            totalClicks: 0,
-            visitedPages: new Set(),
-            path: [],
-            startTime: null,
-            elapsedTime: 0
-        };
+        function switchToRandomMode() {
+            gameState.isDailyMode = false;
+            updateModeUI();
+            clearUrl();
+            location.reload();
+        }
 
-        // ======================
-        // WIKIPEDIA API HANDLER
-        // ======================
-        class WikipediaAPI {
-            constructor() {
-                this.baseUrl = 'https://en.wikipedia.org/w/api.php';
+        function switchToDailyMode() {
+            gameState.isDailyMode = true;
+            gameState.dailyDate = getTodayDateString();
+            updateModeUI();
+            clearUrl();
+            location.reload();
+        }
+
+        function updateModeUI() {
+            const header = document.getElementById('game-header');
+            const randomBtn = document.getElementById('random-mode-btn');
+            const dailyBtn = document.getElementById('daily-mode-btn');
+            const dailyIndicator = document.getElementById('daily-indicator');
+            const dailyDateEl = document.getElementById('daily-date');
+
+            if (gameState.isDailyMode) {
+                header.classList.add('daily-mode');
+                randomBtn.classList.remove('active');
+                dailyBtn.classList.add('active');
+                dailyIndicator.style.display = 'flex';
+                
+                const date = new Date(gameState.dailyDate);
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                dailyDateEl.textContent = date.toLocaleDateString('en-US', options);
+            } else {
+                header.classList.remove('daily-mode');
+                randomBtn.classList.add('active');
+                dailyBtn.classList.remove('active');
+                dailyIndicator.style.display = 'none';
             }
+        }
 
-            async getRandomPage() {
-                try {
-                    const date = new Date();
-                    date.setDate(date.getDate() - 1);
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    
-                    const topViewsUrl = `https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/${year}/${month}/${day}`;
-                    const response = await fetch(topViewsUrl);
-                    const data = await response.json();
-                    
-                    if (data.items && data.items[0] && data.items[0].articles) {
-                        const articles = data.items[0].articles.filter(article => 
-                            !article.article.includes(':') && 
-                            article.article !== 'Main_Page' &&
-                            article.article.length > 2
-                        ).slice(0, 15000);
-                        
-                        if (articles.length > 0) {
-                            const randomArticle = articles[Math.floor(Math.random() * articles.length)];
-                            return decodeURIComponent(randomArticle.article.replace(/_/g, ' '));
-                        }
-                    }
-                } catch (error) {
-                    console.log('Could not fetch popular pages, using fallback');
+        // ======================
+        // WIKIPEDIA API
+        // ======================
+        async function fetchWikipediaPage(title) {
+            const endpoint = 'https://en.wikipedia.org/w/api.php';
+            const params = new URLSearchParams({
+                action: 'parse',
+                page: title,
+                format: 'json',
+                origin: '*',
+                prop: 'text|sections',
+                disabletoc: '1'
+            });
+
+            try {
+                const response = await fetch(`${endpoint}?${params}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.info);
+                }
+
+                return data.parse;
+            } catch (error) {
+                console.error('Error fetching Wikipedia page:', error);
+                throw error;
+            }
+        }
+
+        async function fetchPageDescription(title) {
+            const endpoint = 'https://en.wikipedia.org/w/api.php';
+            const params = new URLSearchParams({
+                action: 'query',
+                titles: title,
+                format: 'json',
+                origin: '*',
+                prop: 'extracts',
+                exintro: true,
+                explaintext: true,
+                exsentences: 2
+            });
+
+            try {
+                const response = await fetch(`${endpoint}?${params}`);
+                const data = await response.json();
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                
+                if (pageId === '-1') {
+                    return '';
                 }
                 
-                const params = new URLSearchParams({
-                    action: 'query',
-                    format: 'json',
-                    list: 'random',
-                    rnnamespace: 0,
-                    rnlimit: 1,
-                    origin: '*'
-                });
-
-                try {
-                    const response = await fetch(`${this.baseUrl}?${params}`);
-                    const data = await response.json();
-                    return data.query.random[0].title;
-                } catch (error) {
-                    console.error('Error fetching random page:', error);
-                    throw error;
-                }
+                return pages[pageId].extract || '';
+            } catch (error) {
+                console.error('Error fetching page description:', error);
+                return '';
             }
+        }
 
-            async getPageContent(pageTitle) {
-                const params = new URLSearchParams({
-                    action: 'parse',
-                    format: 'json',
-                    page: pageTitle,
-                    prop: 'text|categories',
-                    disableeditsection: 1,
-                    disabletoc: 1,
-                    redirects: 1,
-                    origin: '*'
-                });
+        async function getRandomWikipediaPage() {
+            const randomIndex = Math.floor(Math.random() * POPULAR_PAGES.length);
+            return POPULAR_PAGES[randomIndex];
+        }
 
-                try {
-                    const response = await fetch(`${this.baseUrl}?${params}`);
-                    const data = await response.json();
-                    
-                    if (data.error) {
-                        throw new Error(data.error.info);
-                    }
-                    
-                    const isDisambiguation = data.parse.categories?.some(cat => 
-                        cat.category === 'Disambiguation_pages' || 
-                        cat.category === 'All_disambiguation_pages'
-                    ) || false;
-                    
-                    return {
-                        title: data.parse.title,
-                        content: data.parse.text['*'],
-                        redirected: data.parse.redirects ? true : false,
-                        finalTitle: data.parse.title,
-                        isDisambiguation: isDisambiguation
-                    };
-                } catch (error) {
-                    console.error('Error fetching page content:', error);
-                    throw error;
-                }
-            }
-
-            async getPageDescription(pageTitle) {
-                const params = new URLSearchParams({
-                    action: 'query',
-                    format: 'json',
-                    titles: pageTitle,
-                    prop: 'extracts',
-                    exintro: true,
-                    explaintext: true,
-                    exsentences: 2,
-                    origin: '*'
-                });
-
-                try {
-                    const response = await fetch(`${this.baseUrl}?${params}`);
-                    const data = await response.json();
-                    const pages = data.query.pages;
-                    const pageId = Object.keys(pages)[0];
-                    
-                    if (pages[pageId].extract) {
-                        return pages[pageId].extract;
-                    }
-                    return '';
-                } catch (error) {
-                    console.error('Error fetching page description:', error);
-                    return '';
-                }
-            }
+        async function getDailyWikipediaPages() {
+            const seed = dateToSeed(gameState.dailyDate);
+            
+            // Get start page
+            const startIndex = getSeededRandomIndex(POPULAR_PAGES, seed, 0);
+            const startPage = POPULAR_PAGES[startIndex];
+            
+            // Get target page (different from start)
+            let targetIndex;
+            do {
+                targetIndex = getSeededRandomIndex(POPULAR_PAGES, seed, 1000);
+            } while (targetIndex === startIndex);
+            const targetPage = POPULAR_PAGES[targetIndex];
+            
+            return { startPage, targetPage };
         }
 
         // ======================
@@ -1167,111 +953,153 @@
         // ======================
         class GameController {
             constructor() {
-                this.api = new WikipediaAPI();
                 this.gameArea = document.getElementById('game-area');
                 this.clickCounter = document.getElementById('click-counter');
+                this.timerDisplay = document.getElementById('timer');
                 this.pagesVisited = document.getElementById('pages-visited');
                 this.targetPageDisplay = document.getElementById('target-page-display');
-                this.targetDescription = document.getElementById('target-description');
-                this.tooltipTitle = document.getElementById('tooltip-title');
-                this.tooltipDescription = document.getElementById('tooltip-description');
-                this.timerDisplay = document.getElementById('timer-display');
-                this.timerInterval = null;
-                this.tocContainer = document.getElementById('toc-container');
-                this.tocList = document.getElementById('toc-list');
+                this.targetDescriptionDisplay = document.getElementById('target-description');
                 this.pathChain = document.getElementById('path-chain');
+                this.tocContainer = document.getElementById('toc-list');
+                this.timerInterval = null;
             }
 
             async initialize() {
-                try {
-                    const urlParams = getUrlParams();
-                    
-                    if (urlParams.start && urlParams.target) {
-                        gameState.startPage = urlParams.start;
-                        gameState.targetPage = urlParams.target;
-                        gameState.currentPage = urlParams.current || urlParams.start;
-                        gameState.clickCount = urlParams.clicks;
-                        gameState.totalClicks = urlParams.totalClicks;
-                        gameState.visitedPages = new Set(urlParams.visited);
-                        gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
-                        gameState.startTime = urlParams.startTime;
+                // Check if resuming from URL
+                const urlParams = getUrlParams();
+                
+                if (urlParams.start && urlParams.target) {
+                    // Check if daily mode and date matches
+                    if (urlParams.daily) {
+                        gameState.isDailyMode = true;
+                        gameState.dailyDate = urlParams.daily;
                         
-                        const targetDesc = await this.api.getPageDescription(gameState.targetPage);
-                        this.targetDescription.textContent = targetDesc.substring(0, 80) + '...';
-                        this.tooltipTitle.textContent = gameState.targetPage;
-                        this.tooltipDescription.textContent = targetDesc;
-                        
-                        this.updateDisplay();
-                        this.updatePathDisplay();
-                        this.startTimer();
-                        await this.loadPage(gameState.currentPage);
-                    } else {
-                        gameState.startPage = await this.api.getRandomPage();
-                        gameState.targetPage = await this.api.getRandomPage();
-                        
-                        while (gameState.startPage === gameState.targetPage) {
-                            gameState.targetPage = await this.api.getRandomPage();
+                        // If it's a different day, start fresh daily challenge
+                        if (urlParams.daily !== getTodayDateString()) {
+                            gameState.dailyDate = getTodayDateString();
+                            await this.startNewDailyChallenge();
+                            return;
                         }
-
-                        gameState.currentPage = gameState.startPage;
-                        gameState.path = [gameState.startPage];
-                        gameState.clickCount = 0;
-                        gameState.totalClicks = 0;
-                        gameState.visitedPages = new Set([gameState.startPage]);
-                        gameState.startTime = Date.now();
-                        
-                        const targetDesc = await this.api.getPageDescription(gameState.targetPage);
-                        this.targetDescription.textContent = targetDesc.substring(0, 80) + '...';
-                        this.tooltipTitle.textContent = gameState.targetPage;
-                        this.tooltipDescription.textContent = targetDesc;
-                        
-                        updateUrl(
-                            gameState.startPage,
-                            gameState.targetPage,
-                            gameState.currentPage,
-                            gameState.clickCount,
-                            gameState.totalClicks,
-                            Array.from(gameState.visitedPages),
-                            gameState.path,
-                            gameState.startTime
-                        );
-                        
-                        this.updateDisplay();
-                        this.updatePathDisplay();
-                        this.startTimer();
-                        await this.loadPage(gameState.currentPage);
+                    } else {
+                        gameState.isDailyMode = false;
                     }
-                } catch (error) {
-                    this.showError('Failed to initialize game. Please refresh the page.');
-                    console.error(error);
+                    
+                    // Resume existing game
+                    gameState.startPage = urlParams.start;
+                    gameState.targetPage = urlParams.target;
+                    gameState.currentPage = urlParams.current || urlParams.start;
+                    gameState.clickCount = urlParams.clicks;
+                    gameState.totalClicks = urlParams.totalClicks;
+                    gameState.visitedPages = new Set(urlParams.visited);
+                    gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
+                    gameState.startTime = urlParams.startTime;
+                    
+                    updateModeUI();
+                    
+                    // Fetch descriptions
+                    gameState.targetDescription = await fetchPageDescription(gameState.targetPage);
+                    
+                    this.updateDisplay();
+                    this.updatePathDisplay();
+                    this.startTimer();
+                    await this.loadPage(gameState.currentPage);
+                } else {
+                    // Start new game based on mode
+                    if (gameState.isDailyMode) {
+                        await this.startNewDailyChallenge();
+                    } else {
+                        await this.startNewRandomGame();
+                    }
                 }
+            }
+
+            async startNewDailyChallenge() {
+                const { startPage, targetPage } = await getDailyWikipediaPages();
+                
+                gameState.startPage = startPage;
+                gameState.targetPage = targetPage;
+                gameState.currentPage = startPage;
+                gameState.clickCount = 0;
+                gameState.totalClicks = 0;
+                gameState.visitedPages = new Set([startPage]);
+                gameState.path = [startPage];
+                gameState.startTime = Date.now();
+                
+                updateModeUI();
+                
+                // Fetch descriptions
+                gameState.targetDescription = await fetchPageDescription(targetPage);
+                
+                this.updateDisplay();
+                this.updatePathDisplay();
+                this.startTimer();
+                
+                updateUrl(
+                    startPage,
+                    targetPage,
+                    startPage,
+                    0,
+                    0,
+                    [startPage],
+                    [startPage],
+                    gameState.startTime
+                );
+                
+                await this.loadPage(startPage);
+            }
+
+            async startNewRandomGame() {
+                const startPage = await getRandomWikipediaPage();
+                let targetPage;
+                do {
+                    targetPage = await getRandomWikipediaPage();
+                } while (targetPage === startPage);
+
+                gameState.startPage = startPage;
+                gameState.targetPage = targetPage;
+                gameState.currentPage = startPage;
+                gameState.clickCount = 0;
+                gameState.totalClicks = 0;
+                gameState.visitedPages = new Set([startPage]);
+                gameState.path = [startPage];
+                gameState.startTime = Date.now();
+
+                updateModeUI();
+
+                // Fetch descriptions
+                gameState.targetDescription = await fetchPageDescription(targetPage);
+
+                this.updateDisplay();
+                this.updatePathDisplay();
+                this.startTimer();
+
+                updateUrl(
+                    startPage,
+                    targetPage,
+                    startPage,
+                    0,
+                    0,
+                    [startPage],
+                    [startPage],
+                    gameState.startTime
+                );
+
+                await this.loadPage(startPage);
             }
 
             startTimer() {
-                if (this.timerInterval) {
-                    clearInterval(this.timerInterval);
-                }
-                
                 this.timerInterval = setInterval(() => {
-                    if (gameState.startTime) {
-                        gameState.elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
-                        this.updateTimerDisplay();
-                    }
+                    const elapsed = Date.now() - gameState.startTime;
+                    const seconds = Math.floor(elapsed / 1000);
+                    const minutes = Math.floor(seconds / 60);
+                    const remainingSeconds = seconds % 60;
+                    this.timerDisplay.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
                 }, 1000);
-                
-                this.updateTimerDisplay();
-            }
-
-            updateTimerDisplay() {
-                const minutes = Math.floor(gameState.elapsedTime / 60);
-                const seconds = gameState.elapsedTime % 60;
-                this.timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             }
 
             stopTimer() {
                 if (this.timerInterval) {
                     clearInterval(this.timerInterval);
-                    this.timerInterval = null;
                 }
             }
 
@@ -1286,169 +1114,70 @@
                         this.pathChain.appendChild(arrow);
                     }
                     
-                    const pathItem = document.createElement('div');
-                    pathItem.className = 'path-item-visual';
-                    pathItem.textContent = page;
-                    pathItem.title = page;
-                    
+                    const item = document.createElement('div');
+                    item.className = 'path-item-visual';
                     if (index === gameState.path.length - 1) {
-                        pathItem.classList.add('current');
+                        item.classList.add('current');
                     }
-                    
-                    this.pathChain.appendChild(pathItem);
+                    item.textContent = page;
+                    item.title = page;
+                    this.pathChain.appendChild(item);
                 });
             }
 
-            generateTableOfContents() {
-                this.tocList.innerHTML = '';
-                
-                const headers = this.gameArea.querySelectorAll('.article-content h2, .article-content h3');
-                
-                if (headers.length === 0) {
-                    this.tocContainer.style.display = 'none';
+            async loadPage(title) {
+                this.gameArea.innerHTML = '<div class="loading">Loading Wikipedia article...</div>';
+                this.tocContainer.innerHTML = '';
+
+                try {
+                    const pageData = await fetchWikipediaPage(title);
+                    this.renderPage(pageData);
+                    this.buildTableOfContents(pageData.sections);
+                } catch (error) {
+                    this.showError(`Failed to load page: ${error.message}`);
+                }
+            }
+
+            buildTableOfContents(sections) {
+                if (!sections || sections.length === 0) {
+                    this.tocContainer.innerHTML = '<li style="color: #999; font-size: 0.9em;">No sections available</li>';
                     return;
                 }
-                
-                this.tocContainer.style.display = 'block';
-                
-                let currentH2Item = null;
-                
-                headers.forEach((header, index) => {
-                    if (!header.id) {
-                        header.id = `section-${index}`;
-                    }
-                    
-                    const tocItem = document.createElement('li');
-                    tocItem.className = 'toc-item';
-                    
-                    const tocLink = document.createElement('a');
-                    tocLink.className = 'toc-link';
-                    tocLink.textContent = header.textContent;
-                    tocLink.href = `#${header.id}`;
-                    
-                    tocLink.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        
-                        document.querySelectorAll('.toc-link').forEach(link => {
-                            link.classList.remove('active');
-                        });
-                        tocLink.classList.add('active');
-                    });
-                    
-                    tocItem.appendChild(tocLink);
-                    
-                    if (header.tagName === 'H2') {
-                        this.tocList.appendChild(tocItem);
-                        currentH2Item = tocItem;
-                    } else if (header.tagName === 'H3' && currentH2Item) {
-                        let subsectionList = currentH2Item.querySelector('.toc-subsection');
-                        if (!subsectionList) {
-                            subsectionList = document.createElement('ul');
-                            subsectionList.className = 'toc-list toc-subsection';
-                            currentH2Item.appendChild(subsectionList);
-                        }
-                        subsectionList.appendChild(tocItem);
-                    }
-                });
-                
-                this.setupScrollSpy();
-            }
 
-            setupScrollSpy() {
-                const contentWrapper = document.querySelector('.content-wrapper');
-                const headers = this.gameArea.querySelectorAll('.article-content h2, .article-content h3');
+                this.tocContainer.innerHTML = '';
                 
-                contentWrapper.addEventListener('scroll', () => {
-                    let currentSection = null;
-                    
-                    headers.forEach(header => {
-                        const rect = header.getBoundingClientRect();
-                        if (rect.top <= 100) {
-                            currentSection = header.id;
-                        }
-                    });
-                    
-                    if (currentSection) {
-                        document.querySelectorAll('.toc-link').forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href') === `#${currentSection}`) {
+                sections.forEach(section => {
+                    if (section.toclevel <= 2) {
+                        const li = document.createElement('li');
+                        li.className = 'toc-item';
+                        
+                        const link = document.createElement('a');
+                        link.className = 'toc-link';
+                        link.textContent = section.line;
+                        link.style.paddingLeft = `${(section.toclevel - 1) * 15}px`;
+                        
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const heading = document.getElementById(section.anchor);
+                            if (heading) {
+                                heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                
+                                document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
                                 link.classList.add('active');
                             }
                         });
+                        
+                        li.appendChild(link);
+                        this.tocContainer.appendChild(li);
                     }
                 });
             }
 
-            async loadPage(pageTitle) {
-                this.gameArea.innerHTML = '<div class="loading">Loading Wikipedia page</div>';
-
-                try {
-                    const pageData = await this.api.getPageContent(pageTitle);
-                    
-                    if (pageData.redirected && pageData.finalTitle !== pageTitle) {
-                        gameState.currentPage = pageData.finalTitle;
-                        if (gameState.path.length > 0 && gameState.path[gameState.path.length - 1] === pageTitle) {
-                            gameState.path[gameState.path.length - 1] = pageData.finalTitle;
-                        }
-                        gameState.visitedPages.delete(pageTitle);
-                        gameState.visitedPages.add(pageData.finalTitle);
-                        
-                        updateUrl(
-                            gameState.startPage,
-                            gameState.targetPage,
-                            gameState.currentPage,
-                            gameState.clickCount,
-                            gameState.totalClicks,
-                            Array.from(gameState.visitedPages),
-                            gameState.path,
-                            gameState.startTime
-                        );
-                        
-                        const normalizedCurrent = gameState.currentPage.trim().toLowerCase().replace(/_/g, ' ');
-                        const normalizedTarget = gameState.targetPage.trim().toLowerCase().replace(/_/g, ' ');
-                        
-                        if (normalizedCurrent === normalizedTarget) {
-                            this.displayArticle(pageData);
-                            this.showWinScreen();
-                            return;
-                        }
-                    }
-                    
-                    this.displayArticle(pageData);
-                    this.generateTableOfContents();
-                } catch (error) {
-                    this.showError(`Failed to load page: ${pageTitle}. Please try clicking another link.`);
-                    console.error(error);
-                }
-            }
-
-            displayArticle(pageData) {
+            renderPage(pageData) {
                 const articleDiv = document.createElement('div');
-                articleDiv.className = 'article-content';
-                
-                const titleEl = document.createElement('h1');
-                titleEl.className = 'article-title';
-                titleEl.textContent = pageData.title;
-                articleDiv.appendChild(titleEl);
-                
-                const contentDiv = document.createElement('div');
-                contentDiv.innerHTML = pageData.content;
-                
-                const allParagraphs = contentDiv.querySelectorAll('p');
-                for (let p of allParagraphs) {
-                    const text = p.textContent.trim();
-                    if (text.length > 100 && !p.classList.contains('mw-empty-elt')) {
-                        const summaryDiv = document.createElement('div');
-                        summaryDiv.className = 'article-summary';
-                        summaryDiv.innerHTML = p.innerHTML;
-                        articleDiv.appendChild(summaryDiv);
-                        break;
-                    }
-                }
-                
-                articleDiv.appendChild(contentDiv);
-                
+                articleDiv.className = 'wikipedia-article';
+                articleDiv.innerHTML = pageData.text['*'];
+
                 this.gameArea.innerHTML = '';
                 this.gameArea.appendChild(articleDiv);
 
@@ -1538,6 +1267,15 @@
                 this.clickCounter.textContent = gameState.totalClicks;
                 this.pagesVisited.textContent = gameState.path.length;
                 this.targetPageDisplay.textContent = gameState.targetPage;
+                
+                // Update target description
+                if (gameState.targetDescription) {
+                    this.targetDescriptionDisplay.textContent = gameState.targetDescription.substring(0, 100) + '...';
+                    
+                    // Update tooltip
+                    document.getElementById('tooltip-title').textContent = gameState.targetPage;
+                    document.getElementById('tooltip-description').textContent = gameState.targetDescription;
+                }
             }
 
             showWinScreen() {
@@ -1576,8 +1314,17 @@
         function generateShareText() {
             const emoji = gameState.totalClicks <= 3 ? '🏆' : gameState.totalClicks <= 5 ? '🌟' : gameState.totalClicks <= 10 ? '👍' : '✅';
             
-            return `${emoji} WikiPath Challenge ${emoji}
-
+            let modeText = '';
+            if (gameState.isDailyMode) {
+                const date = new Date(gameState.dailyDate);
+                const options = { month: 'short', day: 'numeric', year: 'numeric' };
+                modeText = `📅 Daily Challenge - ${date.toLocaleDateString('en-US', options)}\n`;
+            } else {
+                modeText = `🎲 Random Challenge\n`;
+            }
+            
+            return `${emoji} WikiPath ${emoji}
+${modeText}
 From: ${gameState.startPage}
 To: ${gameState.targetPage}
 
@@ -1646,6 +1393,19 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             const urlParams = getUrlParams();
             
             if (urlParams.start && urlParams.target) {
+                // Check if daily mode and date matches
+                if (urlParams.daily) {
+                    gameState.isDailyMode = true;
+                    gameState.dailyDate = urlParams.daily;
+                    
+                    if (urlParams.daily !== getTodayDateString()) {
+                        location.reload();
+                        return;
+                    }
+                } else {
+                    gameState.isDailyMode = false;
+                }
+                
                 gameState.startPage = urlParams.start;
                 gameState.targetPage = urlParams.target;
                 gameState.currentPage = urlParams.current || urlParams.start;
@@ -1654,6 +1414,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 gameState.visitedPages = new Set(urlParams.visited);
                 gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
                 
+                updateModeUI();
                 game.updateDisplay();
                 game.updatePathDisplay();
                 game.loadPage(gameState.currentPage);
