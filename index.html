@@ -250,6 +250,126 @@
             opacity: 0.7;
         }
 
+        /* Give Up Button */
+        .give-up-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .give-up-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .give-up-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        /* Difficulty Badge */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 8px;
+            background: rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .difficulty-easy {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.6);
+        }
+
+        .difficulty-medium {
+            background: rgba(255, 193, 7, 0.3);
+            border-color: rgba(255, 193, 7, 0.6);
+        }
+
+        .difficulty-hard {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: rgba(244, 67, 54, 0.6);
+        }
+
+        .difficulty-expert {
+            background: rgba(156, 39, 176, 0.3);
+            border-color: rgba(156, 39, 176, 0.6);
+        }
+
+        /* Search Overlay */
+        .search-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 100px;
+        }
+
+        .search-overlay.active {
+            display: flex;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .search-results {
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .search-result-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: #f5f5f5;
+        }
+
+        .search-result-item strong {
+            color: #667eea;
+        }
+
+        .search-hint {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
         .container {
             max-width: 1200px;
             margin: 20px auto;
@@ -504,6 +624,36 @@
             flex-shrink: 0;
         }
 
+        .performance-rating {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .rating-perfect {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+        }
+
+        .rating-excellent {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .rating-good {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .rating-completed {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+            color: white;
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
@@ -611,7 +761,7 @@
 <body>
     <div class="game-header" id="game-header">
         <h1>🌐 WikiPath</h1>
-        <div class="version">v2.1.0 - Daily Challenge Edition</div>
+        <div class="version">v2.2.0 - Enhanced Edition</div>
         
         <!-- Mode Selector -->
         <div class="mode-selector">
@@ -649,6 +799,7 @@
                 <div class="value">
                     <div id="target-page-display">Loading...</div>
                     <div class="target-description" id="target-description"></div>
+                    <span class="difficulty-badge" id="difficulty-badge"></span>
                 </div>
                 <div class="target-tooltip" id="target-tooltip">
                     <h4 id="tooltip-title"></h4>
@@ -661,6 +812,11 @@
         <div class="path-display">
             <div class="path-display-title">🗺️ Your Journey</div>
             <div class="path-chain" id="path-chain"></div>
+        </div>
+
+        <!-- Give Up Button -->
+        <div class="give-up-container">
+            <button class="give-up-btn" onclick="giveUp()">🏳️ Give Up & See Solution</button>
         </div>
     </div>
 
@@ -706,6 +862,15 @@
         ✓ Copied to clipboard!
     </div>
 
+    <!-- Search Overlay (Ctrl+F) -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-box">
+            <input type="text" class="search-input" id="search-input" placeholder="Search within current article...">
+            <div class="search-results" id="search-results"></div>
+            <div class="search-hint">Press Ctrl+F to search • ESC to close</div>
+        </div>
+    </div>
+
     <script>
         // ======================
         // DAILY CHALLENGE SYSTEM
@@ -734,36 +899,87 @@
             return Math.floor(seededRandom(adjustedSeed) * array.length);
         }
 
-        // Popular Wikipedia pages pool
-        const POPULAR_PAGES = [
-            "Albert Einstein", "World War II", "United States", "Python (programming language)",
-            "William Shakespeare", "Leonardo da Vinci", "Solar System", "DNA",
-            "Ancient Rome", "Climate change", "Artificial intelligence", "The Beatles",
-            "Moon", "Mars", "Isaac Newton", "Charles Darwin", "Quantum mechanics",
-            "Renaissance", "French Revolution", "Industrial Revolution", "Tiger",
-            "Lion", "Elephant", "Blue whale", "Amazon rainforest", "Mount Everest",
-            "Pacific Ocean", "European Union", "United Nations", "Olympic Games",
-            "Football", "Basketball", "Chess", "Guitar", "Piano", "Vincent van Gogh",
-            "Pablo Picasso", "Mona Lisa", "Beethoven", "Mozart", "Star Wars",
-            "Harry Potter", "The Lord of the Rings", "Game of Thrones", "Netflix",
-            "Google", "Apple Inc.", "Microsoft", "Facebook", "Twitter",
-            "COVID-19 pandemic", "Great Wall of China", "Eiffel Tower", "Statue of Liberty",
-            "Pyramids of Giza", "Taj Mahal", "Machu Picchu", "Colosseum",
-            "Democracy", "Capitalism", "Socialism", "Philosophy", "Psychology",
-            "Mathematics", "Physics", "Chemistry", "Biology", "Medicine",
-            "Internet", "Computer", "Smartphone", "Electric car", "Space exploration",
-            "International Space Station", "Hubble Space Telescope", "Big Bang",
-            "Black hole", "Galaxy", "Milky Way", "Sun", "Earth", "Jupiter",
-            "Saturn", "Dinosaur", "Evolution", "Photosynthesis", "Periodic table",
-            "Napoleon", "Julius Caesar", "Cleopatra", "Alexander the Great",
-            "Genghis Khan", "Abraham Lincoln", "George Washington", "Martin Luther King Jr.",
-            "Mahatma Gandhi", "Nelson Mandela", "Adolf Hitler", "Winston Churchill",
-            "Coffee", "Tea", "Chocolate", "Pizza", "Sushi", "Pasta",
-            "Rice", "Bread", "Potato", "Tomato", "Wine", "Beer",
-            "New York City", "London", "Paris", "Tokyo", "Beijing",
-            "Rome", "Athens", "Cairo", "Istanbul", "Moscow",
-            "Amazon (company)", "Tesla, Inc.", "SpaceX", "NASA", "Nobel Prize"
+        // Popular Wikipedia pages pool with difficulty ratings
+        const POPULAR_PAGES = {
+            easy: [
+                "United States", "World War II", "Python (programming language)",
+                "Solar System", "Moon", "Sun", "Earth", "Water",
+                "Dog", "Cat", "Football", "Basketball", "Music",
+                "Internet", "Google", "Apple Inc.", "Microsoft",
+                "New York City", "London", "Paris", "Pizza", "Coffee"
+            ],
+            medium: [
+                "Albert Einstein", "William Shakespeare", "Leonardo da Vinci",
+                "DNA", "Climate change", "Artificial intelligence", "The Beatles",
+                "Mars", "Isaac Newton", "Charles Darwin", "Quantum mechanics",
+                "Renaissance", "French Revolution", "Industrial Revolution",
+                "Tiger", "Lion", "Elephant", "Blue whale", "Amazon rainforest",
+                "Mount Everest", "Pacific Ocean", "European Union", "United Nations",
+                "Olympic Games", "Chess", "Guitar", "Piano", "Vincent van Gogh",
+                "Pablo Picasso", "Mona Lisa", "Beethoven", "Mozart", "Star Wars",
+                "Harry Potter", "The Lord of the Rings", "Facebook", "Twitter",
+                "Great Wall of China", "Eiffel Tower", "Statue of Liberty",
+                "Pyramids of Giza", "Taj Mahal", "Machu Picchu", "Colosseum"
+            ],
+            hard: [
+                "Ancient Rome", "Democracy", "Capitalism", "Socialism",
+                "Philosophy", "Psychology", "Mathematics", "Physics",
+                "Chemistry", "Biology", "Medicine", "Computer", "Smartphone",
+                "Electric car", "Space exploration", "International Space Station",
+                "Hubble Space Telescope", "Big Bang", "Black hole", "Galaxy",
+                "Milky Way", "Jupiter", "Saturn", "Dinosaur", "Evolution",
+                "Photosynthesis", "Periodic table", "Napoleon", "Julius Caesar",
+                "Cleopatra", "Alexander the Great", "Genghis Khan",
+                "Abraham Lincoln", "George Washington", "Martin Luther King Jr.",
+                "Mahatma Gandhi", "Nelson Mandela", "Winston Churchill"
+            ],
+            expert: [
+                "COVID-19 pandemic", "Game of Thrones", "Netflix",
+                "Chocolate", "Tea", "Sushi", "Pasta", "Rice", "Bread",
+                "Potato", "Tomato", "Wine", "Beer", "Tokyo", "Beijing",
+                "Rome", "Athens", "Cairo", "Istanbul", "Moscow",
+                "Amazon (company)", "Tesla, Inc.", "SpaceX", "NASA", "Nobel Prize",
+                "Adolf Hitler"
+            ]
+        };
+
+        // Flatten for random selection
+        const ALL_PAGES = [
+            ...POPULAR_PAGES.easy,
+            ...POPULAR_PAGES.medium,
+            ...POPULAR_PAGES.hard,
+            ...POPULAR_PAGES.expert
         ];
+
+        // Get difficulty of a page
+        function getPageDifficulty(pageName) {
+            for (const [difficulty, pages] of Object.entries(POPULAR_PAGES)) {
+                if (pages.includes(pageName)) {
+                    return difficulty;
+                }
+            }
+            return 'medium';
+        }
+
+        // Calculate overall challenge difficulty
+        function calculateChallengeDifficulty(startPage, targetPage) {
+            const startDiff = getPageDifficulty(startPage);
+            const targetDiff = getPageDifficulty(targetPage);
+            
+            const difficultyScore = {
+                'easy': 1,
+                'medium': 2,
+                'hard': 3,
+                'expert': 4
+            };
+            
+            const avgScore = (difficultyScore[startDiff] + difficultyScore[targetDiff]) / 2;
+            
+            if (avgScore <= 1.5) return 'easy';
+            if (avgScore <= 2.5) return 'medium';
+            if (avgScore <= 3.5) return 'hard';
+            return 'expert';
+        }
 
         // ======================
         // GAME STATE
@@ -781,7 +997,10 @@
             isDailyMode: localStorage.getItem('wikipath_mode') === 'random' ? false : true,
             dailyDate: getTodayDateString(),
             startDescription: '',
-            targetDescription: ''
+            targetDescription: '',
+            hasWon: false,
+            gaveUp: false,
+            difficulty: 'medium'
         };
 
         // ======================
@@ -929,23 +1148,23 @@
         }
 
         async function getRandomWikipediaPage() {
-            const randomIndex = Math.floor(Math.random() * POPULAR_PAGES.length);
-            return POPULAR_PAGES[randomIndex];
+            const randomIndex = Math.floor(Math.random() * ALL_PAGES.length);
+            return ALL_PAGES[randomIndex];
         }
 
         async function getDailyWikipediaPages() {
             const seed = dateToSeed(gameState.dailyDate);
             
             // Get start page
-            const startIndex = getSeededRandomIndex(POPULAR_PAGES, seed, 0);
-            const startPage = POPULAR_PAGES[startIndex];
+            const startIndex = getSeededRandomIndex(ALL_PAGES, seed, 0);
+            const startPage = ALL_PAGES[startIndex];
             
             // Get target page (different from start)
             let targetIndex;
             do {
-                targetIndex = getSeededRandomIndex(POPULAR_PAGES, seed, 1000);
+                targetIndex = getSeededRandomIndex(ALL_PAGES, seed, 1000);
             } while (targetIndex === startIndex);
-            const targetPage = POPULAR_PAGES[targetIndex];
+            const targetPage = ALL_PAGES[targetIndex];
             
             return { startPage, targetPage };
         }
@@ -1026,6 +1245,9 @@
                 gameState.visitedPages = new Set([startPage]);
                 gameState.path = [startPage];
                 gameState.startTime = Date.now();
+                gameState.hasWon = false;
+                gameState.gaveUp = false;
+                gameState.difficulty = calculateChallengeDifficulty(startPage, targetPage);
                 
                 updateModeUI();
                 
@@ -1065,6 +1287,9 @@
                 gameState.visitedPages = new Set([startPage]);
                 gameState.path = [startPage];
                 gameState.startTime = Date.now();
+                gameState.hasWon = false;
+                gameState.gaveUp = false;
+                gameState.difficulty = calculateChallengeDifficulty(startPage, targetPage);
 
                 updateModeUI();
 
@@ -1270,6 +1495,11 @@
                 this.pagesVisited.textContent = gameState.path.length;
                 this.targetPageDisplay.textContent = gameState.targetPage;
                 
+                // Update difficulty badge
+                const difficultyBadge = document.getElementById('difficulty-badge');
+                difficultyBadge.textContent = gameState.difficulty.toUpperCase();
+                difficultyBadge.className = `difficulty-badge difficulty-${gameState.difficulty}`;
+                
                 // Update target description
                 if (gameState.targetDescription) {
                     this.targetDescriptionDisplay.textContent = gameState.targetDescription.substring(0, 100) + '...';
@@ -1282,6 +1512,7 @@
 
             showWinScreen() {
                 this.stopTimer();
+                gameState.hasWon = true;
                 
                 const modal = document.getElementById('win-modal');
                 const finalClicksEl = document.getElementById('final-clicks');
@@ -1293,7 +1524,25 @@
                 finalTimeEl.textContent = this.timerDisplay.textContent;
                 finalPagesEl.textContent = gameState.path.length;
 
-                let pathHtml = '<h3>🗺️ Your Journey:</h3>';
+                // Performance rating
+                let rating = '';
+                let ratingClass = '';
+                if (gameState.totalClicks <= 3) {
+                    rating = '🏆 AMAZING! Perfect score!';
+                    ratingClass = 'rating-perfect';
+                } else if (gameState.totalClicks <= 5) {
+                    rating = '🌟 EXCELLENT! Great job!';
+                    ratingClass = 'rating-excellent';
+                } else if (gameState.totalClicks <= 10) {
+                    rating = '👍 GOOD! Well done!';
+                    ratingClass = 'rating-good';
+                } else {
+                    rating = '✅ COMPLETED! Nice work!';
+                    ratingClass = 'rating-completed';
+                }
+
+                let pathHtml = `<div class="performance-rating ${ratingClass}">${rating}</div>`;
+                pathHtml += '<h3>🗺️ Your Journey:</h3>';
                 gameState.path.forEach((page, index) => {
                     pathHtml += `<div class="path-item">
                         <div class="path-item-number">${index + 1}</div>
@@ -1424,10 +1673,191 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         });
 
         // ======================
+        // GIVE UP FUNCTIONALITY
+        // ======================
+        function giveUp() {
+            const confirmed = confirm(`Are you sure you want to give up?\n\nThis will show you the target page but won't count as a win.`);
+            
+            if (!confirmed) {
+                return;
+            }
+            
+            game.stopTimer();
+            gameState.gaveUp = true;
+            
+            const modal = document.getElementById('win-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>🏳️ Challenge Ended</h2>
+                <div class="win-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">You were trying to reach:</span>
+                        <span class="stat-value">${gameState.targetPage}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Clicks Used:</span>
+                        <span class="stat-value">${gameState.totalClicks}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Time Spent:</span>
+                        <span class="stat-value">${game.timerDisplay.textContent}</span>
+                    </div>
+                </div>
+                <div class="win-path">
+                    <h3>🗺️ Your Path So Far:</h3>
+                    ${gameState.path.map((page, index) => `
+                        <div class="path-item">
+                            <div class="path-item-number">${index + 1}</div>
+                            <div>${page}</div>
+                        </div>
+                    `).join('')}
+                    <div style="text-align: center; margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
+                        <strong>💡 Tip:</strong> Try exploring links related to broader categories or finding connections through related topics!
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn secondary" onclick="retryGame()">🔄 Try Again</button>
+                    <button class="modal-btn secondary" onclick="startNewGame()">🎮 New Challenge</button>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        // ======================
+        // SEARCH FUNCTIONALITY (Ctrl+F)
+        // ======================
+        let searchOverlay = null;
+        let searchInput = null;
+        let searchResults = null;
+
+        function initializeSearch() {
+            searchOverlay = document.getElementById('search-overlay');
+            searchInput = document.getElementById('search-input');
+            searchResults = document.getElementById('search-results');
+            
+            // Keyboard shortcut
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    e.preventDefault();
+                    openSearch();
+                }
+                
+                if (e.key === 'Escape' && searchOverlay.classList.contains('active')) {
+                    closeSearch();
+                }
+            });
+            
+            // Close on overlay click
+            searchOverlay.addEventListener('click', (e) => {
+                if (e.target === searchOverlay) {
+                    closeSearch();
+                }
+            });
+            
+            // Search input handler
+            searchInput.addEventListener('input', performSearch);
+        }
+
+        function openSearch() {
+            searchOverlay.classList.add('active');
+            searchInput.value = '';
+            searchResults.innerHTML = '';
+            searchInput.focus();
+        }
+
+        function closeSearch() {
+            searchOverlay.classList.remove('active');
+        }
+
+        function performSearch() {
+            const query = searchInput.value.toLowerCase().trim();
+            searchResults.innerHTML = '';
+            
+            if (query.length < 2) {
+                return;
+            }
+            
+            const gameArea = document.getElementById('game-area');
+            const allLinks = gameArea.querySelectorAll('a');
+            const allText = gameArea.querySelectorAll('p, li, h1, h2, h3, h4');
+            
+            let results = [];
+            
+            // Search in links
+            allLinks.forEach(link => {
+                const text = link.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    results.push({
+                        type: 'link',
+                        text: link.textContent,
+                        element: link,
+                        context: link.parentElement.textContent.substring(0, 150)
+                    });
+                }
+            });
+            
+            // Search in text content
+            allText.forEach(el => {
+                const text = el.textContent.toLowerCase();
+                if (text.includes(query) && !results.some(r => r.element === el)) {
+                    const index = text.indexOf(query);
+                    const start = Math.max(0, index - 50);
+                    const end = Math.min(text.length, index + 100);
+                    results.push({
+                        type: 'text',
+                        text: el.textContent.substring(start, end),
+                        element: el
+                    });
+                }
+            });
+            
+            // Limit results
+            results = results.slice(0, 20);
+            
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No results found</div>';
+                return;
+            }
+            
+            results.forEach(result => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'search-result-item';
+                
+                const highlightedText = result.text.replace(
+                    new RegExp(`(${query})`, 'gi'),
+                    '<strong>$1</strong>'
+                );
+                
+                resultDiv.innerHTML = `
+                    <div style="font-size: 0.9em; color: #667eea; margin-bottom: 5px;">
+                        ${result.type === 'link' ? '🔗 Link' : '📄 Text'}
+                    </div>
+                    <div>${highlightedText}...</div>
+                `;
+                
+                resultDiv.addEventListener('click', () => {
+                    result.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    closeSearch();
+                    
+                    // Highlight briefly
+                    result.element.style.backgroundColor = '#ffeb3b';
+                    setTimeout(() => {
+                        result.element.style.backgroundColor = '';
+                    }, 2000);
+                });
+                
+                searchResults.appendChild(resultDiv);
+            });
+        }
+
+        // ======================
         // INITIALIZE GAME
         // ======================
         const game = new GameController();
         game.initialize();
+        initializeSearch();
 
         function startNewGame() {
             clearUrl();
@@ -1439,8 +1869,13 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 return;
             }
             
+            // Close modal first
+            const modal = document.getElementById('win-modal');
+            modal.classList.remove('active');
+            
             const start = gameState.startPage;
             const target = gameState.targetPage;
+            const difficulty = gameState.difficulty;
             
             gameState.currentPage = start;
             gameState.clickCount = 0;
@@ -1449,6 +1884,9 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             gameState.path = [start];
             gameState.startTime = Date.now();
             gameState.elapsedTime = 0;
+            gameState.hasWon = false;
+            gameState.gaveUp = false;
+            gameState.difficulty = difficulty;
             
             updateUrl(
                 start,
