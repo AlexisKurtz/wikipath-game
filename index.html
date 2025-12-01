@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.6.7
+    Version: 3.6.8
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.6.8: Fixed notice icon position below green banner, improved starting text, removed TOC arrows for sections without children
     - v3.6.7: Made article notice icons larger (28px), standardized tooltip font size (0.9em)
     - v3.6.6: Reduced title size to 3em, moved starting page indicator before title
     - v3.6.5: Moved article notices to top-right corner, smaller icons, horizontal stacking
@@ -654,6 +655,11 @@
             transform: rotate(-90deg);
         }
 
+        .toc-section-header.no-children {
+            cursor: pointer;
+            padding-left: 0;
+        }
+
         .toc-subsections {
             list-style: none;
             margin-left: 15px;
@@ -835,7 +841,7 @@
             border: 2px solid #4caf50;
             border-radius: 8px;
             padding: 12px 16px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -1623,7 +1629,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.7</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.6.8</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2587,25 +2593,35 @@
                     const li = document.createElement('li');
                     li.className = 'toc-item';
                     
-                    // H1 header (collapsible)
+                    const hasSubsections = group.subsections.length > 0;
+                    
+                    // H1 header (collapsible only if has subsections)
                     const header = document.createElement('div');
-                    header.className = 'toc-section-header collapsed'; // Start collapsed
-                    header.innerHTML = `
-                        <span class="toc-collapse-icon">▼</span>
-                        <span>${h1Title}</span>
-                    `;
+                    header.className = hasSubsections ? 'toc-section-header collapsed' : 'toc-section-header no-children';
+                    
+                    // Only add arrow if there are subsections
+                    if (hasSubsections) {
+                        header.innerHTML = `
+                            <span class="toc-collapse-icon">▼</span>
+                            <span>${h1Title}</span>
+                        `;
+                    } else {
+                        header.innerHTML = `<span>${h1Title}</span>`;
+                    }
                     
                     // Subsections list
                     const subsectionsList = document.createElement('ul');
                     subsectionsList.className = 'toc-subsections collapsed'; // Start collapsed
                     
-                    // Add click to H1 to scroll
+                    // Add click to H1 to scroll (and toggle if has children)
                     header.addEventListener('click', (e) => {
-                        // Toggle collapse
-                        header.classList.toggle('collapsed');
-                        subsectionsList.classList.toggle('collapsed');
+                        // Toggle collapse only if has subsections
+                        if (hasSubsections) {
+                            header.classList.toggle('collapsed');
+                            subsectionsList.classList.toggle('collapsed');
+                        }
                         
-                        // Scroll to section if clicking on text (not just toggling)
+                        // Scroll to section
                         const heading = document.getElementById(group.header.anchor);
                         if (heading) {
                             heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2638,7 +2654,7 @@
                     });
                     
                     li.appendChild(header);
-                    if (group.subsections.length > 0) {
+                    if (hasSubsections) {
                         li.appendChild(subsectionsList);
                     }
                     this.tocContainer.appendChild(li);
@@ -2664,8 +2680,8 @@
                     indicator.innerHTML = `
                         <div class="icon">🚀</div>
                         <div class="text">
-                            <div class="label">Starting Page</div>
-                            <div class="description">This is where your journey begins! Navigate to "${gameState.targetPage}"</div>
+                            <div class="label">Starting Point</div>
+                            <div class="description">Your journey begins here. Find your way to "<strong>${gameState.targetPage}</strong>" by following the links.</div>
                         </div>
                     `;
                     
