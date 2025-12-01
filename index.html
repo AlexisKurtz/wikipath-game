@@ -107,6 +107,59 @@
         .stat-item.target {
             flex: 1;
             min-width: 200px;
+            position: relative;
+        }
+
+        .stat-item.target:hover {
+            cursor: pointer;
+        }
+
+        /* Target Page Hover Tooltip */
+        .target-tooltip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 10px;
+            background: white;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 300px;
+            max-width: 400px;
+            text-align: left;
+        }
+
+        .stat-item.target:hover .target-tooltip {
+            display: block;
+        }
+
+        .target-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        .target-tooltip h4 {
+            margin-bottom: 8px;
+            color: #0645ad;
+            font-size: 1em;
+        }
+
+        .target-tooltip p {
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #555;
         }
 
         .stat-label {
@@ -115,6 +168,12 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
+        }
+
+        .stat-item.target .stat-label {
+            font-size: 0.75em;
+            color: #0645ad;
+            font-weight: 700;
         }
 
         .stat-value {
@@ -129,8 +188,8 @@
         }
 
         #target-page-display {
-            font-size: 1em;
-            line-height: 1.2;
+            font-size: 1.15em;
+            line-height: 1.3;
             color: #0645ad;
             font-weight: 700;
         }
@@ -912,10 +971,14 @@
                     <div class="stat-value" id="timer">0:00</div>
                 </div>
                 <div class="stat-item target">
-                    <div class="stat-label">Target Page</div>
+                    <div class="stat-label">🎯 Target Page</div>
                     <div>
                         <span id="target-page-display">Loading...</span>
                         <span class="difficulty-badge" id="difficulty-badge"></span>
+                    </div>
+                    <div class="target-tooltip" id="target-tooltip">
+                        <h4 id="tooltip-title"></h4>
+                        <p id="tooltip-description"></p>
                     </div>
                 </div>
             </div>
@@ -1616,6 +1679,12 @@
                 const difficultyBadge = document.getElementById('difficulty-badge');
                 difficultyBadge.textContent = gameState.difficulty.toUpperCase();
                 difficultyBadge.className = `difficulty-badge difficulty-${gameState.difficulty}`;
+                
+                // Update target tooltip
+                if (gameState.targetDescription) {
+                    document.getElementById('tooltip-title').textContent = gameState.targetPage;
+                    document.getElementById('tooltip-description').textContent = gameState.targetDescription;
+                }
             }
 
             showWinScreen() {
