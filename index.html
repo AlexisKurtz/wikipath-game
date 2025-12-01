@@ -2,8 +2,16 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.0.0
+    Version: 3.2.0
     Last Updated: 2024-11-30
+    
+    Changelog:
+    - v3.2.0: Disabled New Game in Daily mode, Explore mode persistence across mode switches
+    - v3.1.0: Enhanced link visibility, hover previews, FAB menu redesign, fixed Give Up
+    - v3.0.0: Complete UI overhaul, centered target, Explore mode, compact header
+    - v2.2.0: Retry button, Give Up, Ctrl+F search, difficulty indicator
+    - v2.1.0: Daily Challenge mode with seeded random
+    - v2.0.0: Initial release with basic gameplay
 -->
 <head>
     <meta charset="UTF-8">
@@ -517,6 +525,12 @@
         .fab-menu-item.danger:hover {
             background: #ffebee;
             color: #c62828;
+        }
+
+        .fab-menu-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .fab-menu-item .emoji {
@@ -1133,7 +1147,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.0.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.2.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1212,7 +1226,7 @@
                 <span class="emoji">🏳️</span>
                 <span>Give Up</span>
             </button>
-            <button class="fab-menu-item" onclick="startNewGame();">
+            <button class="fab-menu-item" id="new-game-btn" onclick="handleNewGame();">
                 <span class="emoji">🎮</span>
                 <span>New Game</span>
             </button>
@@ -1405,9 +1419,7 @@
             targetDescription: '',
             hasWon: false,
             gaveUp: false,
-            difficulty: 'medium',
-            exploreStartPage: localStorage.getItem('wikipath_explore_start') || '',
-            exploreTargetPage: localStorage.getItem('wikipath_explore_target') || ''
+            difficulty: 'medium'
         };
 
         // ======================
@@ -1455,33 +1467,55 @@
         // MODE SWITCHING
         // ======================
         function switchToExploreMode() {
-            gameState.isDailyMode = false;
-            localStorage.setItem('wikipath_mode', 'explore');
-            updateModeUI();
-            
-            // If there's a saved explore game, load it; otherwise start new
-            if (gameState.exploreStartPage && gameState.exploreTargetPage) {
-                // Just switch mode, don't reload - game will continue
+            if (!gameState.isDailyMode) {
+                // Already in explore mode
                 return;
             }
             
-            // No saved explore game, start new one
-            clearUrl();
-            location.reload();
+            gameState.isDailyMode = false;
+            localStorage.setItem('wikipath_mode', 'explore');
+            
+            // Check if there's a saved explore game
+            const savedExploreStart = localStorage.getItem('wikipath_explore_start');
+            const savedExploreTarget = localStorage.getItem('wikipath_explore_target');
+            
+            if (savedExploreStart && savedExploreTarget) {
+                // Restore the saved explore game
+                clearUrl();
+                const params = new URLSearchParams();
+                params.set('start', savedExploreStart);
+                params.set('target', savedExploreTarget);
+                params.set('current', savedExploreStart);
+                params.set('clicks', '0');
+                params.set('totalClicks', '0');
+                params.set('visited', savedExploreStart);
+                params.set('path', savedExploreStart);
+                params.set('startTime', Date.now().toString());
+                
+                const newUrl = `${window.location.pathname}?${params.toString()}`;
+                window.location.href = newUrl;
+            } else {
+                // No saved explore game, start a new one
+                clearUrl();
+                location.reload();
+            }
         }
 
         function switchToDailyMode() {
+            if (gameState.isDailyMode) {
+                // Already in daily mode
+                return;
+            }
+            
+            // Save current explore game state if in explore mode
+            if (!gameState.isDailyMode && gameState.startPage && gameState.targetPage) {
+                localStorage.setItem('wikipath_explore_start', gameState.startPage);
+                localStorage.setItem('wikipath_explore_target', gameState.targetPage);
+            }
+            
             gameState.isDailyMode = true;
             gameState.dailyDate = getTodayDateString();
             localStorage.setItem('wikipath_mode', 'daily');
-            updateModeUI();
-            
-            // Check if we're already on today's daily challenge
-            const urlParams = getUrlParams();
-            if (urlParams.daily === getTodayDateString()) {
-                // Already on today's daily, just update UI
-                return;
-            }
             
             clearUrl();
             location.reload();
@@ -1490,14 +1524,41 @@
         function updateModeUI() {
             const exploreBtn = document.getElementById('explore-mode-btn');
             const dailyBtn = document.getElementById('daily-mode-btn');
+            const newGameBtn = document.getElementById('new-game-btn');
 
             if (gameState.isDailyMode) {
                 exploreBtn.classList.remove('active');
                 dailyBtn.classList.add('active');
+                
+                // Disable New Game in Daily mode
+                if (newGameBtn) {
+                    newGameBtn.classList.add('disabled');
+                    newGameBtn.title = 'New Game not available in Daily mode - switch to Explore mode';
+                }
             } else {
                 exploreBtn.classList.add('active');
                 dailyBtn.classList.remove('active');
+                
+                // Enable New Game in Explore mode
+                if (newGameBtn) {
+                    newGameBtn.classList.remove('disabled');
+                    newGameBtn.title = '';
+                }
             }
+        }
+
+        // Handle New Game button click
+        function handleNewGame() {
+            if (gameState.isDailyMode) {
+                alert('New Game is not available in Daily mode.\n\nSwitch to Explore mode if you want to start a new random challenge.');
+                return;
+            }
+            
+            // Clear saved explore game
+            localStorage.removeItem('wikipath_explore_start');
+            localStorage.removeItem('wikipath_explore_target');
+            
+            startNewGame();
         }
 
         // ======================
@@ -1700,9 +1761,7 @@
                 gameState.gaveUp = false;
                 gameState.difficulty = calculateChallengeDifficulty(startPage, targetPage);
                 
-                // Save explore pages to localStorage so they persist when switching modes
-                gameState.exploreStartPage = startPage;
-                gameState.exploreTargetPage = targetPage;
+                // Always save explore pages to localStorage
                 localStorage.setItem('wikipath_explore_start', startPage);
                 localStorage.setItem('wikipath_explore_target', targetPage);
 
