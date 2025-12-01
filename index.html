@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.4.2
+    Version: 3.5.0
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.5.0: Added current article title display in TOC, collapsible H1 sections in TOC
     - v3.4.2: Bug fix - Fixed class structure (moved helper functions outside class)
     - v3.4.1: Bug fix - Fixed scope issue with showHint function
     - v3.4.0: Visual polish (confetti, animations, hints), improved sharing
@@ -581,12 +582,60 @@
             color: #202122;
         }
 
+        .toc-current-page {
+            font-size: 0.85em;
+            color: #0645ad;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            border-left: 3px solid #0645ad;
+            font-weight: 600;
+        }
+
         .toc-list {
             list-style: none;
         }
 
         .toc-item {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .toc-section-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 5px 0;
+            font-weight: 600;
+            color: #202122;
+            font-size: 0.9em;
+        }
+
+        .toc-section-header:hover {
+            color: #0645ad;
+        }
+
+        .toc-collapse-icon {
+            font-size: 0.7em;
+            transition: transform 0.2s;
+        }
+
+        .toc-section-header.collapsed .toc-collapse-icon {
+            transform: rotate(-90deg);
+        }
+
+        .toc-subsections {
+            list-style: none;
+            margin-left: 15px;
+            margin-top: 4px;
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .toc-subsections.collapsed {
+            max-height: 0;
         }
 
         .toc-link {
@@ -1432,7 +1481,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.4.2</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.5.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1525,6 +1574,7 @@
     <div class="container">
         <div class="toc-container" id="toc-container">
             <div class="toc-title">Contents</div>
+            <div class="toc-current-page" id="toc-current-page">Loading...</div>
             <ul class="toc-list" id="toc-list"></ul>
         </div>
         <div class="content-area" id="game-area">
@@ -2361,6 +2411,12 @@
             }
 
             buildTableOfContents(sections) {
+                // Update current page display
+                const currentPageEl = document.getElementById('toc-current-page');
+                if (currentPageEl) {
+                    currentPageEl.textContent = `📄 ${gameState.currentPage}`;
+                }
+
                 if (!sections || sections.length === 0) {
                     this.tocContainer.innerHTML = '<li style="color: #999; font-size: 0.9em;">No sections available</li>';
                     return;
@@ -2368,19 +2424,65 @@
 
                 this.tocContainer.innerHTML = '';
                 
+                // Group sections by top-level (H1) sections
+                const sectionGroups = {};
+                let currentH1 = null;
+                
                 sections.forEach(section => {
-                    if (section.toclevel <= 2) {
-                        const li = document.createElement('li');
-                        li.className = 'toc-item';
+                    if (section.toclevel === 1) {
+                        currentH1 = section.line;
+                        sectionGroups[currentH1] = {
+                            header: section,
+                            subsections: []
+                        };
+                    } else if (section.toclevel === 2 && currentH1) {
+                        sectionGroups[currentH1].subsections.push(section);
+                    }
+                });
+                
+                // Build collapsible TOC
+                Object.entries(sectionGroups).forEach(([h1Title, group]) => {
+                    const li = document.createElement('li');
+                    li.className = 'toc-item';
+                    
+                    // H1 header (collapsible)
+                    const header = document.createElement('div');
+                    header.className = 'toc-section-header';
+                    header.innerHTML = `
+                        <span class="toc-collapse-icon">▼</span>
+                        <span>${h1Title}</span>
+                    `;
+                    
+                    // Subsections list
+                    const subsectionsList = document.createElement('ul');
+                    subsectionsList.className = 'toc-subsections';
+                    
+                    // Add click to H1 to scroll
+                    header.addEventListener('click', (e) => {
+                        // Toggle collapse
+                        header.classList.toggle('collapsed');
+                        subsectionsList.classList.toggle('collapsed');
+                        
+                        // Scroll to section if clicking on text (not just toggling)
+                        const heading = document.getElementById(group.header.anchor);
+                        if (heading) {
+                            heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    });
+                    
+                    // Add subsections
+                    group.subsections.forEach(subsection => {
+                        const subLi = document.createElement('li');
+                        subLi.className = 'toc-item';
                         
                         const link = document.createElement('a');
                         link.className = 'toc-link';
-                        link.textContent = section.line;
-                        link.style.paddingLeft = `${(section.toclevel - 1) * 15}px`;
+                        link.textContent = subsection.line;
                         
                         link.addEventListener('click', (e) => {
                             e.preventDefault();
-                            const heading = document.getElementById(section.anchor);
+                            e.stopPropagation();
+                            const heading = document.getElementById(subsection.anchor);
                             if (heading) {
                                 heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                 
@@ -2389,9 +2491,15 @@
                             }
                         });
                         
-                        li.appendChild(link);
-                        this.tocContainer.appendChild(li);
+                        subLi.appendChild(link);
+                        subsectionsList.appendChild(subLi);
+                    });
+                    
+                    li.appendChild(header);
+                    if (group.subsections.length > 0) {
+                        li.appendChild(subsectionsList);
                     }
+                    this.tocContainer.appendChild(li);
                 });
             }
 
