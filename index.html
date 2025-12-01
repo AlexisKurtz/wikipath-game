@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.3.0
+    Version: 3.4.0
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.4.0: Visual polish (confetti, animations, hints), improved sharing
     - v3.3.0: Statistics Dashboard with tracking, personal bests, daily streak, recent games
     - v3.2.0: Disabled New Game in Daily mode, Explore mode persistence across mode switches
     - v3.1.0: Enhanced link visibility, hover previews, FAB menu redesign, fixed Give Up
@@ -745,10 +746,109 @@
         }
 
         .loading::before {
-            content: '⏳';
-            font-size: 2em;
+            content: '';
             display: block;
-            margin-bottom: 15px;
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0645ad;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Page Transition Animation */
+        .wikipedia-article {
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Click Animation Feedback */
+        @keyframes clickPulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.95);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .click-feedback {
+            animation: clickPulse 0.2s ease;
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #0645ad;
+            position: absolute;
+            animation: confettiFall 3s linear forwards;
+            z-index: 9999;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Success celebration animation */
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .celebrating {
+            animation: celebrate 0.5s ease-in-out;
+        }
+
+        /* Ripple effect for button clicks */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            animation: rippleEffect 0.6s ease-out;
+        }
+
+        @keyframes rippleEffect {
+            to {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
         }
 
         .error {
@@ -1170,6 +1270,62 @@
             margin-top: 15px;
         }
 
+        /* Hint System */
+        .hint-badge {
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            background: white;
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 12px 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 140;
+            display: none;
+            animation: slideInLeft 0.3s ease;
+        }
+
+        .hint-badge.active {
+            display: block;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hint-badge.warmer {
+            border-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .hint-badge.colder {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .hint-badge.hot {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .hint-text {
+            font-weight: 600;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .hint-icon {
+            font-size: 1.2em;
+            margin-right: 6px;
+        }
+
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .header-top {
@@ -1274,7 +1430,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.3.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.4.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1473,6 +1629,12 @@
     <div class="link-preview" id="link-preview">
         <div class="link-preview-title" id="preview-title"></div>
         <div class="link-preview-text" id="preview-text"></div>
+    </div>
+
+    <!-- Hint Badge -->
+    <div class="hint-badge" id="hint-badge">
+        <span class="hint-icon" id="hint-icon">🔥</span>
+        <span class="hint-text" id="hint-text">Getting warmer!</span>
     </div>
 
     <script>
@@ -2264,6 +2426,9 @@
                         link.addEventListener('click', async (e) => {
                             e.preventDefault();
                             
+                            // Add click feedback animation
+                            addClickFeedback(link);
+                            
                             // Hide preview on click
                             const preview = document.getElementById('link-preview');
                             preview.classList.remove('active');
@@ -2302,6 +2467,9 @@
                 gameState.currentPage = pageTitle;
                 gameState.path.push(pageTitle);
                 
+                // Show hint (warmer/colder)
+                showHint(pageTitle);
+                
                 updateUrl(
                     gameState.startPage,
                     gameState.targetPage,
@@ -2327,6 +2495,47 @@
                 await this.loadPage(pageTitle);
             }
 
+        // Show hint based on progress
+        function showHint(currentPage) {
+            const hint Badge = document.getElementById('hint-badge');
+            const hintIcon = document.getElementById('hint-icon');
+            const hintText = document.getElementById('hint-text');
+            
+            // Simple heuristic: check if page title shares words with target
+            const currentWords = currentPage.toLowerCase().split(/[\s_\-()]+/);
+            const targetWords = gameState.targetPage.toLowerCase().split(/[\s_\-()]+/);
+            
+            const commonWords = currentWords.filter(word => 
+                word.length > 3 && targetWords.includes(word)
+            ).length;
+            
+            // Remove previous classes
+            hintBadge.className = 'hint-badge active';
+            
+            if (commonWords >= 2) {
+                hintBadge.classList.add('hot');
+                hintIcon.textContent = '🔥';
+                hintText.textContent = "You're very close!";
+            } else if (commonWords === 1) {
+                hintBadge.classList.add('warmer');
+                hintIcon.textContent = '🌡️';
+                hintText.textContent = 'Getting warmer!';
+            } else if (gameState.path.length > 5) {
+                hintBadge.classList.add('colder');
+                hintIcon.textContent = '❄️';
+                hintText.textContent = 'Try a different direction';
+            } else {
+                hintBadge.classList.add('warmer');
+                hintIcon.textContent = '🧭';
+                hintText.textContent = 'Keep exploring!';
+            }
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                hintBadge.classList.remove('active');
+            }, 3000);
+        }
+
             updateDisplay() {
                 this.clickCounter.textContent = gameState.totalClicks;
                 this.targetPageDisplay.textContent = gameState.targetPage;
@@ -2346,6 +2555,9 @@
             showWinScreen() {
                 this.stopTimer();
                 gameState.hasWon = true;
+                
+                // Trigger confetti celebration
+                createConfetti();
                 
                 // Calculate time in seconds
                 const timeInSeconds = Math.floor((Date.now() - gameState.startTime) / 1000);
@@ -2400,6 +2612,32 @@
                 modal.classList.add('active');
             }
 
+        // Create confetti celebration
+        function createConfetti() {
+            const colors = ['#0645ad', '#7c3aed', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
+            const confettiCount = 50;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 30);
+            }
+        }
+
+        // Add click feedback animation
+        function addClickFeedback(element) {
+            element.classList.add('click-feedback');
+            setTimeout(() => element.classList.remove('click-feedback'), 200);
+        }
+
             showError(message) {
                 this.gameArea.innerHTML = `<div class="error">${message}</div>`;
             }
@@ -2420,16 +2658,24 @@
                 modeText = `🧭 Explore Mode\n`;
             }
             
-            return `${emoji} WikiPath ${emoji}
+            // Create visual path representation
+            const pathVisual = gameState.path.map((page, i) => {
+                if (i === 0) return `🎯 ${page}`;
+                if (i === gameState.path.length - 1) return `✅ ${page}`;
+                return `  → ${page}`;
+            }).join('\n');
+            
+            return `${emoji} WikiPath Challenge ${emoji}
 ${modeText}
-From: ${gameState.startPage}
-To: ${gameState.targetPage}
+${gameState.startPage} ➜ ${gameState.targetPage}
 
+📊 Results:
 ✓ Clicks: ${gameState.totalClicks}
-⏱️ Time: ${game.timerDisplay.textContent}
+⏱️ Time: ${document.getElementById('timer').textContent}
 📄 Pages: ${gameState.path.length}
 
-Path: ${gameState.path.join(' → ')}
+🗺️ My Path:
+${pathVisual}
 
 Play at: ${window.location.origin}${window.location.pathname}`;
         }
@@ -2454,7 +2700,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             const shareText = generateShareText();
             
             navigator.clipboard.writeText(shareText).then(() => {
-                showNotification();
+                showNotification('Copied to clipboard!');
             }).catch(err => {
                 console.error('Failed to copy:', err);
                 // Fallback for older browsers
@@ -2466,7 +2712,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 textArea.select();
                 try {
                     document.execCommand('copy');
-                    showNotification();
+                    showNotification('Copied to clipboard!');
                 } catch (err) {
                     console.error('Fallback copy failed:', err);
                 }
@@ -2474,8 +2720,9 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             });
         }
 
-        function showNotification() {
+        function showNotification(message = '✓ Copied to clipboard!') {
             const notification = document.getElementById('share-notification');
+            notification.textContent = message;
             notification.classList.add('show');
             
             setTimeout(() => {
