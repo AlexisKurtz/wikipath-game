@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.4.1
+    Version: 3.4.2
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.4.2: Bug fix - Fixed class structure (moved helper functions outside class)
     - v3.4.1: Bug fix - Fixed scope issue with showHint function
     - v3.4.0: Visual polish (confetti, animations, hints), improved sharing
     - v3.3.0: Statistics Dashboard with tracking, personal bests, daily streak, recent games
@@ -1431,7 +1432,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.4.1</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.4.2</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2617,6 +2618,15 @@
                 modal.classList.add('active');
             }
 
+            showError(message) {
+                this.gameArea.innerHTML = `<div class="error">${message}</div>`;
+            }
+        }
+
+        // ======================
+        // VISUAL EFFECTS
+        // ======================
+        
         // Create confetti celebration
         function createConfetti() {
             const colors = ['#0645ad', '#7c3aed', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
@@ -2641,11 +2651,6 @@
         function addClickFeedback(element) {
             element.classList.add('click-feedback');
             setTimeout(() => element.classList.remove('click-feedback'), 200);
-        }
-
-            showError(message) {
-                this.gameArea.innerHTML = `<div class="error">${message}</div>`;
-            }
         }
 
         // ======================
