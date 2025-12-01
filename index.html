@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.5.0
+    Version: 3.5.1
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.5.1: Fixed preview tooltip positioning, removed disclaimer boxes, removed redirect hatnotes
     - v3.5.0: Added current article title display in TOC, collapsible H1 sections in TOC
     - v3.4.2: Bug fix - Fixed class structure (moved helper functions outside class)
     - v3.4.1: Bug fix - Fixed scope issue with showHint function
@@ -789,6 +790,53 @@
             height: auto;
         }
 
+        /* Hide full disclaimer boxes, show compact version */
+        .wikipedia-article .ambox,
+        .wikipedia-article .hatnote,
+        .wikipedia-article .dablink {
+            display: none !important;
+        }
+
+        /* Compact notice icons */
+        .article-notice {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 600;
+            cursor: help;
+            position: relative;
+        }
+
+        .article-notice.verification {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+
+        .article-notice.cleanup {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .article-notice:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 5px;
+            padding: 8px 12px;
+            background: #333;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
         .loading {
             text-align: center;
             padding: 60px 40px;
@@ -1481,7 +1529,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.5.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.5.1</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2508,6 +2556,23 @@
                 articleDiv.className = 'wikipedia-article';
                 articleDiv.innerHTML = pageData.text['*'];
 
+                // Remove unwanted elements
+                // Remove "This article needs additional citations" and similar boxes
+                articleDiv.querySelectorAll('.ambox, .hatnote, .dablink, .rellink').forEach(el => el.remove());
+                
+                // Remove "For other uses" and redirect messages
+                articleDiv.querySelectorAll('.hatnote, [class*="hatnote"]').forEach(el => el.remove());
+                
+                // Check if article has issues and add compact notice
+                const h1 = articleDiv.querySelector('h1');
+                if (h1 && pageData.text['*'].includes('citation')) {
+                    const notice = document.createElement('span');
+                    notice.className = 'article-notice verification';
+                    notice.textContent = '⚠️';
+                    notice.setAttribute('data-tooltip', 'This article may need additional verification');
+                    h1.appendChild(notice);
+                }
+
                 this.gameArea.innerHTML = '';
                 this.gameArea.appendChild(articleDiv);
 
@@ -2546,11 +2611,6 @@
                                 const previewTitle = document.getElementById('preview-title');
                                 const previewText = document.getElementById('preview-text');
                                 
-                                // Position preview near cursor
-                                const rect = link.getBoundingClientRect();
-                                preview.style.left = Math.min(e.clientX + 15, window.innerWidth - 370) + 'px';
-                                preview.style.top = (rect.bottom + 10) + 'px';
-                                
                                 previewTitle.textContent = pageTitle;
                                 previewText.innerHTML = '<span class="link-preview-loading">Loading preview...</span>';
                                 preview.classList.add('active');
@@ -2570,6 +2630,27 @@
                                     previewText.textContent = previewCache[pageTitle].substring(0, 200) + '...';
                                 }
                             }, 500); // Delay before showing preview
+                        });
+                        
+                        // Track mouse movement to position preview
+                        link.addEventListener('mousemove', (e) => {
+                            const preview = document.getElementById('link-preview');
+                            if (preview.classList.contains('active')) {
+                                // Position near mouse, keeping it on screen
+                                let left = e.clientX + 15;
+                                let top = e.clientY + 15;
+                                
+                                // Adjust if would go off screen
+                                if (left + 350 > window.innerWidth) {
+                                    left = e.clientX - 365;
+                                }
+                                if (top + preview.offsetHeight > window.innerHeight) {
+                                    top = e.clientY - preview.offsetHeight - 15;
+                                }
+                                
+                                preview.style.left = left + 'px';
+                                preview.style.top = top + 'px';
+                            }
                         });
                         
                         link.addEventListener('mouseleave', () => {
