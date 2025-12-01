@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.4.0
+    Version: 3.4.1
     Last Updated: 2024-11-30
     
     Changelog:
+    - v3.4.1: Bug fix - Fixed scope issue with showHint function
     - v3.4.0: Visual polish (confetti, animations, hints), improved sharing
     - v3.3.0: Statistics Dashboard with tracking, personal bests, daily streak, recent games
     - v3.2.0: Disabled New Game in Daily mode, Explore mode persistence across mode switches
@@ -1430,7 +1431,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.4.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.4.1</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2119,6 +2120,51 @@
         }
 
         // ======================
+        // HINT SYSTEM
+        // ======================
+        function showHint(currentPage) {
+            const hintBadge = document.getElementById('hint-badge');
+            const hintIcon = document.getElementById('hint-icon');
+            const hintText = document.getElementById('hint-text');
+            
+            if (!hintBadge || !gameState.targetPage) return;
+            
+            // Simple heuristic: check if page title shares words with target
+            const currentWords = currentPage.toLowerCase().split(/[\s_\-()]+/);
+            const targetWords = gameState.targetPage.toLowerCase().split(/[\s_\-()]+/);
+            
+            const commonWords = currentWords.filter(word => 
+                word.length > 3 && targetWords.includes(word)
+            ).length;
+            
+            // Remove previous classes
+            hintBadge.className = 'hint-badge active';
+            
+            if (commonWords >= 2) {
+                hintBadge.classList.add('hot');
+                hintIcon.textContent = '🔥';
+                hintText.textContent = "You're very close!";
+            } else if (commonWords === 1) {
+                hintBadge.classList.add('warmer');
+                hintIcon.textContent = '🌡️';
+                hintText.textContent = 'Getting warmer!';
+            } else if (gameState.path.length > 5) {
+                hintBadge.classList.add('colder');
+                hintIcon.textContent = '❄️';
+                hintText.textContent = 'Try a different direction';
+            } else {
+                hintBadge.classList.add('warmer');
+                hintIcon.textContent = '🧭';
+                hintText.textContent = 'Keep exploring!';
+            }
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                hintBadge.classList.remove('active');
+            }, 3000);
+        }
+
+        // ======================
         // GAME CONTROLLER
         // ======================
         class GameController {
@@ -2494,47 +2540,6 @@
 
                 await this.loadPage(pageTitle);
             }
-
-        // Show hint based on progress
-        function showHint(currentPage) {
-            const hintBadge = document.getElementById('hint-badge');
-            const hintIcon = document.getElementById('hint-icon');
-            const hintText = document.getElementById('hint-text');
-            
-            // Simple heuristic: check if page title shares words with target
-            const currentWords = currentPage.toLowerCase().split(/[\s_\-()]+/);
-            const targetWords = gameState.targetPage.toLowerCase().split(/[\s_\-()]+/);
-            
-            const commonWords = currentWords.filter(word => 
-                word.length > 3 && targetWords.includes(word)
-            ).length;
-            
-            // Remove previous classes
-            hintBadge.className = 'hint-badge active';
-            
-            if (commonWords >= 2) {
-                hintBadge.classList.add('hot');
-                hintIcon.textContent = '🔥';
-                hintText.textContent = "You're very close!";
-            } else if (commonWords === 1) {
-                hintBadge.classList.add('warmer');
-                hintIcon.textContent = '🌡️';
-                hintText.textContent = 'Getting warmer!';
-            } else if (gameState.path.length > 5) {
-                hintBadge.classList.add('colder');
-                hintIcon.textContent = '❄️';
-                hintText.textContent = 'Try a different direction';
-            } else {
-                hintBadge.classList.add('warmer');
-                hintIcon.textContent = '🧭';
-                hintText.textContent = 'Keep exploring!';
-            }
-            
-            // Auto-hide after 3 seconds
-            setTimeout(() => {
-                hintBadge.classList.remove('active');
-            }, 3000);
-        }
 
             updateDisplay() {
                 this.clickCounter.textContent = gameState.totalClicks;
