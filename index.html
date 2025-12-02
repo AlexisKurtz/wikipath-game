@@ -2,40 +2,13 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.8.4
-    Last Updated: 2024-12-01
+    Version: 3.9.0
+    Last Updated: 2024-12-02
     
     Changelog:
-    - v3.8.4: Fixed redirect bug - now detects win when clicking redirect links (e.g., Cleopatra VII → Cleopatra)
-    - v3.8.3: Positioned infobox to the right (Wikipedia-style), removed edit buttons
-    - v3.8.2: Fixed image loading - now fixes URLs in HTML before DOM insertion
-    - v3.8.1: Fixed broken images, added Wikipedia autocomplete, added Fill Random for page preview
-    - v3.8.0: Debug Mode Lite - Custom game setup, page preview, feature flag
-    - v3.7.0: Added keyboard shortcuts for New Game - 'N' or Ctrl+N (Explore mode only)
-    - v3.6.9: Fixed notice icon positioning (now with H1, not in green banner), more specific verification detection
-    - v3.6.8: Fixed notice icon position below green banner, improved starting text, removed TOC arrows for sections without children
-    - v3.6.7: Made article notice icons larger (28px), standardized tooltip font size (0.9em)
-    - v3.6.6: Reduced title size to 3em, moved starting page indicator before title
-    - v3.6.5: Moved article notices to top-right corner, smaller icons, horizontal stacking
-    - v3.6.4: Replaced TOC buttons with smaller +/- symbols (expand/collapse all)
-    - v3.6.3: Fixed missing article titles - now always displays page title at top
-    - v3.6.2: Increased article title size to 3.5em (much bigger and more prominent)
-    - v3.6.1: Removed article title from TOC (now only shown in main article)
-    - v3.6.0: Added starting page indicator, TOC collapsed by default, collapse/expand all buttons
-    - v3.5.3: Fixed redirect pages, made article title bigger (2.8em like Wikipedia)
-    - v3.5.2: Fixed FAB menu click interaction, improved menu item clickability
-    - v3.5.1: Fixed preview tooltip positioning, removed disclaimer boxes, removed redirect hatnotes
-    - v3.5.0: Added current article title display in TOC, collapsible H1 sections in TOC
-    - v3.4.2: Bug fix - Fixed class structure (moved helper functions outside class)
-    - v3.4.1: Bug fix - Fixed scope issue with showHint function
-    - v3.4.0: Visual polish (confetti, animations, hints), improved sharing
-    - v3.3.0: Statistics Dashboard with tracking, personal bests, daily streak, recent games
-    - v3.2.0: Disabled New Game in Daily mode, Explore mode persistence across mode switches
-    - v3.1.0: Enhanced link visibility, hover previews, FAB menu redesign, fixed Give Up
-    - v3.0.0: Complete UI overhaul, centered target, Explore mode, compact header
-    - v2.2.0: Retry button, Give Up, Ctrl+F search, difficulty indicator
-    - v2.1.0: Daily Challenge mode with seeded random
-    - v2.0.0: Initial release with basic gameplay
+    - v3.9.0: Added minimum clicks solver, hints, and optimal path comparison
+    - v3.8.4: Fixed redirect bug - now detects win when clicking redirect links
+    [previous changelog entries...]
 -->
 <head>
     <meta charset="UTF-8">
@@ -123,6 +96,16 @@
             font-size: 1em;
             font-weight: 700;
             color: #0645ad;
+        }
+
+        /* NEW: Minimum clicks styling */
+        .stat-value-compact.minimum {
+            color: #28a745;
+        }
+
+        .stat-value-compact.loading {
+            color: #999;
+            font-size: 0.8em;
         }
 
         /* Center - Target Page (Prominent) */
@@ -1529,6 +1512,16 @@
             flex-shrink: 0;
         }
 
+        /* NEW: Optimal path styling */
+        .path-item.optimal {
+            border-left-color: #28a745;
+            background: #e8f5e9;
+        }
+
+        .path-item.optimal .path-item-number {
+            background: #28a745;
+        }
+
         .performance-rating {
             background: #f0f0f0;
             padding: 20px;
@@ -1562,6 +1555,27 @@
             background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
             color: white;
             border-color: #4a148c;
+        }
+
+        /* NEW: Path comparison styling */
+        .path-comparison {
+            margin: 25px 0;
+        }
+
+        .path-comparison-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .efficiency-badge {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 700;
         }
 
         .modal-buttons {
@@ -1834,17 +1848,6 @@
                 font-size: 1.1em;
             }
         }
-                font-size: 1.1em;
-            }
-
-            .stat-value {
-                font-size: 0.95em;
-            }
-
-            .stat-label {
-                font-size: 0.65em;
-            }
-        }
     </style>
 </head>
 <body>
@@ -1854,12 +1857,17 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.8.4</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
                         <div class="stat-label-compact">Clicks</div>
                         <div class="stat-value-compact" id="click-counter">0</div>
+                    </div>
+                    <!-- NEW: Minimum clicks display -->
+                    <div class="stat-item-compact">
+                        <div class="stat-label-compact">Minimum</div>
+                        <div class="stat-value-compact minimum" id="min-clicks-display">-</div>
                     </div>
                     <div class="stat-item-compact">
                         <div class="stat-label-compact">Time</div>
@@ -1957,6 +1965,11 @@
             <button class="fab-menu-item" onclick="togglePathPanel(); closeFabMenu();">
                 <span class="emoji">🗺️</span>
                 <span>View Path</span>
+            </button>
+            <!-- NEW: Hint button now functional -->
+            <button class="fab-menu-item" id="hint-btn" onclick="showSolverHint(); closeFabMenu();">
+                <span class="emoji">💡</span>
+                <span>Get Hint</span>
             </button>
             <button class="fab-menu-item" onclick="openSearch(); closeFabMenu();">
                 <span class="emoji">🔍</span>
@@ -2104,25 +2117,312 @@
 
     <script>
         // ======================
+        // WIKIPEDIA PATH SOLVER
+        // ======================
+
+        class WikipathSolverBrowser {
+            constructor() {
+                this.cache = new Map();
+                this.apiDelay = 150;
+            }
+
+            async getOutgoingLinks(pageTitle) {
+                const cacheKey = `out:${pageTitle}`;
+                if (this.cache.has(cacheKey)) {
+                    return this.cache.get(cacheKey);
+                }
+
+                try {
+                    const url = `https://en.wikipedia.org/w/api.php?` +
+                        `action=query&titles=${encodeURIComponent(pageTitle)}` +
+                        `&prop=links&pllimit=max&format=json&origin=*&plnamespace=0`;
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    const pages = data.query?.pages || {};
+                    const pageId = Object.keys(pages)[0];
+
+                    if (pageId === '-1') return [];
+
+                    const links = pages[pageId]?.links || [];
+                    const linkTitles = links.map(link => link.title);
+
+                    this.cache.set(cacheKey, linkTitles);
+                    await this.delay(this.apiDelay);
+
+                    return linkTitles;
+                } catch (error) {
+                    console.error(`Error fetching links:`, error);
+                    return [];
+                }
+            }
+
+            async getIncomingLinks(pageTitle) {
+                const cacheKey = `in:${pageTitle}`;
+                if (this.cache.has(cacheKey)) {
+                    return this.cache.get(cacheKey);
+                }
+
+                try {
+                    const url = `https://en.wikipedia.org/w/api.php?` +
+                        `action=query&titles=${encodeURIComponent(pageTitle)}` +
+                        `&prop=linkshere&lhlimit=max&format=json&origin=*&lhnamespace=0`;
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    const pages = data.query?.pages || {};
+                    const pageId = Object.keys(pages)[0];
+
+                    if (pageId === '-1') return [];
+
+                    const linkshere = pages[pageId]?.linkshere || [];
+                    const linkTitles = linkshere.map(link => link.title);
+
+                    this.cache.set(cacheKey, linkTitles);
+                    await this.delay(this.apiDelay);
+
+                    return linkTitles;
+                } catch (error) {
+                    console.error(`Error fetching incoming links:`, error);
+                    return [];
+                }
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            normalizeTitle(title) {
+                title = title.trim().replace(/_/g, ' ');
+                return title.charAt(0).toUpperCase() + title.slice(1);
+            }
+
+            async findShortestPath(startPage, targetPage, maxDepth = 5) {
+                console.log(`Finding path from "${startPage}" to "${targetPage}"...`);
+                
+                startPage = this.normalizeTitle(startPage);
+                targetPage = this.normalizeTitle(targetPage);
+
+                if (startPage === targetPage) {
+                    return { found: true, path: [startPage], length: 0, pagesExplored: 0 };
+                }
+
+                const forwardQueue = [[startPage]];
+                const forwardVisited = new Map([[startPage, [startPage]]]);
+                const backwardQueue = [[targetPage]];
+                const backwardVisited = new Map([[targetPage, [targetPage]]]);
+
+                let depth = 0;
+                let pagesExplored = 0;
+
+                while (forwardQueue.length > 0 || backwardQueue.length > 0) {
+                    if (depth > maxDepth) {
+                        return {
+                            found: false,
+                            path: null,
+                            length: null,
+                            pagesExplored,
+                            message: `No path found within ${maxDepth} degrees`
+                        };
+                    }
+
+                    // Forward search
+                    if (forwardQueue.length > 0) {
+                        const forwardSize = forwardQueue.length;
+                        for (let i = 0; i < forwardSize; i++) {
+                            const currentPath = forwardQueue.shift();
+                            const currentPage = currentPath[currentPath.length - 1];
+
+                            if (backwardVisited.has(currentPage)) {
+                                const backwardPath = backwardVisited.get(currentPage);
+                                const completePath = [...currentPath, ...backwardPath.slice(1).reverse()];
+                                return {
+                                    found: true,
+                                    path: completePath,
+                                    length: completePath.length - 1,
+                                    pagesExplored
+                                };
+                            }
+
+                            const links = await this.getOutgoingLinks(currentPage);
+                            pagesExplored++;
+
+                            for (const link of links) {
+                                if (!forwardVisited.has(link)) {
+                                    const newPath = [...currentPath, link];
+                                    forwardVisited.set(link, newPath);
+                                    forwardQueue.push(newPath);
+
+                                    if (backwardVisited.has(link)) {
+                                        const backwardPath = backwardVisited.get(link);
+                                        const completePath = [...newPath, ...backwardPath.slice(1).reverse()];
+                                        return {
+                                            found: true,
+                                            path: completePath,
+                                            length: completePath.length - 1,
+                                            pagesExplored
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Backward search
+                    if (backwardQueue.length > 0) {
+                        const backwardSize = backwardQueue.length;
+                        for (let i = 0; i < backwardSize; i++) {
+                            const currentPath = backwardQueue.shift();
+                            const currentPage = currentPath[currentPath.length - 1];
+
+                            if (forwardVisited.has(currentPage)) {
+                                const forwardPath = forwardVisited.get(currentPage);
+                                const completePath = [...forwardPath, ...currentPath.slice(1).reverse()];
+                                return {
+                                    found: true,
+                                    path: completePath,
+                                    length: completePath.length - 1,
+                                    pagesExplored
+                                };
+                            }
+
+                            const links = await this.getIncomingLinks(currentPage);
+                            pagesExplored++;
+
+                            for (const link of links) {
+                                if (!backwardVisited.has(link)) {
+                                    const newPath = [...currentPath, link];
+                                    backwardVisited.set(link, newPath);
+                                    backwardQueue.push(newPath);
+
+                                    if (forwardVisited.has(link)) {
+                                        const forwardPath = forwardVisited.get(link);
+                                        const completePath = [...forwardPath, ...newPath.slice(1).reverse()];
+                                        return {
+                                            found: true,
+                                            path: completePath,
+                                            length: completePath.length - 1,
+                                            pagesExplored
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    depth++;
+                }
+
+                return { found: false, path: null, length: null, pagesExplored };
+            }
+
+            async getBestNextLink(currentPage, targetPage) {
+                const result = await this.findShortestPath(currentPage, targetPage, 4);
+
+                if (!result.found || !result.path || result.path.length < 2) {
+                    return { success: false, message: 'Could not find optimal path' };
+                }
+
+                return {
+                    success: true,
+                    bestLink: result.path[1],
+                    optimalPath: result.path,
+                    optimalLength: result.length,
+                    hint: `Try clicking: "${result.path[1]}"`
+                };
+            }
+        }
+
+        // Create global instance
+        const wikipathSolver = new WikipathSolverBrowser();
+        console.log('✓ Wikipedia Path Solver ready!');
+
+        // Store optimal path globally
+        let optimalPathData = null;
+
+        // Show hint using the solver
+        async function showSolverHint() {
+            if (!gameState.currentPage || !gameState.targetPage || gameState.hasWon) {
+                showNotification('Hint not available right now');
+                return;
+            }
+
+            const minClicksDisplay = document.getElementById('min-clicks-display');
+            const originalText = minClicksDisplay.textContent;
+            minClicksDisplay.textContent = '...';
+            minClicksDisplay.classList.add('loading');
+
+            try {
+                const hint = await wikipathSolver.getBestNextLink(
+                    gameState.currentPage,
+                    gameState.targetPage
+                );
+
+                if (hint.success) {
+                    showNotification(`💡 Hint: Look for "${hint.bestLink}"`);
+                    console.log('Optimal path:', hint.optimalPath.join(' → '));
+                } else {
+                    showNotification('Could not generate hint');
+                }
+            } catch (error) {
+                console.error('Hint error:', error);
+                showNotification('Error generating hint');
+            } finally {
+                minClicksDisplay.textContent = originalText;
+                minClicksDisplay.classList.remove('loading');
+            }
+        }
+
+        // Calculate minimum clicks when game starts
+        async function calculateMinimumClicks(startPage, targetPage) {
+            const minClicksDisplay = document.getElementById('min-clicks-display');
+            minClicksDisplay.textContent = '...';
+            minClicksDisplay.classList.add('loading');
+
+            try {
+                console.log('Calculating minimum clicks...');
+                const result = await wikipathSolver.findShortestPath(startPage, targetPage, 5);
+                
+                if (result.found) {
+                    optimalPathData = result;
+                    minClicksDisplay.textContent = result.length;
+                    minClicksDisplay.classList.remove('loading');
+                    console.log(`✓ Minimum: ${result.length} clicks`);
+                    console.log(`✓ Path: ${result.path.join(' → ')}`);
+                } else {
+                    optimalPathData = null;
+                    minClicksDisplay.textContent = '?';
+                    minClicksDisplay.classList.remove('loading');
+                    console.log('Could not find path within 5 degrees');
+                }
+            } catch (error) {
+                console.error('Error calculating minimum clicks:', error);
+                optimalPathData = null;
+                minClicksDisplay.textContent = '?';
+                minClicksDisplay.classList.remove('loading');
+            }
+        }
+
+        // ======================
         // CONFIGURATION
         // ======================
         
         // Feature Flags
-        const SHOW_DEBUG_MODE = true; // Set to false for production
+        const SHOW_DEBUG_MODE = true;
         
         // Initialize debug mode visibility
         if (SHOW_DEBUG_MODE) {
             document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('debug-toggle').style.display = 'inline-block';
                 
-                // Restore debug panel state from localStorage
                 const debugMode = localStorage.getItem('wikipath_debug_mode') === 'true';
                 if (debugMode) {
                     document.getElementById('debug-toggle').classList.add('active');
                     document.getElementById('debug-panel').classList.add('active');
                 }
                 
-                // Setup autocomplete for debug inputs
                 setupAutocomplete('debug-start-page', 'autocomplete-start');
                 setupAutocomplete('debug-target-page', 'autocomplete-target');
                 setupAutocomplete('debug-preview-page', 'autocomplete-preview');
@@ -2133,30 +2433,25 @@
         // DAILY CHALLENGE SYSTEM
         // ======================
         
-        // Get today's date in YYYY-MM-DD format
         function getTodayDateString() {
             const today = new Date();
             return today.toISOString().split('T')[0];
         }
 
-        // Simple seeded random number generator
         function seededRandom(seed) {
             let x = Math.sin(seed++) * 10000;
             return x - Math.floor(x);
         }
 
-        // Convert date string to seed number
         function dateToSeed(dateString) {
             return dateString.split('-').map(Number).reduce((acc, val) => acc * 100 + val, 0);
         }
 
-        // Get seeded random index from array
         function getSeededRandomIndex(array, seed, offset = 0) {
             const adjustedSeed = seed + offset;
             return Math.floor(seededRandom(adjustedSeed) * array.length);
         }
 
-        // Popular Wikipedia pages pool with difficulty ratings
         const POPULAR_PAGES = {
             easy: [
                 "United States", "World War II", "Python (programming language)",
@@ -2200,7 +2495,6 @@
             ]
         };
 
-        // Flatten for random selection
         const ALL_PAGES = [
             ...POPULAR_PAGES.easy,
             ...POPULAR_PAGES.medium,
@@ -2208,7 +2502,6 @@
             ...POPULAR_PAGES.expert
         ];
 
-        // Get difficulty of a page
         function getPageDifficulty(pageName) {
             for (const [difficulty, pages] of Object.entries(POPULAR_PAGES)) {
                 if (pages.includes(pageName)) {
@@ -2218,7 +2511,6 @@
             return 'medium';
         }
 
-        // Calculate overall challenge difficulty
         function calculateChallengeDifficulty(startPage, targetPage) {
             const startDiff = getPageDifficulty(startPage);
             const targetDiff = getPageDifficulty(targetPage);
@@ -2251,7 +2543,7 @@
             averageTime: 0,
             dailyStreak: 0,
             lastDailyDate: null,
-            recentGames: [], // Last 10 games
+            recentGames: [],
             
             load() {
                 const saved = localStorage.getItem('wikipath_stats');
@@ -2283,17 +2575,14 @@
                 if (won) {
                     this.totalWins++;
                     
-                    // Update best clicks
                     if (this.bestClicks === null || clicks < this.bestClicks) {
                         this.bestClicks = clicks;
                     }
                     
-                    // Update best time
                     if (this.bestTime === null || timeInSeconds < this.bestTime) {
                         this.bestTime = timeInSeconds;
                     }
                     
-                    // Update daily streak
                     if (mode === 'daily') {
                         const today = getTodayDateString();
                         if (this.lastDailyDate) {
@@ -2317,7 +2606,6 @@
                     this.totalGiveUps++;
                 }
                 
-                // Calculate averages
                 if (won) {
                     const totalClicksSum = this.averageClicks * (this.totalWins - 1) + clicks;
                     this.averageClicks = Math.round(totalClicksSum / this.totalWins * 10) / 10;
@@ -2326,7 +2614,6 @@
                     this.averageTime = Math.round(totalTimeSum / this.totalWins);
                 }
                 
-                // Add to recent games
                 this.recentGames.unshift({
                     date: new Date().toISOString(),
                     won,
@@ -2337,7 +2624,6 @@
                     gaveUp
                 });
                 
-                // Keep only last 10 games
                 if (this.recentGames.length > 10) {
                     this.recentGames = this.recentGames.slice(0, 10);
                 }
@@ -2364,7 +2650,6 @@
             }
         };
 
-        // Load stats on page load
         stats.load();
 
         // ======================
@@ -2434,20 +2719,15 @@
         // MODE SWITCHING
         // ======================
         function switchToExploreMode() {
-            if (!gameState.isDailyMode) {
-                // Already in explore mode
-                return;
-            }
+            if (!gameState.isDailyMode) return;
             
             gameState.isDailyMode = false;
             localStorage.setItem('wikipath_mode', 'explore');
             
-            // Check if there's a saved explore game
             const savedExploreStart = localStorage.getItem('wikipath_explore_start');
             const savedExploreTarget = localStorage.getItem('wikipath_explore_target');
             
             if (savedExploreStart && savedExploreTarget) {
-                // Restore the saved explore game
                 clearUrl();
                 const params = new URLSearchParams();
                 params.set('start', savedExploreStart);
@@ -2462,19 +2742,14 @@
                 const newUrl = `${window.location.pathname}?${params.toString()}`;
                 window.location.href = newUrl;
             } else {
-                // No saved explore game, start a new one
                 clearUrl();
                 location.reload();
             }
         }
 
         function switchToDailyMode() {
-            if (gameState.isDailyMode) {
-                // Already in daily mode
-                return;
-            }
+            if (gameState.isDailyMode) return;
             
-            // Save current explore game state if in explore mode
             if (!gameState.isDailyMode && gameState.startPage && gameState.targetPage) {
                 localStorage.setItem('wikipath_explore_start', gameState.startPage);
                 localStorage.setItem('wikipath_explore_target', gameState.targetPage);
@@ -2497,7 +2772,6 @@
                 exploreBtn.classList.remove('active');
                 dailyBtn.classList.add('active');
                 
-                // Disable New Game in Daily mode
                 if (newGameBtn) {
                     newGameBtn.classList.add('disabled');
                     newGameBtn.title = 'New Game not available in Daily mode - switch to Explore mode';
@@ -2506,7 +2780,6 @@
                 exploreBtn.classList.add('active');
                 dailyBtn.classList.remove('active');
                 
-                // Enable New Game in Explore mode
                 if (newGameBtn) {
                     newGameBtn.classList.remove('disabled');
                     newGameBtn.title = '';
@@ -2514,14 +2787,12 @@
             }
         }
 
-        // Handle New Game button click
         function handleNewGame() {
             if (gameState.isDailyMode) {
                 alert('New Game is not available in Daily mode.\n\nSwitch to Explore mode if you want to start a new random challenge.');
                 return;
             }
             
-            // Clear saved explore game
             localStorage.removeItem('wikipath_explore_start');
             localStorage.removeItem('wikipath_explore_target');
             
@@ -2540,7 +2811,7 @@
                 origin: '*',
                 prop: 'text|sections',
                 disabletoc: '1',
-                redirects: '1'  // Automatically follow redirects
+                redirects: '1'
             });
 
             try {
@@ -2596,11 +2867,9 @@
         async function getDailyWikipediaPages() {
             const seed = dateToSeed(gameState.dailyDate);
             
-            // Get start page
             const startIndex = getSeededRandomIndex(ALL_PAGES, seed, 0);
             const startPage = ALL_PAGES[startIndex];
             
-            // Get target page (different from start)
             let targetIndex;
             do {
                 targetIndex = getSeededRandomIndex(ALL_PAGES, seed, 1000);
@@ -2620,7 +2889,6 @@
             
             if (!hintBadge || !gameState.targetPage) return;
             
-            // Simple heuristic: check if page title shares words with target
             const currentWords = currentPage.toLowerCase().split(/[\s_\-()]+/);
             const targetWords = gameState.targetPage.toLowerCase().split(/[\s_\-()]+/);
             
@@ -2628,7 +2896,6 @@
                 word.length > 3 && targetWords.includes(word)
             ).length;
             
-            // Remove previous classes
             hintBadge.className = 'hint-badge active';
             
             if (commonWords >= 2) {
@@ -2649,7 +2916,6 @@
                 hintText.textContent = 'Keep exploring!';
             }
             
-            // Auto-hide after 3 seconds
             setTimeout(() => {
                 hintBadge.classList.remove('active');
             }, 3000);
@@ -2669,16 +2935,13 @@
             }
 
             async initialize() {
-                // Check if resuming from URL
                 const urlParams = getUrlParams();
                 
                 if (urlParams.start && urlParams.target) {
-                    // Check if daily mode and date matches
                     if (urlParams.daily) {
                         gameState.isDailyMode = true;
                         gameState.dailyDate = urlParams.daily;
                         
-                        // If it's a different day, start fresh daily challenge
                         if (urlParams.daily !== getTodayDateString()) {
                             gameState.dailyDate = getTodayDateString();
                             await this.startNewDailyChallenge();
@@ -2688,7 +2951,6 @@
                         gameState.isDailyMode = false;
                     }
                     
-                    // Resume existing game
                     gameState.startPage = urlParams.start;
                     gameState.targetPage = urlParams.target;
                     gameState.currentPage = urlParams.current || urlParams.start;
@@ -2700,15 +2962,17 @@
                     
                     updateModeUI();
                     
-                    // Fetch descriptions
                     gameState.targetDescription = await fetchPageDescription(gameState.targetPage);
                     
                     this.updateDisplay();
                     this.updatePathDisplay();
                     this.startTimer();
+                    
+                    // NEW: Calculate minimum clicks for resumed game
+                    calculateMinimumClicks(gameState.startPage, gameState.targetPage);
+                    
                     await this.loadPage(gameState.currentPage);
                 } else {
-                    // Start new game based on mode
                     if (gameState.isDailyMode) {
                         await this.startNewDailyChallenge();
                     } else {
@@ -2734,12 +2998,14 @@
                 
                 updateModeUI();
                 
-                // Fetch descriptions
                 gameState.targetDescription = await fetchPageDescription(targetPage);
                 
                 this.updateDisplay();
                 this.updatePathDisplay();
                 this.startTimer();
+                
+                // NEW: Calculate minimum clicks
+                calculateMinimumClicks(startPage, targetPage);
                 
                 updateUrl(
                     startPage,
@@ -2774,18 +3040,19 @@
                 gameState.gaveUp = false;
                 gameState.difficulty = calculateChallengeDifficulty(startPage, targetPage);
                 
-                // Always save explore pages to localStorage
                 localStorage.setItem('wikipath_explore_start', startPage);
                 localStorage.setItem('wikipath_explore_target', targetPage);
 
                 updateModeUI();
 
-                // Fetch descriptions
                 gameState.targetDescription = await fetchPageDescription(targetPage);
 
                 this.updateDisplay();
                 this.updatePathDisplay();
                 this.startTimer();
+
+                // NEW: Calculate minimum clicks
+                calculateMinimumClicks(startPage, targetPage);
 
                 updateUrl(
                     startPage,
@@ -2844,21 +3111,16 @@
                 try {
                     const pageData = await fetchWikipediaPage(title);
                     
-                    // IMPORTANT: Update currentPage to the actual resolved page title
-                    // This handles redirects (e.g., "Cleopatra VII" -> "Cleopatra")
                     const actualPageTitle = pageData.title;
                     
-                    // Update gameState if the actual page is different (redirect was followed)
                     if (actualPageTitle !== title) {
                         console.log(`Redirect: ${title} -> ${actualPageTitle}`);
                         gameState.currentPage = actualPageTitle;
                         
-                        // Update the path to reflect the actual page
                         if (gameState.path[gameState.path.length - 1] === title) {
                             gameState.path[gameState.path.length - 1] = actualPageTitle;
                         }
                         
-                        // Update URL
                         updateUrl(
                             gameState.startPage,
                             gameState.targetPage,
@@ -2870,7 +3132,6 @@
                             gameState.startTime
                         );
                         
-                        // Check if we've reached the target after redirect
                         const normalizedCurrent = actualPageTitle.trim().toLowerCase().replace(/_/g, ' ');
                         const normalizedTarget = gameState.targetPage.trim().toLowerCase().replace(/_/g, ' ');
                         
@@ -2895,7 +3156,6 @@
 
                 this.tocContainer.innerHTML = '';
                 
-                // Group sections by top-level (H1) sections
                 const sectionGroups = {};
                 let currentH1 = null;
                 
@@ -2911,18 +3171,15 @@
                     }
                 });
                 
-                // Build collapsible TOC
                 Object.entries(sectionGroups).forEach(([h1Title, group]) => {
                     const li = document.createElement('li');
                     li.className = 'toc-item';
                     
                     const hasSubsections = group.subsections.length > 0;
                     
-                    // H1 header (collapsible only if has subsections)
                     const header = document.createElement('div');
                     header.className = hasSubsections ? 'toc-section-header collapsed' : 'toc-section-header no-children';
                     
-                    // Only add arrow if there are subsections
                     if (hasSubsections) {
                         header.innerHTML = `
                             <span class="toc-collapse-icon">▼</span>
@@ -2932,26 +3189,21 @@
                         header.innerHTML = `<span>${h1Title}</span>`;
                     }
                     
-                    // Subsections list
                     const subsectionsList = document.createElement('ul');
-                    subsectionsList.className = 'toc-subsections collapsed'; // Start collapsed
+                    subsectionsList.className = 'toc-subsections collapsed';
                     
-                    // Add click to H1 to scroll (and toggle if has children)
                     header.addEventListener('click', (e) => {
-                        // Toggle collapse only if has subsections
                         if (hasSubsections) {
                             header.classList.toggle('collapsed');
                             subsectionsList.classList.toggle('collapsed');
                         }
                         
-                        // Scroll to section
                         const heading = document.getElementById(group.header.anchor);
                         if (heading) {
                             heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }
                     });
                     
-                    // Add subsections
                     group.subsections.forEach(subsection => {
                         const subLi = document.createElement('li');
                         subLi.className = 'toc-item';
@@ -2988,30 +3240,19 @@
                 const articleDiv = document.createElement('div');
                 articleDiv.className = 'wikipedia-article';
                 
-                // Fix image URLs in HTML before inserting
                 let htmlContent = pageData.text['*'];
                 
-                // Fix protocol-relative URLs
                 htmlContent = htmlContent.replace(/src="\/\//g, 'src="https://');
                 htmlContent = htmlContent.replace(/srcset="\/\//g, 'srcset="https://');
-                
-                // Fix relative URLs (but not protocol-relative ones)
                 htmlContent = htmlContent.replace(/src="\/(?!\/)/g, 'src="https://en.wikipedia.org/');
                 htmlContent = htmlContent.replace(/srcset="\/(?!\/)/g, 'srcset="https://en.wikipedia.org/');
                 
                 articleDiv.innerHTML = htmlContent;
 
-                // Remove unwanted elements
-                // Remove "This article needs additional citations" and similar boxes
                 articleDiv.querySelectorAll('.ambox, .hatnote, .dablink, .rellink').forEach(el => el.remove());
-                
-                // Remove "For other uses" and redirect messages
                 articleDiv.querySelectorAll('.hatnote, [class*="hatnote"]').forEach(el => el.remove());
-                
-                // Remove edit buttons
                 articleDiv.querySelectorAll('.mw-editsection, [class*="editsection"]').forEach(el => el.remove());
                 
-                // Add starting page indicator FIRST (only for the first page)
                 if (gameState.currentPage === gameState.startPage && gameState.path.length === 1) {
                     const indicator = document.createElement('div');
                     indicator.className = 'starting-page-indicator';
@@ -3023,7 +3264,6 @@
                         </div>
                     `;
                     
-                    // Insert at the very beginning
                     const firstElement = articleDiv.firstElementChild;
                     if (firstElement) {
                         articleDiv.insertBefore(indicator, firstElement);
@@ -3032,13 +3272,11 @@
                     }
                 }
                 
-                // Check if H1 exists, if not create one
                 let h1 = articleDiv.querySelector('h1');
                 if (!h1) {
                     h1 = document.createElement('h1');
                     h1.textContent = pageData.title;
                     
-                    // Insert after starting indicator if it exists, otherwise at beginning
                     const startingIndicator = articleDiv.querySelector('.starting-page-indicator');
                     if (startingIndicator && startingIndicator.nextSibling) {
                         articleDiv.insertBefore(h1, startingIndicator.nextSibling);
@@ -3054,11 +3292,9 @@
                     }
                 }
                 
-                // Create notices container for icons
                 const noticesContainer = document.createElement('div');
                 noticesContainer.className = 'article-notices-container';
                 
-                // Check for verification needs - be more specific about what we're looking for
                 const hasVerificationIssue = 
                     pageData.text['*'].includes('This article needs additional citations') ||
                     pageData.text['*'].includes('needs additional verification') ||
@@ -3074,7 +3310,6 @@
                     noticesContainer.appendChild(notice);
                 }
                 
-                // Check for recent changes (if template is present)
                 if (pageData.text['*'].includes('current event') || pageData.text['*'].includes('recently updated')) {
                     const notice = document.createElement('span');
                     notice.className = 'article-notice recent-changes';
@@ -3083,7 +3318,6 @@
                     noticesContainer.appendChild(notice);
                 }
                 
-                // Check for recent death notice
                 if (pageData.text['*'].includes('recently died') || pageData.text['*'].includes('recent death')) {
                     const notice = document.createElement('span');
                     notice.className = 'article-notice recent-death';
@@ -3092,13 +3326,10 @@
                     noticesContainer.appendChild(notice);
                 }
                 
-                // Add notices container right after H1 if it has any notices
                 if (noticesContainer.children.length > 0 && h1) {
-                    // Wrap H1 in a container for relative positioning
                     const h1Container = document.createElement('div');
                     h1Container.style.position = 'relative';
                     
-                    // Move H1 into container
                     const h1Parent = h1.parentNode;
                     h1Parent.insertBefore(h1Container, h1);
                     h1Container.appendChild(h1);
@@ -3109,38 +3340,31 @@
                 this.gameArea.appendChild(articleDiv);
 
                 this.processLinks();
-                this.fixImages(); // Fix broken Wikipedia images
+                this.fixImages();
             }
 
             fixImages() {
-                // Fix Wikipedia image sources
                 const images = this.gameArea.querySelectorAll('img');
                 images.forEach(img => {
                     const src = img.getAttribute('src');
                     
                     if (!src) return;
                     
-                    // Case 1: Protocol-relative URLs (//upload.wikimedia.org/...)
                     if (src.startsWith('//')) {
                         img.setAttribute('src', 'https:' + src);
                     } 
-                    // Case 2: Relative URLs starting with / (/static/images/...)
                     else if (src.startsWith('/') && !src.startsWith('//')) {
                         img.setAttribute('src', 'https://en.wikipedia.org' + src);
                     }
-                    // Case 3: Data URIs or already absolute URLs - leave as is
                     else if (src.startsWith('data:') || src.startsWith('http:') || src.startsWith('https:')) {
-                        // Already valid, do nothing
+                        // Already valid
                     }
-                    // Case 4: Relative URLs without leading slash
                     else if (!src.includes('://')) {
                         img.setAttribute('src', 'https://en.wikipedia.org/' + src);
                     }
                     
-                    // Add error handler
                     img.onerror = function() {
                         console.warn('Failed to load image:', this.src);
-                        // Hide broken images
                         this.style.display = 'none';
                     };
                 });
@@ -3158,7 +3382,6 @@
                         link.removeAttribute('href');
                         link.style.cursor = 'pointer';
                         
-                        // Mark visited links
                         if (gameState.visitedPages.has(pageTitle)) {
                             link.classList.add('visited-link');
                         }
@@ -3168,7 +3391,6 @@
                             link.classList.add('disambiguation-link');
                         }
                         
-                        // Add hover preview
                         let previewTimeout = null;
                         let previewCache = {};
                         
@@ -3182,7 +3404,6 @@
                                 previewText.innerHTML = '<span class="link-preview-loading">Loading preview...</span>';
                                 preview.classList.add('active');
                                 
-                                // Fetch preview if not cached
                                 if (!previewCache[pageTitle]) {
                                     try {
                                         const description = await fetchPageDescription(pageTitle);
@@ -3192,22 +3413,18 @@
                                     }
                                 }
                                 
-                                // Show cached preview
                                 if (preview.classList.contains('active')) {
                                     previewText.textContent = previewCache[pageTitle].substring(0, 200) + '...';
                                 }
-                            }, 500); // Delay before showing preview
+                            }, 500);
                         });
                         
-                        // Track mouse movement to position preview
                         link.addEventListener('mousemove', (e) => {
                             const preview = document.getElementById('link-preview');
                             if (preview.classList.contains('active')) {
-                                // Position near mouse, keeping it on screen
                                 let left = e.clientX + 15;
                                 let top = e.clientY + 15;
                                 
-                                // Adjust if would go off screen
                                 if (left + 350 > window.innerWidth) {
                                     left = e.clientX - 365;
                                 }
@@ -3229,10 +3446,8 @@
                         link.addEventListener('click', async (e) => {
                             e.preventDefault();
                             
-                            // Add click feedback animation
                             addClickFeedback(link);
                             
-                            // Hide preview on click
                             const preview = document.getElementById('link-preview');
                             preview.classList.remove('active');
                             
@@ -3270,7 +3485,6 @@
                 gameState.currentPage = pageTitle;
                 gameState.path.push(pageTitle);
                 
-                // Show hint (warmer/colder)
                 showHint(pageTitle);
                 
                 updateUrl(
@@ -3302,12 +3516,10 @@
                 this.clickCounter.textContent = gameState.totalClicks;
                 this.targetPageDisplay.textContent = gameState.targetPage;
                 
-                // Update difficulty badge
                 const difficultyBadge = document.getElementById('difficulty-badge');
                 difficultyBadge.textContent = gameState.difficulty.toUpperCase();
                 difficultyBadge.className = `difficulty-badge difficulty-${gameState.difficulty}`;
                 
-                // Update target tooltip
                 if (gameState.targetDescription) {
                     document.getElementById('tooltip-title').textContent = gameState.targetPage;
                     document.getElementById('tooltip-description').textContent = gameState.targetDescription;
@@ -3318,13 +3530,10 @@
                 this.stopTimer();
                 gameState.hasWon = true;
                 
-                // Trigger confetti celebration
                 createConfetti();
                 
-                // Calculate time in seconds
                 const timeInSeconds = Math.floor((Date.now() - gameState.startTime) / 1000);
                 
-                // Record statistics
                 const mode = gameState.isDailyMode ? 'daily' : 'explore';
                 stats.recordGame(true, gameState.totalClicks, timeInSeconds, gameState.path, mode, false);
                 
@@ -3338,28 +3547,59 @@
                 finalTimeEl.textContent = this.timerDisplay.textContent;
                 finalPagesEl.textContent = gameState.path.length;
 
-                // Performance rating
                 let rating = '';
                 let ratingClass = '';
-                if (gameState.totalClicks <= 3) {
-                    rating = '🏆 AMAZING! Perfect score!';
-                    ratingClass = 'rating-perfect';
-                } else if (gameState.totalClicks <= 5) {
-                    rating = '🌟 EXCELLENT! Great job!';
-                    ratingClass = 'rating-excellent';
-                } else if (gameState.totalClicks <= 10) {
-                    rating = '👍 GOOD! Well done!';
-                    ratingClass = 'rating-good';
+                
+                // NEW: Compare with optimal if available
+                if (optimalPathData && optimalPathData.found) {
+                    const efficiency = Math.round((optimalPathData.length / gameState.totalClicks) * 100);
+                    
+                    if (efficiency >= 100) {
+                        rating = '🏆 PERFECT! Optimal path!';
+                        ratingClass = 'rating-perfect';
+                    } else if (efficiency >= 80) {
+                        rating = '🌟 EXCELLENT! Very close to optimal!';
+                        ratingClass = 'rating-excellent';
+                    } else if (efficiency >= 60) {
+                        rating = '👍 GOOD! Nice work!';
+                        ratingClass = 'rating-good';
+                    } else {
+                        rating = '✅ COMPLETED! Well done!';
+                        ratingClass = 'rating-completed';
+                    }
                 } else {
-                    rating = '✅ COMPLETED! Nice work!';
-                    ratingClass = 'rating-completed';
+                    if (gameState.totalClicks <= 3) {
+                        rating = '🏆 AMAZING! Perfect score!';
+                        ratingClass = 'rating-perfect';
+                    } else if (gameState.totalClicks <= 5) {
+                        rating = '🌟 EXCELLENT! Great job!';
+                        ratingClass = 'rating-excellent';
+                    } else if (gameState.totalClicks <= 10) {
+                        rating = '👍 GOOD! Well done!';
+                        ratingClass = 'rating-good';
+                    } else {
+                        rating = '✅ COMPLETED! Nice work!';
+                        ratingClass = 'rating-completed';
+                    }
                 }
 
                 let pathHtml = `<div class="performance-rating ${ratingClass}">${rating}</div>`;
                 
-                // Show personal best if achieved
                 if (stats.bestClicks === gameState.totalClicks && stats.totalWins > 1) {
                     pathHtml += '<div style="text-align: center; background: #fff3cd; padding: 10px; border-radius: 8px; margin-bottom: 15px; color: #856404;"><strong>🎉 New Personal Best!</strong></div>';
+                }
+                
+                // NEW: Show comparison if we have optimal path
+                if (optimalPathData && optimalPathData.found && optimalPathData.length !== gameState.totalClicks) {
+                    const efficiency = Math.round((optimalPathData.length / gameState.totalClicks) * 100);
+                    pathHtml += `
+                        <div class="path-comparison">
+                            <div class="path-comparison-header">
+                                <h3>📊 Path Comparison</h3>
+                                <div class="efficiency-badge">${efficiency}% Efficient</div>
+                            </div>
+                        </div>
+                    `;
                 }
                 
                 pathHtml += '<h3>🗺️ Your Journey:</h3>';
@@ -3369,6 +3609,18 @@
                         <div>${page}</div>
                     </div>`;
                 });
+                
+                // NEW: Show optimal path if different
+                if (optimalPathData && optimalPathData.found && optimalPathData.length !== gameState.totalClicks) {
+                    pathHtml += `<h3 style="margin-top: 25px;">✨ Optimal Path (${optimalPathData.length} clicks):</h3>`;
+                    optimalPathData.path.forEach((page, index) => {
+                        pathHtml += `<div class="path-item optimal">
+                            <div class="path-item-number">${index + 1}</div>
+                            <div>${page}</div>
+                        </div>`;
+                    });
+                }
+                
                 winPathEl.innerHTML = pathHtml;
 
                 modal.classList.add('active');
@@ -3383,7 +3635,6 @@
         // VISUAL EFFECTS
         // ======================
         
-        // Create confetti celebration
         function createConfetti() {
             const colors = ['#0645ad', '#7c3aed', '#f59e0b', '#10b981', '#ef4444', '#ec4899'];
             const confettiCount = 50;
@@ -3403,7 +3654,6 @@
             }
         }
 
-        // Add click feedback animation
         function addClickFeedback(element) {
             element.classList.add('click-feedback');
             setTimeout(() => element.classList.remove('click-feedback'), 200);
@@ -3424,7 +3674,13 @@
                 modeText = `🧭 Explore Mode\n`;
             }
             
-            // Create visual path representation
+            // NEW: Include minimum clicks if available
+            let efficiencyText = '';
+            if (optimalPathData && optimalPathData.found) {
+                const efficiency = Math.round((optimalPathData.length / gameState.totalClicks) * 100);
+                efficiencyText = `⚡ Efficiency: ${efficiency}% (${optimalPathData.length} min)\n`;
+            }
+            
             const pathVisual = gameState.path.map((page, i) => {
                 if (i === 0) return `🎯 ${page}`;
                 if (i === gameState.path.length - 1) return `✅ ${page}`;
@@ -3437,7 +3693,7 @@ ${gameState.startPage} ➜ ${gameState.targetPage}
 
 📊 Results:
 ✓ Clicks: ${gameState.totalClicks}
-⏱️ Time: ${document.getElementById('timer').textContent}
+${efficiencyText}⏱️ Time: ${document.getElementById('timer').textContent}
 📄 Pages: ${gameState.path.length}
 
 🗺️ My Path:
@@ -3469,7 +3725,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 showNotification('Copied to clipboard!');
             }).catch(err => {
                 console.error('Failed to copy:', err);
-                // Fallback for older browsers
                 const textArea = document.createElement('textarea');
                 textArea.value = shareText;
                 textArea.style.position = 'fixed';
@@ -3503,7 +3758,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             const urlParams = getUrlParams();
             
             if (urlParams.start && urlParams.target) {
-                // Check if daily mode and date matches
                 if (urlParams.daily) {
                     gameState.isDailyMode = true;
                     gameState.dailyDate = urlParams.daily;
@@ -3546,7 +3800,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         }
 
         function updateStatsDisplay() {
-            // Update stat cards
             document.getElementById('stat-streak').textContent = stats.dailyStreak;
             document.getElementById('stat-games').textContent = stats.totalGamesPlayed;
             document.getElementById('stat-wins').textContent = stats.totalWins;
@@ -3568,7 +3821,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             document.getElementById('stat-avg-time').textContent = 
                 stats.totalWins > 0 ? formatTime(stats.averageTime) : '-';
             
-            // Update recent games
             const recentGamesList = document.getElementById('recent-games-list');
             if (stats.recentGames.length === 0) {
                 recentGamesList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No games played yet</p>';
@@ -3617,17 +3869,14 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             menu.classList.remove('open');
         }
 
-        // Close menu when clicking outside
         document.addEventListener('click', (e) => {
             const menu = document.getElementById('fab-menu');
             const menuButton = document.querySelector('.fab-menu-button');
             
-            // Don't close if clicking the menu button (toggle handles that)
             if (menuButton && menuButton.contains(e.target)) {
                 return;
             }
             
-            // Close if clicking outside the menu
             if (menu && !menu.contains(e.target)) {
                 menu.classList.remove('open');
             }
@@ -3665,7 +3914,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         // ======================
         // GIVE UP FUNCTIONALITY
         // ======================
-        let globalGameController = null; // Store global reference
+        let globalGameController = null;
 
         function giveUp() {
             const confirmed = confirm(`Are you sure you want to give up?\n\nThis will show you the target page but won't count as a win.`);
@@ -3679,7 +3928,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             }
             gameState.gaveUp = true;
             
-            // Record statistics for give up
             const timeInSeconds = Math.floor((Date.now() - gameState.startTime) / 1000);
             const mode = gameState.isDailyMode ? 'daily' : 'explore';
             stats.recordGame(false, gameState.totalClicks, timeInSeconds, gameState.path, mode, true);
@@ -3736,24 +3984,19 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             searchInput = document.getElementById('search-input');
             searchResults = document.getElementById('search-results');
             
-            // Keyboard shortcut
             document.addEventListener('keydown', (e) => {
-                // Ctrl/Cmd+F to open search
                 if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
                     e.preventDefault();
                     openSearch();
                 }
                 
-                // Ctrl/Cmd+N or just 'N' to create new game (Explore mode only)
                 if (((e.ctrlKey || e.metaKey) && e.key === 'n') || (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey)) {
-                    // Don't trigger if user is typing in an input field
                     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
                         return;
                     }
                     
                     e.preventDefault();
                     
-                    // Only allow in Explore mode
                     if (!gameState.isDailyMode) {
                         handleNewGame();
                     } else {
@@ -3761,20 +4004,17 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                     }
                 }
                 
-                // Escape to close search
                 if (e.key === 'Escape' && searchOverlay.classList.contains('active')) {
                     closeSearch();
                 }
             });
             
-            // Close on overlay click
             searchOverlay.addEventListener('click', (e) => {
                 if (e.target === searchOverlay) {
                     closeSearch();
                 }
             });
             
-            // Search input handler
             searchInput.addEventListener('input', performSearch);
         }
 
@@ -3803,7 +4043,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             
             let results = [];
             
-            // Search in links
             allLinks.forEach(link => {
                 const text = link.textContent.toLowerCase();
                 if (text.includes(query)) {
@@ -3816,7 +4055,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 }
             });
             
-            // Search in text content
             allText.forEach(el => {
                 const text = el.textContent.toLowerCase();
                 if (text.includes(query) && !results.some(r => r.element === el)) {
@@ -3831,7 +4069,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 }
             });
             
-            // Limit results
             results = results.slice(0, 20);
             
             if (results.length === 0) {
@@ -3859,7 +4096,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                     result.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     closeSearch();
                     
-                    // Highlight briefly
                     result.element.style.backgroundColor = '#ffeb3b';
                     setTimeout(() => {
                         result.element.style.backgroundColor = '';
@@ -3874,7 +4110,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         // INITIALIZE GAME
         // ======================
         const game = new GameController();
-        globalGameController = game; // Store in global for giveUp function
+        globalGameController = game;
         game.initialize();
         initializeSearch();
 
@@ -3888,7 +4124,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 return;
             }
             
-            // Close modal first
             const modal = document.getElementById('win-modal');
             modal.classList.remove('active');
             
@@ -3920,6 +4155,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             
             location.reload();
         }
+        
         // ======================
         // DEBUG MODE FUNCTIONS
         // ======================
@@ -3930,7 +4166,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             const isActive = toggle.classList.toggle('active');
             panel.classList.toggle('active');
             
-            // Save state
             localStorage.setItem('wikipath_debug_mode', isActive);
         }
         
@@ -3939,10 +4174,8 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             const targetPage = document.getElementById('debug-target-page').value.trim();
             const errorEl = document.getElementById('debug-game-error');
             
-            // Clear previous errors
             errorEl.classList.remove('active');
             
-            // Validate inputs
             if (!startPage || !targetPage) {
                 errorEl.textContent = '❌ Please enter both start and target pages';
                 errorEl.classList.add('active');
@@ -3955,7 +4188,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 return;
             }
             
-            // Validate pages exist
             const startValid = await validateWikipediaPage(startPage);
             const targetValid = await validateWikipediaPage(targetPage);
             
@@ -3971,15 +4203,12 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 return;
             }
             
-            // Start custom game
             const normalizedStart = startPage.replace(/ /g, '_');
             const normalizedTarget = targetPage.replace(/ /g, '_');
             
-            // Switch to explore mode and start custom game
             gameState.isDailyMode = false;
             updateModeUI();
             
-            // Navigate to game with custom pages
             window.location.href = `?start=${encodeURIComponent(normalizedStart)}&target=${encodeURIComponent(normalizedTarget)}`;
         }
         
@@ -3987,7 +4216,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             const pageName = document.getElementById('debug-preview-page').value.trim();
             const errorEl = document.getElementById('debug-preview-error');
             
-            // Clear previous errors
             errorEl.classList.remove('active');
             
             if (!pageName) {
@@ -3996,7 +4224,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 return;
             }
             
-            // Validate page exists
             const valid = await validateWikipediaPage(pageName);
             
             if (!valid) {
@@ -4005,7 +4232,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 return;
             }
             
-            // Load the page in preview mode
             const normalizedPage = pageName.replace(/ /g, '_');
             gameState.currentPage = normalizedPage;
             
@@ -4014,8 +4240,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 globalGameController.renderPage(pageData);
                 globalGameController.buildTableOfContents(pageData.sections || []);
                 
-                // Scroll to content
-                document.getElementById('game-container').scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('game-area').scrollIntoView({ behavior: 'smooth' });
             } catch (error) {
                 errorEl.textContent = `❌ Error loading page: ${error.message}`;
                 errorEl.classList.add('active');
@@ -4038,7 +4263,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 const pages = data.query.pages;
                 const pageId = Object.keys(pages)[0];
                 
-                // Page exists if ID is not -1
                 return pageId !== '-1';
             } catch (error) {
                 console.error('Page validation error:', error);
@@ -4047,7 +4271,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         }
         
         function fillRandomPages() {
-            // Fill with random pages from our list
             const randomStart = ALL_PAGES[Math.floor(Math.random() * ALL_PAGES.length)];
             let randomTarget;
             do {
@@ -4059,7 +4282,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         }
         
         function fillRandomPreview() {
-            // Fill with random page from our list
             const randomPage = ALL_PAGES[Math.floor(Math.random() * ALL_PAGES.length)];
             document.getElementById('debug-preview-page').value = randomPage;
         }
@@ -4078,17 +4300,14 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             input.addEventListener('input', async (e) => {
                 const query = e.target.value.trim();
                 
-                // Clear previous timeout
                 clearTimeout(autocompleteTimeout);
                 
-                // Hide dropdown if query is too short
                 if (query.length < 2) {
                     dropdown.classList.remove('active');
                     dropdown.innerHTML = '';
                     return;
                 }
                 
-                // Debounce API calls
                 autocompleteTimeout = setTimeout(async () => {
                     const suggestions = await getWikipediaSuggestions(query);
                     
@@ -4101,7 +4320,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                             item.className = 'debug-autocomplete-item';
                             item.textContent = suggestion;
                             
-                            // Click to select
                             item.addEventListener('click', () => {
                                 input.value = suggestion;
                                 dropdown.classList.remove('active');
@@ -4116,10 +4334,9 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                         dropdown.classList.remove('active');
                         dropdown.innerHTML = '';
                     }
-                }, 300); // 300ms debounce
+                }, 300);
             });
             
-            // Keyboard navigation
             input.addEventListener('keydown', (e) => {
                 const items = dropdown.querySelectorAll('.debug-autocomplete-item');
                 
@@ -4142,7 +4359,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 }
             });
             
-            // Close on click outside
             document.addEventListener('click', (e) => {
                 if (!input.contains(e.target) && !dropdown.contains(e.target)) {
                     dropdown.classList.remove('active');
@@ -4177,7 +4393,6 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 const response = await fetch(`${endpoint}?${params}`);
                 const data = await response.json();
                 
-                // OpenSearch API returns: [query, [titles], [descriptions], [urls]]
                 return data[1] || [];
             } catch (error) {
                 console.error('Autocomplete error:', error);
