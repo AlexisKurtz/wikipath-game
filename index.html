@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.8.2
+    Version: 3.8.3
     Last Updated: 2024-12-01
     
     Changelog:
+    - v3.8.3: Positioned infobox to the right (Wikipedia-style), removed edit buttons
     - v3.8.2: Fixed image loading - now fixes URLs in HTML before DOM insertion
     - v3.8.1: Fixed broken images, added Wikipedia autocomplete, added Fill Random for page preview
     - v3.8.0: Debug Mode Lite - Custom game setup, page preview, feature flag
@@ -845,10 +846,63 @@
             height: auto;
         }
 
+        /* Infobox positioning - float to the right like Wikipedia */
+        .wikipedia-article .infobox {
+            float: right;
+            clear: right;
+            width: 300px;
+            margin: 0 0 1em 1em;
+            padding: 0.5em;
+            background: #f8f9fa;
+            border: 1px solid #a2a9b1;
+            font-size: 0.9em;
+        }
+
+        .wikipedia-article .infobox-image {
+            text-align: center;
+            margin-bottom: 0.5em;
+        }
+
+        .wikipedia-article .infobox img {
+            width: 100%;
+            height: auto;
+        }
+
+        .wikipedia-article .infobox th,
+        .wikipedia-article .infobox td {
+            padding: 0.3em 0.5em;
+            vertical-align: top;
+        }
+
+        .wikipedia-article .infobox th {
+            text-align: left;
+            font-weight: 600;
+            background: #eaecf0;
+        }
+
+        .wikipedia-article .infobox caption {
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 0.5em;
+            background: #eaecf0;
+        }
+
+        /* Make sure content flows around infobox */
+        .wikipedia-article p {
+            margin-bottom: 0.8em;
+            clear: none;
+        }
+
         /* Hide full disclaimer boxes, show compact version */
         .wikipedia-article .ambox,
         .wikipedia-article .hatnote,
         .wikipedia-article .dablink {
+            display: none !important;
+        }
+
+        /* Hide edit buttons */
+        .wikipedia-article .mw-editsection,
+        .wikipedia-article [class*="editsection"] {
             display: none !important;
         }
 
@@ -1799,7 +1853,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.8.2</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.8.3</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2915,6 +2969,9 @@
                 
                 // Remove "For other uses" and redirect messages
                 articleDiv.querySelectorAll('.hatnote, [class*="hatnote"]').forEach(el => el.remove());
+                
+                // Remove edit buttons
+                articleDiv.querySelectorAll('.mw-editsection, [class*="editsection"]').forEach(el => el.remove());
                 
                 // Add starting page indicator FIRST (only for the first page)
                 if (gameState.currentPage === gameState.startPage && gameState.path.length === 1) {
