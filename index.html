@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.8.3
+    Version: 3.8.4
     Last Updated: 2024-12-01
     
     Changelog:
+    - v3.8.4: Fixed redirect bug - now detects win when clicking redirect links (e.g., Cleopatra VII → Cleopatra)
     - v3.8.3: Positioned infobox to the right (Wikipedia-style), removed edit buttons
     - v3.8.2: Fixed image loading - now fixes URLs in HTML before DOM insertion
     - v3.8.1: Fixed broken images, added Wikipedia autocomplete, added Fill Random for page preview
@@ -1853,7 +1854,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.8.3</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.8.4</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2842,6 +2843,43 @@
 
                 try {
                     const pageData = await fetchWikipediaPage(title);
+                    
+                    // IMPORTANT: Update currentPage to the actual resolved page title
+                    // This handles redirects (e.g., "Cleopatra VII" -> "Cleopatra")
+                    const actualPageTitle = pageData.title;
+                    
+                    // Update gameState if the actual page is different (redirect was followed)
+                    if (actualPageTitle !== title) {
+                        console.log(`Redirect: ${title} -> ${actualPageTitle}`);
+                        gameState.currentPage = actualPageTitle;
+                        
+                        // Update the path to reflect the actual page
+                        if (gameState.path[gameState.path.length - 1] === title) {
+                            gameState.path[gameState.path.length - 1] = actualPageTitle;
+                        }
+                        
+                        // Update URL
+                        updateUrl(
+                            gameState.startPage,
+                            gameState.targetPage,
+                            gameState.currentPage,
+                            gameState.clickCount,
+                            gameState.totalClicks,
+                            Array.from(gameState.visitedPages),
+                            gameState.path,
+                            gameState.startTime
+                        );
+                        
+                        // Check if we've reached the target after redirect
+                        const normalizedCurrent = actualPageTitle.trim().toLowerCase().replace(/_/g, ' ');
+                        const normalizedTarget = gameState.targetPage.trim().toLowerCase().replace(/_/g, ' ');
+                        
+                        if (normalizedCurrent === normalizedTarget) {
+                            this.showWinScreen();
+                            return;
+                        }
+                    }
+                    
                     this.renderPage(pageData);
                     this.buildTableOfContents(pageData.sections);
                 } catch (error) {
