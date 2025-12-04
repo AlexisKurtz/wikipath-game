@@ -2,10 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.11.0
+    Version: 3.11.2
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.11.2: FIXED collapsible sections! Rewrote algorithm to handle Wikipedia's nested HTML structure properly
+    - v3.11.1: Added extensive debugging for collapsible sections to diagnose issues
     - v3.11.0: Added collapsible sections (collapsed by default on mobile + special sections like "Royal Titulary"), hidden TOC on mobile
     - v3.10.2: Added keyboard shortcut labels to menu items (H for Hint, R for Retry, Ctrl+F for Search)
     - v3.10.1: CRITICAL FIX! Hints now use cached optimal path instead of recalculating (fixes non-optimal hints)
@@ -1906,7 +1908,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.11.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.11.2</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3582,77 +3584,112 @@
 
             makeCollapsibleSections() {
                 const isMobile = window.innerWidth <= 768;
+                console.log('=== Making Collapsible Sections ===');
+                console.log('Is mobile:', isMobile, 'Window width:', window.innerWidth);
                 
-                // Find all section headers (h2, h3, h4)
-                const headers = this.gameArea.querySelectorAll('h2, h3, h4');
+                // Find all section headers (h2 only for main sections, Wikipedia style)
+                const headers = this.gameArea.querySelectorAll('h2');
+                console.log('Found H2 headers:', headers.length);
                 
-                headers.forEach(header => {
-                    // Get all content until the next header of same or higher level
-                    const content = [];
-                    let nextElement = header.nextElementSibling;
-                    const headerLevel = parseInt(header.tagName.substring(1));
+                headers.forEach((header, index) => {
+                    console.log(`Processing header ${index}:`, header.textContent.trim());
                     
-                    while (nextElement) {
-                        const isHeader = nextElement.tagName.match(/^H[1-6]$/);
-                        if (isHeader) {
-                            const nextLevel = parseInt(nextElement.tagName.substring(1));
-                            if (nextLevel <= headerLevel) {
-                                break;
-                            }
+                    // Find all elements between this header and the next h2
+                    const nextH2 = headers[index + 1];
+                    const content = [];
+                    
+                    // Get all elements after this header until the next h2 or end of document
+                    let currentNode = header.nextSibling;
+                    
+                    while (currentNode) {
+                        // Stop if we hit the next h2
+                        if (currentNode === nextH2) break;
+                        
+                        // Add elements (skip text nodes that are just whitespace)
+                        if (currentNode.nodeType === Node.ELEMENT_NODE) {
+                            content.push(currentNode);
                         }
-                        content.push(nextElement);
-                        nextElement = nextElement.nextElementSibling;
+                        
+                        currentNode = currentNode.nextSibling;
                     }
                     
+                    console.log(`  Content elements found: ${content.length}`);
+                    
                     // Skip if no content to collapse
-                    if (content.length === 0) return;
+                    if (content.length === 0) {
+                        console.log('  Skipping - no content');
+                        return;
+                    }
                     
-                    // Create collapsible container
-                    const container = document.createElement('div');
-                    container.className = 'section-content';
+                    // Create wrapper div for collapsible content
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'section-content';
                     
-                    // Move content into container
+                    // Move all content elements into wrapper
                     content.forEach(el => {
-                        container.appendChild(el);
+                        wrapper.appendChild(el);
                     });
                     
-                    // Insert container after header
-                    header.parentNode.insertBefore(container, header.nextSibling);
+                    // Insert wrapper after header
+                    header.parentNode.insertBefore(wrapper, header.nextSibling);
                     
-                    // Add toggle button
+                    // Add toggle button to header
                     const toggleBtn = document.createElement('span');
                     toggleBtn.className = 'section-toggle';
                     toggleBtn.textContent = '[-]';
-                    toggleBtn.style.cssText = 'cursor: pointer; margin-left: 8px; user-select: none; font-size: 0.8em; color: #0645ad;';
                     
                     header.appendChild(toggleBtn);
                     header.style.cursor = 'pointer';
                     
-                    // Collapse by default on mobile or if section should be collapsed
+                    // Determine if should be collapsed
                     const shouldCollapse = isMobile || this.shouldCollapseSection(header);
+                    console.log(`  Should collapse: ${shouldCollapse} (mobile: ${isMobile}, special: ${this.shouldCollapseSection(header)})`);
+                    
                     if (shouldCollapse) {
-                        container.style.display = 'none';
+                        wrapper.style.display = 'none';
                         toggleBtn.textContent = '[+]';
+                        console.log('  ✓ Collapsed');
+                    } else {
+                        console.log('  ✓ Expanded');
                     }
                     
-                    // Toggle functionality
-                    const toggle = () => {
-                        const isVisible = container.style.display !== 'none';
-                        container.style.display = isVisible ? 'none' : 'block';
+                    // Toggle handler
+                    const toggle = (e) => {
+                        e.stopPropagation();
+                        const isVisible = wrapper.style.display !== 'none';
+                        wrapper.style.display = isVisible ? 'none' : 'block';
                         toggleBtn.textContent = isVisible ? '[+]' : '[-]';
+                        console.log(`  Toggled: ${isVisible ? 'collapsed' : 'expanded'}`);
                     };
                     
                     header.addEventListener('click', toggle);
                 });
+                
+                console.log('=== Collapsible sections setup complete ===');
             }
             
             shouldCollapseSection(header) {
-                // Check if section contains mw-collapsible or similar classes
-                const headerText = header.textContent.toLowerCase();
+                // Get clean header text without toggle button
+                const headerText = header.textContent.replace(/\[\+\]|\[\-\]/g, '').toLowerCase().trim();
+                console.log(`    Checking: "${headerText}"`);
                 
-                // Collapse sections that are typically collapsed on Wikipedia
-                const collapseKeywords = ['royal titulary', 'titulary', 'see also', 'notes', 'references', 'external links', 'further reading'];
-                return collapseKeywords.some(keyword => headerText.includes(keyword));
+                // Sections to collapse by default
+                const collapseKeywords = [
+                    'royal titulary',
+                    'titulary', 
+                    'see also', 
+                    'notes', 
+                    'references',
+                    'citations',
+                    'bibliography',
+                    'external links', 
+                    'further reading',
+                    'sources'
+                ];
+                
+                const shouldCollapse = collapseKeywords.some(keyword => headerText.includes(keyword));
+                console.log(`    Should collapse: ${shouldCollapse}`);
+                return shouldCollapse;
             }
 
             fixImages() {
