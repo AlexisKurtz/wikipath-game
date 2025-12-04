@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.9.7
+    Version: 3.9.8
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.9.8: FIXED hint bug! Removed title normalization, let Wikipedia API handle it correctly
     - v3.9.7: Added extensive debugging for hint bug (title normalization issues)
     - v3.9.6: Fixed "URI malformed" error with try-catch on decodeURIComponent
     - v3.9.5: Added extensive debugging + safety check for hint bug (suggesting current page)
@@ -1884,7 +1885,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.7</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.8</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2167,10 +2168,16 @@
                     const response = await fetch(url);
                     const data = await response.json();
 
-                    // Check if Wikipedia normalized the title
+                    // Use Wikipedia's normalized title if provided
+                    let actualTitle = pageTitle;
                     if (data.query?.normalized) {
+                        actualTitle = data.query.normalized[0].to;
                         console.log('[getOutgoingLinks] Wikipedia normalized title:', 
-                            data.query.normalized[0].from, '→', data.query.normalized[0].to);
+                            data.query.normalized[0].from, '→', actualTitle);
+                        // Cache under both the requested and normalized title
+                        if (pageTitle !== actualTitle) {
+                            this.cache.set(`out:${actualTitle}`, null); // Will be filled below
+                        }
                     }
 
                     const pages = data.query?.pages || {};
@@ -2212,10 +2219,16 @@
                     const response = await fetch(url);
                     const data = await response.json();
 
-                    // Check if Wikipedia normalized the title
+                    // Use Wikipedia's normalized title if provided
+                    let actualTitle = pageTitle;
                     if (data.query?.normalized) {
+                        actualTitle = data.query.normalized[0].to;
                         console.log('[getIncomingLinks] Wikipedia normalized title:', 
-                            data.query.normalized[0].from, '→', data.query.normalized[0].to);
+                            data.query.normalized[0].from, '→', actualTitle);
+                        // Cache under both the requested and normalized title
+                        if (pageTitle !== actualTitle) {
+                            this.cache.set(`in:${actualTitle}`, null); // Will be filled below
+                        }
                     }
 
                     const pages = data.query?.pages || {};
@@ -2248,17 +2261,27 @@
             }
 
             normalizeTitle(title) {
+                // Replace underscores with spaces and trim
                 title = title.trim().replace(/_/g, ' ');
+                
+                // Wikipedia capitalizes the first letter of each word (except small words in middle)
+                // But for simplicity, we'll just capitalize the first letter and keep the rest as-is
+                // This matches Wikipedia's actual behavior for most article titles
+                if (title.length === 0) return title;
+                
+                // Capitalize first character, keep rest as provided
                 return title.charAt(0).toUpperCase() + title.slice(1);
             }
 
             async findShortestPath(startPage, targetPage, maxDepth = 5) {
                 console.log(`Finding path from "${startPage}" to "${targetPage}"...`);
                 
-                startPage = this.normalizeTitle(startPage);
-                targetPage = this.normalizeTitle(targetPage);
+                // Don't normalize - let Wikipedia API handle title formatting
+                // Just clean up underscores to spaces
+                startPage = startPage.trim().replace(/_/g, ' ');
+                targetPage = targetPage.trim().replace(/_/g, ' ');
 
-                if (startPage === targetPage) {
+                if (startPage.toLowerCase() === targetPage.toLowerCase()) {
                     return { found: true, path: [startPage], length: 0, pagesExplored: 0 };
                 }
 
