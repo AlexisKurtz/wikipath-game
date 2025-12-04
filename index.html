@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.9.2
+    Version: 3.9.3
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.9.3: Fixed hint keyboard shortcut and gold highlight (now working!)
     - v3.9.2: Added 'H' keyboard shortcut for hints + visual gold highlight of suggested link
     - v3.9.1: Removed non-clickable links from page (cleaner UX)
     - v3.9.0: Added minimum clicks solver, hints, and optimal path comparison
@@ -1879,7 +1880,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.2</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.3</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2391,14 +2392,18 @@
                 );
 
                 if (hint.success) {
-                    // Find the link on the page
-                    const linkToFind = hint.bestLink.replace(/ /g, '_');
-                    const allLinks = document.querySelectorAll('#content a');
+                    // Find the link on the page using the data-page-title attribute
+                    const allLinks = document.querySelectorAll('#content a[data-page-title]');
                     let foundLink = null;
                     
+                    // The hint.bestLink might have spaces or underscores, normalize both for comparison
+                    const normalizedHint = hint.bestLink.replace(/_/g, ' ');
+                    
                     for (const link of allLinks) {
-                        const href = link.getAttribute('href');
-                        if (href && href.includes('/wiki/' + linkToFind)) {
+                        const pageTitle = link.getAttribute('data-page-title');
+                        const normalizedPageTitle = pageTitle.replace(/_/g, ' ');
+                        
+                        if (normalizedPageTitle === normalizedHint) {
                             foundLink = link;
                             break;
                         }
@@ -2422,8 +2427,9 @@
                             foundLink.classList.remove('hint-highlight');
                         }, 3000);
                     } else {
-                        // Link not found on page (shouldn't happen, but just in case)
+                        // Link not found on page (might be further down and need scrolling/loading)
                         showNotification(`💡 Hint: Look for "${hint.bestLink}"`);
+                        console.log('Link not found on current page view:', hint.bestLink);
                     }
                     
                     console.log('Optimal path:', hint.optimalPath.join(' → '));
@@ -3443,6 +3449,9 @@
                     if (href && href.startsWith('/wiki/') && !href.includes(':')) {
                         const pageTitle = decodeURIComponent(href.replace('/wiki/', ''));
                         
+                        // Store pageTitle as data attribute for later reference (e.g., for hints)
+                        link.setAttribute('data-page-title', pageTitle);
+                        
                         link.removeAttribute('href');
                         link.style.cursor = 'pointer';
                         
@@ -4076,7 +4085,8 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                     }
                     
                     const hintBtn = document.getElementById('hint-btn');
-                    if (hintBtn && !hintBtn.disabled && gameState.gameActive) {
+                    // Check if game is active by checking if we have current and target pages and haven't won yet
+                    if (hintBtn && !hintBtn.disabled && gameState.currentPage && gameState.targetPage && !gameState.hasWon) {
                         e.preventDefault();
                         hintBtn.click();
                     }
