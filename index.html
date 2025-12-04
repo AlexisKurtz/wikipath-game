@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.9.6
+    Version: 3.9.7
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.9.7: Added extensive debugging for hint bug (title normalization issues)
     - v3.9.6: Fixed "URI malformed" error with try-catch on decodeURIComponent
     - v3.9.5: Added extensive debugging + safety check for hint bug (suggesting current page)
     - v3.9.4: Fixed hint highlighting selector (#game-area not #content) + added debugging
@@ -1883,7 +1884,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.6</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.7</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2166,10 +2167,19 @@
                     const response = await fetch(url);
                     const data = await response.json();
 
+                    // Check if Wikipedia normalized the title
+                    if (data.query?.normalized) {
+                        console.log('[getOutgoingLinks] Wikipedia normalized title:', 
+                            data.query.normalized[0].from, '→', data.query.normalized[0].to);
+                    }
+
                     const pages = data.query?.pages || {};
                     const pageId = Object.keys(pages)[0];
 
-                    if (pageId === '-1') return [];
+                    if (pageId === '-1') {
+                        console.log('[getOutgoingLinks] Page not found:', pageTitle);
+                        return [];
+                    }
 
                     const links = pages[pageId]?.links || [];
                     // FILTER OUT non-clickable links (same as game UI does)
@@ -2202,10 +2212,19 @@
                     const response = await fetch(url);
                     const data = await response.json();
 
+                    // Check if Wikipedia normalized the title
+                    if (data.query?.normalized) {
+                        console.log('[getIncomingLinks] Wikipedia normalized title:', 
+                            data.query.normalized[0].from, '→', data.query.normalized[0].to);
+                    }
+
                     const pages = data.query?.pages || {};
                     const pageId = Object.keys(pages)[0];
 
-                    if (pageId === '-1') return [];
+                    if (pageId === '-1') {
+                        console.log('[getIncomingLinks] Page not found:', pageTitle);
+                        return [];
+                    }
 
                     const linkshere = pages[pageId]?.linkshere || [];
                     // FILTER OUT non-clickable links (same as game UI does)
@@ -2414,11 +2433,21 @@
                     const normalizedBestLink = hint.bestLink.replace(/_/g, ' ').trim().toLowerCase();
                     const normalizedCurrentPage = gameState.currentPage.replace(/_/g, ' ').trim().toLowerCase();
                     
+                    console.log('=== SAFETY CHECK ===');
+                    console.log('Raw bestLink:', hint.bestLink);
+                    console.log('Raw currentPage:', gameState.currentPage);
+                    console.log('Normalized bestLink:', normalizedBestLink);
+                    console.log('Normalized currentPage:', normalizedCurrentPage);
+                    console.log('Are they equal?', normalizedBestLink === normalizedCurrentPage);
+                    console.log('Path[0] (should be current):', hint.optimalPath?.[0]);
+                    console.log('Path[1] (the suggestion):', hint.optimalPath?.[1]);
+                    
                     if (normalizedBestLink === normalizedCurrentPage) {
                         console.error('⚠️ BUG DETECTED: Hint is suggesting current page!');
                         console.error('Current page:', gameState.currentPage);
                         console.error('Suggested link:', hint.bestLink);
                         console.error('Full path:', hint.optimalPath);
+                        console.error('This means path[0] and path[1] are the same, or there\'s a title mismatch');
                         showNotification('⚠️ Hint error: Already on suggested page. Try again.');
                         minClicksDisplay.textContent = originalText;
                         minClicksDisplay.classList.remove('loading');
