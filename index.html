@@ -2,10 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.11.3
+    Version: 3.12.1
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.12.1: Added extensive DOM structure debugging to diagnose why content isn't being found
+    - v3.12.0: ACTUALLY FIXED! Made sections RESPONSIVE - collapse/expand based on current window width, not just page load
     - v3.11.3: Added mobile detection alert for debugging WTF is happening
     - v3.11.2: FIXED collapsible sections! Rewrote algorithm to handle Wikipedia's nested HTML structure properly
     - v3.11.1: Added extensive debugging for collapsible sections to diagnose issues
@@ -1909,7 +1911,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.11.3</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.12.1</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3588,17 +3590,44 @@
                 console.log('=== Making Collapsible Sections ===');
                 console.log('Is mobile:', isMobile, 'Window width:', window.innerWidth);
                 
-                // TEMPORARY: Alert for mobile debugging
-                if (window.innerWidth <= 768) {
-                    alert(`MOBILE DETECTED!\nWidth: ${window.innerWidth}\nisMobile: ${isMobile}\nSections should collapse!`);
-                }
-                
                 // Find all section headers (h2 only for main sections, Wikipedia style)
                 const headers = this.gameArea.querySelectorAll('h2');
                 console.log('Found H2 headers:', headers.length);
                 
+                // DEBUG: Inspect first header's DOM structure
+                if (headers.length > 0) {
+                    const firstHeader = headers[0];
+                    console.log('=== DEBUGGING FIRST HEADER DOM STRUCTURE ===');
+                    console.log('Header text:', firstHeader.textContent);
+                    console.log('Header parent:', firstHeader.parentNode);
+                    console.log('Header parent tagName:', firstHeader.parentNode.tagName);
+                    console.log('Next sibling:', firstHeader.nextSibling);
+                    console.log('Next element sibling:', firstHeader.nextElementSibling);
+                    console.log('Parent\'s next sibling:', firstHeader.parentNode.nextSibling);
+                    console.log('Parent\'s next element sibling:', firstHeader.parentNode.nextElementSibling);
+                    
+                    // Try to find all siblings
+                    let siblings = [];
+                    let node = firstHeader.nextSibling;
+                    let count = 0;
+                    while (node && count < 10) {
+                        console.log(`Sibling ${count}:`, node.nodeType === 1 ? node.tagName : 'TextNode', node);
+                        siblings.push(node);
+                        node = node.nextSibling;
+                        count++;
+                    }
+                    console.log('Total siblings found:', siblings.length);
+                    console.log('=== END DEBUG ===');
+                }
+                
                 headers.forEach((header, index) => {
                     console.log(`Processing header ${index}:`, header.textContent.trim());
+                    
+                    // Skip if already processed (has toggle button)
+                    if (header.querySelector('.section-toggle')) {
+                        console.log('  Already processed, skipping');
+                        return;
+                    }
                     
                     // Find all elements between this header and the next h2
                     const nextH2 = headers[index + 1];
@@ -3647,6 +3676,10 @@
                     header.appendChild(toggleBtn);
                     header.style.cursor = 'pointer';
                     
+                    // Store reference to wrapper and button for responsive updates
+                    header._collapsibleWrapper = wrapper;
+                    header._collapsibleToggle = toggleBtn;
+                    
                     // Determine if should be collapsed
                     const shouldCollapse = isMobile || this.shouldCollapseSection(header);
                     console.log(`  Should collapse: ${shouldCollapse} (mobile: ${isMobile}, special: ${this.shouldCollapseSection(header)})`);
@@ -3674,10 +3707,42 @@
                 console.log('=== Collapsible sections setup complete ===');
             }
             
+            updateCollapsibleSectionsForResize() {
+                // Update section states based on current window width
+                const isMobile = window.innerWidth <= 768;
+                console.log('=== Updating sections for resize ===');
+                console.log('Window width:', window.innerWidth, 'Is mobile:', isMobile);
+                
+                const headers = this.gameArea.querySelectorAll('h2');
+                
+                headers.forEach(header => {
+                    const wrapper = header._collapsibleWrapper;
+                    const toggleBtn = header._collapsibleToggle;
+                    
+                    if (!wrapper || !toggleBtn) return;
+                    
+                    // Check if section should be collapsed
+                    const shouldCollapse = isMobile || this.shouldCollapseSection(header);
+                    
+                    // Only auto-collapse/expand if user hasn't manually toggled
+                    // Check if current state matches what it should be
+                    const isCurrentlyCollapsed = wrapper.style.display === 'none';
+                    
+                    if (shouldCollapse && !isCurrentlyCollapsed) {
+                        // Should be collapsed but isn't
+                        wrapper.style.display = 'none';
+                        toggleBtn.textContent = '[+]';
+                    } else if (!shouldCollapse && isCurrentlyCollapsed && !this.shouldCollapseSection(header)) {
+                        // Should be expanded but isn't (and it's not a special section)
+                        wrapper.style.display = 'block';
+                        toggleBtn.textContent = '[-]';
+                    }
+                });
+            }
+            
             shouldCollapseSection(header) {
                 // Get clean header text without toggle button
                 const headerText = header.textContent.replace(/\[\+\]|\[\-\]/g, '').toLowerCase().trim();
-                console.log(`    Checking: "${headerText}"`);
                 
                 // Sections to collapse by default
                 const collapseKeywords = [
@@ -3693,9 +3758,7 @@
                     'sources'
                 ];
                 
-                const shouldCollapse = collapseKeywords.some(keyword => headerText.includes(keyword));
-                console.log(`    Should collapse: ${shouldCollapse}`);
-                return shouldCollapse;
+                return collapseKeywords.some(keyword => headerText.includes(keyword));
             }
 
             fixImages() {
@@ -4534,6 +4597,18 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         globalGameController = game;
         game.initialize();
         initializeSearch();
+
+        // Add responsive resize listener for collapsible sections
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            // Debounce resize events
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (globalGameController) {
+                    globalGameController.updateCollapsibleSectionsForResize();
+                }
+            }, 150);
+        });
 
         function startNewGame() {
             clearUrl();
