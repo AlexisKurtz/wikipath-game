@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.9.0
+    Version: 3.9.1
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.9.1: Removed non-clickable links from page (cleaner UX)
     - v3.9.0: Added minimum clicks solver, hints, and optimal path comparison
     - v3.8.4: Fixed redirect bug - now detects win when clicking redirect links
     [previous changelog entries...]
@@ -1857,7 +1858,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.1</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3470,11 +3471,8 @@
                             this.handleLinkClick(pageTitle);
                         });
                     } else {
-                        link.style.color = '#999';
-                        link.style.cursor = 'not-allowed';
-                        link.addEventListener('click', (e) => {
-                            e.preventDefault();
-                        });
+                        // Remove non-article links completely from the page
+                        link.remove();
                     }
                 });
             }
