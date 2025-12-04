@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.16.0
+    Version: 3.17.0
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.17.0: Fixed hint scrolling (expands collapsed sections) + fixed mobile touch scrolling (detects tap vs scroll gesture)
     - v3.16.0: FOUND IT! H2s are wrapped in mw-heading divs. Now looking at siblings of the wrapper, not the H2 itself!
     - v3.15.0: Simplified approach - walks DOM siblings directly instead of trying to map positions (should FINALLY work!)
     - v3.14.0: THE ACTUAL FIX! Was looking at wrong DOM level - now looks inside .wikipedia-article wrapper where content actually is
@@ -1915,7 +1916,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.16.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.17.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2583,6 +2584,25 @@
                 
                 if (foundLink) {
                     console.log('Scrolling and highlighting link...');
+                    
+                    // Check if link is inside a collapsed section and expand it
+                    const headers = document.querySelectorAll('#game-area h2');
+                    for (const header of headers) {
+                        const wrapper = header._collapsibleWrapper;
+                        if (wrapper && wrapper.contains(foundLink)) {
+                            // Link is in this section - check if collapsed
+                            if (wrapper.style.display === 'none') {
+                                console.log('Expanding collapsed section:', header.textContent);
+                                wrapper.style.display = 'block';
+                                const toggleBtn = header._collapsibleToggle;
+                                if (toggleBtn) {
+                                    toggleBtn.textContent = '[-]';
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    
                     // Scroll to the link smoothly
                     foundLink.scrollIntoView({ 
                         behavior: 'smooth', 
@@ -3696,7 +3716,10 @@
                         console.log('  ✓ Expanded');
                     }
                     
-                    // Toggle handler
+                    // Toggle handler with mobile scroll detection
+                    let touchStartY = 0;
+                    let touchStartTime = 0;
+                    
                     const toggle = (e) => {
                         e.stopPropagation();
                         const isVisible = wrapper.style.display !== 'none';
@@ -3704,7 +3727,34 @@
                         toggleBtn.textContent = isVisible ? '[+]' : '[-]';
                     };
                     
-                    header.addEventListener('click', toggle);
+                    // Desktop: simple click
+                    header.addEventListener('click', (e) => {
+                        // Only toggle on actual clicks, not touch events
+                        if (e.type === 'click' && !e.isTrusted) return; // Ignore synthetic clicks
+                        if (e.pointerType === 'touch') return; // Ignore if it came from touch
+                        toggle(e);
+                    });
+                    
+                    // Mobile: detect tap vs scroll
+                    header.addEventListener('touchstart', (e) => {
+                        touchStartY = e.touches[0].clientY;
+                        touchStartTime = Date.now();
+                    }, { passive: true });
+                    
+                    header.addEventListener('touchend', (e) => {
+                        const touchEndY = e.changedTouches[0].clientY;
+                        const touchDuration = Date.now() - touchStartTime;
+                        const touchDistance = Math.abs(touchEndY - touchStartY);
+                        
+                        // Only toggle if it was a quick tap with minimal movement
+                        // (not a scroll gesture)
+                        if (touchDistance < 10 && touchDuration < 300) {
+                            toggle(e);
+                        }
+                    });
+                    
+                    // Store reference for hint feature to expand section if needed
+                    header._collapsibleSection = { wrapper, toggleBtn, toggle };
                 });
                 
                 console.log('=== Complete ===');
