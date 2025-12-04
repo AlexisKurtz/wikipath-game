@@ -2,10 +2,13 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.13.0
+    Version: 3.16.0
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.16.0: FOUND IT! H2s are wrapped in mw-heading divs. Now looking at siblings of the wrapper, not the H2 itself!
+    - v3.15.0: Simplified approach - walks DOM siblings directly instead of trying to map positions (should FINALLY work!)
+    - v3.14.0: THE ACTUAL FIX! Was looking at wrong DOM level - now looks inside .wikipedia-article wrapper where content actually is
     - v3.13.0: COMPLETELY REWROTE collapsible algorithm - finds content by array position, not DOM siblings (should actually work now!)
     - v3.12.1: Added extensive DOM structure debugging to diagnose why content isn't being found
     - v3.12.0: ACTUALLY FIXED! Made sections RESPONSIVE - collapse/expand based on current window width, not just page load
@@ -1912,7 +1915,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.13.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.16.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3588,85 +3591,89 @@
 
             makeCollapsibleSections() {
                 const isMobile = window.innerWidth <= 768;
-                console.log('=== Making Collapsible Sections (NEW APPROACH) ===');
+                console.log('=== Making Collapsible Sections (WRAPPER FIX) ===');
                 console.log('Is mobile:', isMobile, 'Window width:', window.innerWidth);
                 
-                // Get all H2 headers
+                // Find all H2 headers
                 const headers = Array.from(this.gameArea.querySelectorAll('h2'));
                 console.log('Found H2 headers:', headers.length);
                 
                 if (headers.length === 0) {
-                    console.log('No headers found, exiting');
+                    console.log('No headers found');
                     return;
                 }
                 
-                // Get all top-level children of gameArea
-                const allElements = Array.from(this.gameArea.children);
-                console.log('Total elements in game area:', allElements.length);
-                
                 headers.forEach((header, index) => {
-                    console.log(`\nProcessing header ${index}: "${header.textContent.trim()}"`);
+                    console.log(`\nProcessing: "${header.textContent.trim()}"`);
                     
                     // Skip if already processed
                     if (header.querySelector('.section-toggle')) {
-                        console.log('  Already processed, skipping');
+                        console.log('  Already processed');
                         return;
                     }
                     
-                    // Find header's parent in the allElements array (might be wrapped)
-                    let headerElement = header;
-                    while (headerElement.parentNode !== this.gameArea && headerElement.parentNode) {
-                        headerElement = headerElement.parentNode;
+                    // Find the mw-heading wrapper div that contains this H2
+                    let headerWrapper = header.closest('.mw-heading');
+                    if (!headerWrapper) {
+                        console.log('  No mw-heading wrapper found, using H2 directly');
+                        headerWrapper = header;
                     }
                     
-                    console.log('  Header element tag:', headerElement.tagName);
+                    console.log('  Header wrapper:', headerWrapper.className);
                     
-                    const headerIndex = allElements.indexOf(headerElement);
-                    console.log('  Header position in DOM:', headerIndex);
-                    
-                    if (headerIndex === -1) {
-                        console.log('  Could not find header in elements array');
-                        return;
+                    // Find next H2's wrapper
+                    const nextHeader = headers[index + 1];
+                    let nextHeaderWrapper = null;
+                    if (nextHeader) {
+                        nextHeaderWrapper = nextHeader.closest('.mw-heading') || nextHeader;
                     }
                     
-                    // Find next header's position
-                    let nextHeaderIndex = allElements.length;
-                    if (index < headers.length - 1) {
-                        let nextHeaderElement = headers[index + 1];
-                        while (nextHeaderElement.parentNode !== this.gameArea && nextHeaderElement.parentNode) {
-                            nextHeaderElement = nextHeaderElement.parentNode;
-                        }
-                        nextHeaderIndex = allElements.indexOf(nextHeaderElement);
-                    }
-                    
-                    console.log('  Next header position:', nextHeaderIndex);
-                    
-                    // Collect all elements between this header and the next
+                    // Collect all siblings between this wrapper and the next
                     const contentElements = [];
-                    for (let i = headerIndex + 1; i < nextHeaderIndex; i++) {
-                        contentElements.push(allElements[i]);
+                    let currentElement = headerWrapper.nextElementSibling;
+                    
+                    while (currentElement) {
+                        // Stop if we hit the next header's wrapper
+                        if (currentElement === nextHeaderWrapper) {
+                            break;
+                        }
+                        
+                        // Stop if this element contains the next header
+                        if (nextHeader && currentElement.contains(nextHeader)) {
+                            break;
+                        }
+                        
+                        // Skip other mw-heading divs (subsections like H3, H4)
+                        if (currentElement.classList && currentElement.classList.contains('mw-heading')) {
+                            // This is a subsection, but we still want to include it
+                            contentElements.push(currentElement);
+                        } else {
+                            contentElements.push(currentElement);
+                        }
+                        
+                        currentElement = currentElement.nextElementSibling;
                     }
                     
-                    console.log('  Content elements found:', contentElements.length);
+                    console.log(`  Content elements found: ${contentElements.length}`);
                     
                     if (contentElements.length === 0) {
-                        console.log('  No content to collapse');
+                        console.log('  No content');
                         return;
                     }
                     
-                    // Create wrapper for content
+                    // Create wrapper
                     const wrapper = document.createElement('div');
                     wrapper.className = 'section-content';
                     
-                    // Move content elements into wrapper
+                    // Move content into wrapper
                     contentElements.forEach(el => {
                         wrapper.appendChild(el);
                     });
                     
-                    // Insert wrapper after header element
-                    headerElement.parentNode.insertBefore(wrapper, headerElement.nextSibling);
+                    // Insert wrapper after the header wrapper
+                    headerWrapper.parentNode.insertBefore(wrapper, headerWrapper.nextSibling);
                     
-                    // Add toggle button to actual h2
+                    // Add toggle button to the actual H2
                     const toggleBtn = document.createElement('span');
                     toggleBtn.className = 'section-toggle';
                     toggleBtn.textContent = '[-]';
@@ -3678,14 +3685,13 @@
                     header._collapsibleWrapper = wrapper;
                     header._collapsibleToggle = toggleBtn;
                     
-                    // Determine if should collapse
+                    // Should collapse?
                     const shouldCollapse = isMobile || this.shouldCollapseSection(header);
-                    console.log(`  Should collapse: ${shouldCollapse}`);
                     
                     if (shouldCollapse) {
                         wrapper.style.display = 'none';
                         toggleBtn.textContent = '[+]';
-                        console.log('  ✓ Collapsed');
+                        console.log('  ✓ COLLAPSED');
                     } else {
                         console.log('  ✓ Expanded');
                     }
@@ -3701,7 +3707,7 @@
                     header.addEventListener('click', toggle);
                 });
                 
-                console.log('\n=== Collapsible sections complete ===');
+                console.log('=== Complete ===');
             }
             
             updateCollapsibleSectionsForResize() {
