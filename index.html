@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.9.1
+    Version: 3.9.2
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.9.2: Added 'H' keyboard shortcut for hints + visual gold highlight of suggested link
     - v3.9.1: Removed non-clickable links from page (cleaner UX)
     - v3.9.0: Added minimum clicks solver, hints, and optimal path comparison
     - v3.8.4: Fixed redirect bug - now detects win when clicking redirect links
@@ -1849,6 +1850,26 @@
                 font-size: 1.1em;
             }
         }
+
+        /* Hint highlight animation */
+        .hint-highlight {
+            background-color: gold !important;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8) !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            animation: hint-pulse 1s ease-in-out infinite;
+            font-weight: 600 !important;
+            color: #000 !important;
+        }
+
+        @keyframes hint-pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(255, 215, 0, 1);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1858,7 +1879,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.1</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.2</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -1968,7 +1989,7 @@
                 <span>View Path</span>
             </button>
             <!-- NEW: Hint button now functional -->
-            <button class="fab-menu-item" id="hint-btn" onclick="showSolverHint(); closeFabMenu();">
+            <button class="fab-menu-item" id="hint-btn" onclick="showSolverHint(); closeFabMenu();" title="Get Hint (H)">
                 <span class="emoji">💡</span>
                 <span>Get Hint</span>
             </button>
@@ -2370,7 +2391,41 @@
                 );
 
                 if (hint.success) {
-                    showNotification(`💡 Hint: Look for "${hint.bestLink}"`);
+                    // Find the link on the page
+                    const linkToFind = hint.bestLink.replace(/ /g, '_');
+                    const allLinks = document.querySelectorAll('#content a');
+                    let foundLink = null;
+                    
+                    for (const link of allLinks) {
+                        const href = link.getAttribute('href');
+                        if (href && href.includes('/wiki/' + linkToFind)) {
+                            foundLink = link;
+                            break;
+                        }
+                    }
+                    
+                    if (foundLink) {
+                        // Scroll to the link smoothly
+                        foundLink.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                        
+                        // Add gold highlight
+                        foundLink.classList.add('hint-highlight');
+                        
+                        // Show notification
+                        showNotification(`💡 Hint: Highlighted on page`);
+                        
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                            foundLink.classList.remove('hint-highlight');
+                        }, 3000);
+                    } else {
+                        // Link not found on page (shouldn't happen, but just in case)
+                        showNotification(`💡 Hint: Look for "${hint.bestLink}"`);
+                    }
+                    
                     console.log('Optimal path:', hint.optimalPath.join(' → '));
                 } else {
                     showNotification('Could not generate hint');
@@ -4012,6 +4067,19 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 
                 if (e.key === 'Escape' && searchOverlay.classList.contains('active')) {
                     closeSearch();
+                }
+                
+                // 'H' for hint
+                if (e.key === 'h' || e.key === 'H') {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                        return;
+                    }
+                    
+                    const hintBtn = document.getElementById('hint-btn');
+                    if (hintBtn && !hintBtn.disabled && gameState.gameActive) {
+                        e.preventDefault();
+                        hintBtn.click();
+                    }
                 }
             });
             
