@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.9.8
+    Version: 3.9.9
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.9.9: CRITICAL FIX! Fixed bidirectional BFS path reconstruction (reverse THEN slice)
     - v3.9.8: FIXED hint bug! Removed title normalization, let Wikipedia API handle it correctly
     - v3.9.7: Added extensive debugging for hint bug (title normalization issues)
     - v3.9.6: Fixed "URI malformed" error with try-catch on decodeURIComponent
@@ -1885,7 +1886,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.8</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.9</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2313,7 +2314,7 @@
 
                             if (backwardVisited.has(currentPage)) {
                                 const backwardPath = backwardVisited.get(currentPage);
-                                const completePath = [...currentPath, ...backwardPath.slice(1).reverse()];
+                                const completePath = [...currentPath, ...backwardPath.reverse().slice(1)];
                                 return {
                                     found: true,
                                     path: completePath,
@@ -2333,7 +2334,7 @@
 
                                     if (backwardVisited.has(link)) {
                                         const backwardPath = backwardVisited.get(link);
-                                        const completePath = [...newPath, ...backwardPath.slice(1).reverse()];
+                                        const completePath = [...newPath, ...backwardPath.reverse().slice(1)];
                                         return {
                                             found: true,
                                             path: completePath,
@@ -2355,7 +2356,7 @@
 
                             if (forwardVisited.has(currentPage)) {
                                 const forwardPath = forwardVisited.get(currentPage);
-                                const completePath = [...forwardPath, ...currentPath.slice(1).reverse()];
+                                const completePath = [...forwardPath, ...currentPath.reverse().slice(1)];
                                 return {
                                     found: true,
                                     path: completePath,
@@ -2375,7 +2376,7 @@
 
                                     if (forwardVisited.has(link)) {
                                         const forwardPath = forwardVisited.get(link);
-                                        const completePath = [...forwardPath, ...newPath.slice(1).reverse()];
+                                        const completePath = [...forwardPath, ...newPath.reverse().slice(1)];
                                         return {
                                             found: true,
                                             path: completePath,
