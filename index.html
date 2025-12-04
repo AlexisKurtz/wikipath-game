@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.9.5
+    Version: 3.9.6
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.9.6: Fixed "URI malformed" error with try-catch on decodeURIComponent
     - v3.9.5: Added extensive debugging + safety check for hint bug (suggesting current page)
     - v3.9.4: Fixed hint highlighting selector (#game-area not #content) + added debugging
     - v3.9.3: Fixed hint keyboard shortcut and gold highlight (now working!)
@@ -1882,7 +1883,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.5</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.6</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3493,7 +3494,14 @@
                     const href = link.getAttribute('href');
                     
                     if (href && href.startsWith('/wiki/') && !href.includes(':')) {
-                        const pageTitle = decodeURIComponent(href.replace('/wiki/', ''));
+                        let pageTitle;
+                        try {
+                            pageTitle = decodeURIComponent(href.replace('/wiki/', ''));
+                        } catch (e) {
+                            // If decoding fails (malformed URI), use the raw title
+                            console.warn('Failed to decode URI:', href, e);
+                            pageTitle = href.replace('/wiki/', '');
+                        }
                         
                         // Store pageTitle as data attribute for later reference (e.g., for hints)
                         link.setAttribute('data-page-title', pageTitle);
