@@ -2,10 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.9.3
+    Version: 3.9.5
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.9.5: Added extensive debugging + safety check for hint bug (suggesting current page)
+    - v3.9.4: Fixed hint highlighting selector (#game-area not #content) + added debugging
     - v3.9.3: Fixed hint keyboard shortcut and gold highlight (now working!)
     - v3.9.2: Added 'H' keyboard shortcut for hints + visual gold highlight of suggested link
     - v3.9.1: Removed non-clickable links from page (cleaner UX)
@@ -1880,7 +1882,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.3</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.9.5</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2350,12 +2352,16 @@
             }
 
             async getBestNextLink(currentPage, targetPage) {
+                console.log('[getBestNextLink] Called with:', { currentPage, targetPage });
                 const result = await this.findShortestPath(currentPage, targetPage, 4);
+                console.log('[getBestNextLink] Path found:', result.path);
 
                 if (!result.found || !result.path || result.path.length < 2) {
+                    console.log('[getBestNextLink] No valid path found');
                     return { success: false, message: 'Could not find optimal path' };
                 }
 
+                console.log('[getBestNextLink] Returning path[1]:', result.path[1]);
                 return {
                     success: true,
                     bestLink: result.path[1],
@@ -2375,8 +2381,10 @@
 
         // Show hint using the solver
         async function showSolverHint() {
+            console.log('=== showSolverHint called ===');
             if (!gameState.currentPage || !gameState.targetPage || gameState.hasWon) {
                 showNotification('Hint not available right now');
+                console.log('Hint blocked:', { currentPage: gameState.currentPage, targetPage: gameState.targetPage, hasWon: gameState.hasWon });
                 return;
             }
 
@@ -2386,18 +2394,50 @@
             minClicksDisplay.classList.add('loading');
 
             try {
+                console.log('=== HINT REQUEST ===');
+                console.log('Current page:', gameState.currentPage);
+                console.log('Target page:', gameState.targetPage);
+                console.log('Getting hint from solver...');
                 const hint = await wikipathSolver.getBestNextLink(
                     gameState.currentPage,
                     gameState.targetPage
                 );
+                console.log('Hint result:', hint);
+                console.log('Suggested next link:', hint.bestLink);
+                if (hint.optimalPath) {
+                    console.log('Full path:', hint.optimalPath.join(' → '));
+                }
 
                 if (hint.success) {
+                    // SAFETY CHECK: Don't suggest the current page
+                    const normalizedBestLink = hint.bestLink.replace(/_/g, ' ').trim().toLowerCase();
+                    const normalizedCurrentPage = gameState.currentPage.replace(/_/g, ' ').trim().toLowerCase();
+                    
+                    if (normalizedBestLink === normalizedCurrentPage) {
+                        console.error('⚠️ BUG DETECTED: Hint is suggesting current page!');
+                        console.error('Current page:', gameState.currentPage);
+                        console.error('Suggested link:', hint.bestLink);
+                        console.error('Full path:', hint.optimalPath);
+                        showNotification('⚠️ Hint error: Already on suggested page. Try again.');
+                        minClicksDisplay.textContent = originalText;
+                        minClicksDisplay.classList.remove('loading');
+                        return;
+                    }
+                    
                     // Find the link on the page using the data-page-title attribute
-                    const allLinks = document.querySelectorAll('#content a[data-page-title]');
+                    const allLinks = document.querySelectorAll('#game-area a[data-page-title]');
+                    console.log('Total links with data-page-title:', allLinks.length);
+                    
+                    // Debug: log first few links
+                    if (allLinks.length > 0) {
+                        console.log('First 5 links:', Array.from(allLinks).slice(0, 5).map(l => l.getAttribute('data-page-title')));
+                    }
+                    
                     let foundLink = null;
                     
                     // The hint.bestLink might have spaces or underscores, normalize both for comparison
                     const normalizedHint = hint.bestLink.replace(/_/g, ' ');
+                    console.log('Looking for:', normalizedHint);
                     
                     for (const link of allLinks) {
                         const pageTitle = link.getAttribute('data-page-title');
@@ -2405,11 +2445,13 @@
                         
                         if (normalizedPageTitle === normalizedHint) {
                             foundLink = link;
+                            console.log('✓ Found link!');
                             break;
                         }
                     }
                     
                     if (foundLink) {
+                        console.log('Scrolling and highlighting link...');
                         // Scroll to the link smoothly
                         foundLink.scrollIntoView({ 
                             behavior: 'smooth', 
@@ -2418,6 +2460,7 @@
                         
                         // Add gold highlight
                         foundLink.classList.add('hint-highlight');
+                        console.log('Highlight class added');
                         
                         // Show notification
                         showNotification(`💡 Hint: Highlighted on page`);
@@ -2425,16 +2468,19 @@
                         // Remove highlight after 3 seconds
                         setTimeout(() => {
                             foundLink.classList.remove('hint-highlight');
+                            console.log('Highlight removed');
                         }, 3000);
                     } else {
                         // Link not found on page (might be further down and need scrolling/loading)
                         showNotification(`💡 Hint: Look for "${hint.bestLink}"`);
-                        console.log('Link not found on current page view:', hint.bestLink);
+                        console.log('⚠ Link not found on current page view:', hint.bestLink);
+                        console.log('All available links:', Array.from(allLinks).map(l => l.getAttribute('data-page-title')));
                     }
                     
                     console.log('Optimal path:', hint.optimalPath.join(' → '));
                 } else {
                     showNotification('Could not generate hint');
+                    console.log('Hint generation failed');
                 }
             } catch (error) {
                 console.error('Hint error:', error);
@@ -4080,15 +4126,28 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 
                 // 'H' for hint
                 if (e.key === 'h' || e.key === 'H') {
+                    console.log('H key pressed!');
                     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                        console.log('Ignored - typing in input field');
                         return;
                     }
                     
                     const hintBtn = document.getElementById('hint-btn');
+                    console.log('Hint button:', hintBtn);
+                    console.log('Button disabled?', hintBtn?.disabled);
+                    console.log('Game state:', {
+                        currentPage: gameState.currentPage,
+                        targetPage: gameState.targetPage,
+                        hasWon: gameState.hasWon
+                    });
+                    
                     // Check if game is active by checking if we have current and target pages and haven't won yet
                     if (hintBtn && !hintBtn.disabled && gameState.currentPage && gameState.targetPage && !gameState.hasWon) {
+                        console.log('Triggering hint!');
                         e.preventDefault();
                         hintBtn.click();
+                    } else {
+                        console.log('Hint conditions not met');
                     }
                 }
             });
