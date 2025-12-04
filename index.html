@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.11.2
+    Version: 3.11.3
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.11.3: Added mobile detection alert for debugging WTF is happening
     - v3.11.2: FIXED collapsible sections! Rewrote algorithm to handle Wikipedia's nested HTML structure properly
     - v3.11.1: Added extensive debugging for collapsible sections to diagnose issues
     - v3.11.0: Added collapsible sections (collapsed by default on mobile + special sections like "Royal Titulary"), hidden TOC on mobile
@@ -1908,7 +1909,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.11.2</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.11.3</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3586,6 +3587,11 @@
                 const isMobile = window.innerWidth <= 768;
                 console.log('=== Making Collapsible Sections ===');
                 console.log('Is mobile:', isMobile, 'Window width:', window.innerWidth);
+                
+                // TEMPORARY: Alert for mobile debugging
+                if (window.innerWidth <= 768) {
+                    alert(`MOBILE DETECTED!\nWidth: ${window.innerWidth}\nisMobile: ${isMobile}\nSections should collapse!`);
+                }
                 
                 // Find all section headers (h2 only for main sections, Wikipedia style)
                 const headers = this.gameArea.querySelectorAll('h2');
