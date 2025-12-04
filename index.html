@@ -2,10 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.10.1
+    Version: 3.11.0
     Last Updated: 2024-12-02
     
     Changelog:
+    - v3.11.0: Added collapsible sections (collapsed by default on mobile + special sections like "Royal Titulary"), hidden TOC on mobile
+    - v3.10.2: Added keyboard shortcut labels to menu items (H for Hint, R for Retry, Ctrl+F for Search)
     - v3.10.1: CRITICAL FIX! Hints now use cached optimal path instead of recalculating (fixes non-optimal hints)
     - v3.10.0: Added Retry feature with 'R' keyboard shortcut to restart current game
     - v3.9.9: CRITICAL FIX! Fixed bidirectional BFS path reconstruction (reverse THEN slice)
@@ -1775,6 +1777,26 @@
             margin-right: 6px;
         }
 
+        /* Collapsible Sections */
+        .section-toggle {
+            cursor: pointer;
+            margin-left: 8px;
+            user-select: none;
+            font-size: 0.8em;
+            color: #0645ad;
+            font-weight: normal;
+            font-family: monospace;
+        }
+
+        .section-toggle:hover {
+            color: #0b0080;
+        }
+
+        .section-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .header-top {
@@ -1805,11 +1827,7 @@
             }
 
             .toc-container {
-                width: 100%;
-                height: auto;
-                max-height: 200px;
-                position: relative;
-                top: 0;
+                display: none; /* Hide TOC on mobile like Wikipedia mobile */
             }
 
             .content-area {
@@ -1888,7 +1906,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.10.1</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.11.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2001,10 +2019,12 @@
             <button class="fab-menu-item" id="hint-btn" onclick="showSolverHint(); closeFabMenu();" title="Get Hint (H)">
                 <span class="emoji">💡</span>
                 <span>Get Hint</span>
+                <span class="keyboard-shortcut">H</span>
             </button>
             <button class="fab-menu-item" onclick="openSearch(); closeFabMenu();">
                 <span class="emoji">🔍</span>
-                <span>Search (Ctrl+F)</span>
+                <span>Search</span>
+                <span class="keyboard-shortcut">Ctrl+F</span>
             </button>
             <button class="fab-menu-item" onclick="openStats(); closeFabMenu();">
                 <span class="emoji">📊</span>
@@ -2014,6 +2034,7 @@
             <button class="fab-menu-item" id="retry-btn" onclick="retryGame(); closeFabMenu();" title="Retry Game (R)">
                 <span class="emoji">🔄</span>
                 <span>Retry</span>
+                <span class="keyboard-shortcut">R</span>
             </button>
             <button class="fab-menu-item danger" onclick="giveUp(); closeFabMenu();">
                 <span class="emoji">🏳️</span>
@@ -3556,6 +3577,82 @@
 
                 this.processLinks();
                 this.fixImages();
+                this.makeCollapsibleSections();
+            }
+
+            makeCollapsibleSections() {
+                const isMobile = window.innerWidth <= 768;
+                
+                // Find all section headers (h2, h3, h4)
+                const headers = this.gameArea.querySelectorAll('h2, h3, h4');
+                
+                headers.forEach(header => {
+                    // Get all content until the next header of same or higher level
+                    const content = [];
+                    let nextElement = header.nextElementSibling;
+                    const headerLevel = parseInt(header.tagName.substring(1));
+                    
+                    while (nextElement) {
+                        const isHeader = nextElement.tagName.match(/^H[1-6]$/);
+                        if (isHeader) {
+                            const nextLevel = parseInt(nextElement.tagName.substring(1));
+                            if (nextLevel <= headerLevel) {
+                                break;
+                            }
+                        }
+                        content.push(nextElement);
+                        nextElement = nextElement.nextElementSibling;
+                    }
+                    
+                    // Skip if no content to collapse
+                    if (content.length === 0) return;
+                    
+                    // Create collapsible container
+                    const container = document.createElement('div');
+                    container.className = 'section-content';
+                    
+                    // Move content into container
+                    content.forEach(el => {
+                        container.appendChild(el);
+                    });
+                    
+                    // Insert container after header
+                    header.parentNode.insertBefore(container, header.nextSibling);
+                    
+                    // Add toggle button
+                    const toggleBtn = document.createElement('span');
+                    toggleBtn.className = 'section-toggle';
+                    toggleBtn.textContent = '[-]';
+                    toggleBtn.style.cssText = 'cursor: pointer; margin-left: 8px; user-select: none; font-size: 0.8em; color: #0645ad;';
+                    
+                    header.appendChild(toggleBtn);
+                    header.style.cursor = 'pointer';
+                    
+                    // Collapse by default on mobile or if section should be collapsed
+                    const shouldCollapse = isMobile || this.shouldCollapseSection(header);
+                    if (shouldCollapse) {
+                        container.style.display = 'none';
+                        toggleBtn.textContent = '[+]';
+                    }
+                    
+                    // Toggle functionality
+                    const toggle = () => {
+                        const isVisible = container.style.display !== 'none';
+                        container.style.display = isVisible ? 'none' : 'block';
+                        toggleBtn.textContent = isVisible ? '[+]' : '[-]';
+                    };
+                    
+                    header.addEventListener('click', toggle);
+                });
+            }
+            
+            shouldCollapseSection(header) {
+                // Check if section contains mw-collapsible or similar classes
+                const headerText = header.textContent.toLowerCase();
+                
+                // Collapse sections that are typically collapsed on Wikipedia
+                const collapseKeywords = ['royal titulary', 'titulary', 'see also', 'notes', 'references', 'external links', 'further reading'];
+                return collapseKeywords.some(keyword => headerText.includes(keyword));
             }
 
             fixImages() {
