@@ -2,10 +2,16 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.20.0
-    Last Updated: 2024-12-02
-    
+    Version: 3.26.0
+    Last Updated: 2024-12-11
+
     Changelog:
+    - v3.26.0: PERFORMANCE BOOST! Implemented hover prefetch - pages load INSTANTLY when clicked (200ms hover triggers background fetch). Smart cache system with max 10 pages, max 3 concurrent prefetches. Clicks now feel instant!
+    - v3.25.0: MAJOR typography upgrade! Modern sans-serif font stack (16px base). Enhanced heading hierarchy with better sizing (h2: 1.75em, h3: 1.35em). Improved vertical rhythm with 1.2em paragraph spacing. Added letter-spacing, muted caption colors, and refined blockquotes.
+    - v3.24.0: EXACT Wikipedia layout match! Fixed image box sizing to wrap tightly around images (display: table). Added .mw-default-size support (220px max). Removed excessive borders. Images now align perfectly with paragraphs matching native Wikipedia.
+    - v3.23.0: Fixed Wikipedia layout! H2 sections now clear floats (start after infobox). Figure elements default to right-aligned like Wikipedia. Content flows properly matching native Wikipedia layout.
+    - v3.22.0: Improved image captions! Added comprehensive CSS for Wikipedia's caption structures (.thumb, .thumbcaption, figure, figcaption, gallery). Captions now display properly with borders, backgrounds, and mobile responsiveness matching native Wikipedia.
+    - v3.21.0: ACTUALLY FIXED IMAGES! Non-article links (File:) were being removed along with their images. Now unwraps images from links to preserve them.
     - v3.20.0: FIXED IMAGES! Was removing 58/60 images by accident. Now only removes notification boxes that don't contain images
     - v3.19.0: Fixed link wobble on hover (removed padding/margin changes) + added image debugging to diagnose loading issues
     - v3.18.0: Made links bolder (font-weight: 600) + improved image loading (srcset support, better error handling, lazy loading)
@@ -730,41 +736,65 @@
         }
 
         .wikipedia-article {
-            font-family: 'Linux Libertine', Georgia, Times, serif;
-            font-size: 14px;
-            line-height: 1.6;
+            /* Modern, readable font stack - falls back gracefully */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 16px; /* Optimal for reading (16-18px is ideal) */
+            line-height: 1.7; /* Increased for better readability */
             color: #202122;
             max-width: 900px;
+            letter-spacing: 0.01em; /* Subtle spacing improves readability */
         }
 
         .wikipedia-article h1 {
-            font-size: 3em;
-            margin-bottom: 0.3em;
-            margin-top: 0.2em;
-            padding-bottom: 0.2em;
+            font-size: 2.5em; /* Slightly smaller for better proportion */
+            margin-bottom: 0.5em;
+            margin-top: 0.25em;
+            padding-bottom: 0.3em;
             border-bottom: 1px solid #a2a9b1;
-            font-family: 'Linux Libertine', Georgia, Times, serif;
-            font-weight: 400;
-            line-height: 1.2;
+            font-weight: 600; /* Slightly bolder for clarity */
+            line-height: 1.25;
             color: #202122;
+            letter-spacing: -0.02em; /* Tighter spacing for large text */
         }
 
         .wikipedia-article h2 {
-            font-size: 1.5em;
-            margin-top: 1em;
-            margin-bottom: 0.5em;
-            padding-bottom: 0.2em;
+            font-size: 1.75em; /* Increased for better hierarchy */
+            margin-top: 1.5em; /* More breathing room */
+            margin-bottom: 0.75em;
+            padding-bottom: 0.3em;
             border-bottom: 1px solid #a2a9b1;
+            font-weight: 600;
+            line-height: 1.3;
+            color: #202122;
+            letter-spacing: -0.01em;
+        }
+
+        /* Ensure h2 sections clear floated elements (especially the infobox) */
+        .wikipedia-article .mw-heading h2 {
+            clear: both;
         }
 
         .wikipedia-article h3 {
-            font-size: 1.2em;
-            margin-top: 0.8em;
-            margin-bottom: 0.4em;
+            font-size: 1.35em; /* Increased for better distinction */
+            margin-top: 1.25em;
+            margin-bottom: 0.6em;
+            font-weight: 600;
+            line-height: 1.35;
+            color: #202122;
+        }
+
+        .wikipedia-article h4 {
+            font-size: 1.15em;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+            line-height: 1.4;
+            color: #202122;
         }
 
         .wikipedia-article p {
-            margin-bottom: 0.8em;
+            margin-bottom: 1.2em; /* Increased spacing between paragraphs */
+            line-height: 1.7;
         }
 
         .wikipedia-article a {
@@ -845,7 +875,25 @@
         }
 
         .wikipedia-article ul, .wikipedia-article ol {
-            margin-left: 1.6em;
+            margin-left: 1.8em;
+            margin-bottom: 1.2em;
+            line-height: 1.7;
+        }
+
+        .wikipedia-article li {
+            margin-bottom: 0.5em;
+        }
+
+        .wikipedia-article blockquote {
+            margin: 1.5em 2em;
+            padding-left: 1.5em;
+            border-left: 3px solid #0645ad;
+            color: #404040;
+            font-style: italic;
+            line-height: 1.7;
+        }
+
+        .wikipedia-article blockquote p {
             margin-bottom: 0.8em;
         }
 
@@ -859,11 +907,12 @@
             float: right;
             clear: right;
             width: 300px;
-            margin: 0 0 1em 1em;
-            padding: 0.5em;
+            margin: 0 0 1.5em 1.5em;
+            padding: 0.75em;
             background: #f8f9fa;
             border: 1px solid #a2a9b1;
-            font-size: 0.9em;
+            font-size: 0.875em; /* Proportional to new base size */
+            line-height: 1.5;
         }
 
         .wikipedia-article .infobox-image {
@@ -893,6 +942,150 @@
             font-size: 1.1em;
             padding: 0.5em;
             background: #eaecf0;
+        }
+
+        /* Wikipedia Thumbnail Images with Captions */
+        .wikipedia-article .thumb {
+            margin: 0.5em 0 1.3em 1.4em;
+            background-color: #f8f9fa;
+            border: 1px solid #c8ccd1;
+            padding: 3px;
+            font-size: 94%;
+            text-align: center;
+            overflow: hidden;
+            display: inline-block;
+            box-sizing: content-box;
+        }
+
+        .wikipedia-article .thumb.tright {
+            clear: right;
+            float: right;
+            margin: 0.5em 0 1.3em 1.4em;
+        }
+
+        .wikipedia-article .thumb.tleft {
+            clear: left;
+            float: left;
+            margin: 0.5em 1.4em 1.3em 0;
+        }
+
+        .wikipedia-article .thumbinner {
+            padding: 3px;
+            background-color: #f8f9fa;
+            font-size: 94%;
+            text-align: center;
+            overflow: hidden;
+            min-width: 100px;
+        }
+
+        .wikipedia-article .thumbimage {
+            border: none;
+            background-color: #fff;
+            display: block;
+        }
+
+        .wikipedia-article .thumbcaption {
+            border: none;
+            text-align: left;
+            line-height: 1.5;
+            padding: 6px;
+            font-size: 0.875em; /* 14.875px based on 17px base */
+            color: #54595d; /* Slightly muted for captions */
+        }
+
+        .wikipedia-article .magnify {
+            display: none; /* Hide magnifying glass icon */
+        }
+
+        /* Figure and Figcaption (Semantic HTML) */
+        .wikipedia-article figure {
+            margin: 0.5em 0 1.3em 1.4em;
+            padding: 3px;
+            background-color: #f8f9fa;
+            border: 1px solid #c8ccd1;
+            max-width: 100%;
+            float: right; /* Default to right like Wikipedia */
+            clear: right;
+            display: table; /* Makes figure wrap tightly around content */
+            box-sizing: content-box;
+        }
+
+        /* Wikipedia's default size for figures */
+        .wikipedia-article figure.mw-default-size {
+            max-width: 220px; /* Wikipedia's default thumbnail width */
+        }
+
+        .wikipedia-article figure.mw-halign-right {
+            clear: right;
+            float: right;
+            margin: 0.5em 0 1.3em 1.4em;
+        }
+
+        .wikipedia-article figure.mw-halign-left {
+            clear: left;
+            float: left;
+            margin: 0.5em 1.4em 1.3em 0;
+        }
+
+        .wikipedia-article figure.mw-halign-center {
+            margin: 0.5em auto;
+            display: table;
+            float: none;
+            clear: both;
+        }
+
+        .wikipedia-article figure > a {
+            display: block;
+        }
+
+        .wikipedia-article figure img {
+            display: block;
+            height: auto;
+        }
+
+        .wikipedia-article figcaption {
+            font-size: 0.875em; /* 14.875px based on 17px base */
+            line-height: 1.5;
+            padding: 6px;
+            color: #54595d; /* Slightly muted for captions */
+            text-align: left;
+            display: table-caption;
+            caption-side: bottom;
+        }
+
+        /* Gallery Images */
+        .wikipedia-article .gallery {
+            margin: 2px;
+            padding: 2px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .wikipedia-article .gallerybox {
+            margin: 2px;
+            padding: 5px;
+            display: inline-block;
+            vertical-align: top;
+            background-color: #f8f9fa;
+            border: 1px solid #c8ccd1;
+            text-align: center;
+        }
+
+        .wikipedia-article .gallerybox .thumb {
+            margin: 2px auto;
+            border: none;
+            background: transparent;
+            padding: 0;
+        }
+
+        .wikipedia-article .gallerytext,
+        .wikipedia-article .gallerytxt {
+            font-size: 0.85em;
+            line-height: 1.4em;
+            padding: 2px 4px;
+            color: #202122;
+            text-align: center;
         }
 
         /* Make sure content flows around infobox */
@@ -1868,6 +2061,36 @@
 
             .modal-buttons {
                 flex-direction: column;
+            }
+
+            /* Image caption mobile styles */
+            .wikipedia-article .thumb,
+            .wikipedia-article .thumb.tright,
+            .wikipedia-article .thumb.tleft {
+                float: none;
+                clear: both;
+                margin: 1em auto;
+                max-width: 100%;
+                width: auto !important;
+            }
+
+            .wikipedia-article figure,
+            .wikipedia-article figure.mw-halign-right,
+            .wikipedia-article figure.mw-halign-left {
+                float: none;
+                margin: 1em auto;
+                max-width: 100%;
+            }
+
+            .wikipedia-article .thumbcaption,
+            .wikipedia-article figcaption {
+                font-size: 0.85em;
+            }
+
+            .wikipedia-article .infobox {
+                float: none;
+                margin: 1em auto;
+                max-width: 100%;
             }
         }
 
@@ -3068,7 +3291,20 @@
         // ======================
         // WIKIPEDIA API
         // ======================
+        // Prefetch cache for instant page loads
+        const prefetchCache = new Map();
+        const prefetchInProgress = new Set();
+        const MAX_PREFETCH_CONCURRENT = 3;
+
         async function fetchWikipediaPage(title) {
+            // Check prefetch cache first
+            if (prefetchCache.has(title)) {
+                console.log(`✓ Using prefetched page: ${title}`);
+                const cached = prefetchCache.get(title);
+                prefetchCache.delete(title); // Remove from cache after use
+                return cached;
+            }
+
             const endpoint = 'https://en.wikipedia.org/w/api.php';
             const params = new URLSearchParams({
                 action: 'parse',
@@ -3092,6 +3328,56 @@
             } catch (error) {
                 console.error('Error fetching Wikipedia page:', error);
                 throw error;
+            }
+        }
+
+        // Prefetch a page in the background
+        async function prefetchPage(title) {
+            // Don't prefetch if already cached or in progress
+            if (prefetchCache.has(title) || prefetchInProgress.has(title)) {
+                return;
+            }
+
+            // Limit concurrent prefetches
+            if (prefetchInProgress.size >= MAX_PREFETCH_CONCURRENT) {
+                return;
+            }
+
+            prefetchInProgress.add(title);
+            console.log(`→ Prefetching: ${title}`);
+
+            try {
+                const endpoint = 'https://en.wikipedia.org/w/api.php';
+                const params = new URLSearchParams({
+                    action: 'parse',
+                    page: title,
+                    format: 'json',
+                    origin: '*',
+                    prop: 'text|sections',
+                    disabletoc: '1',
+                    redirects: '1'
+                });
+
+                const response = await fetch(`${endpoint}?${params}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.info);
+                }
+
+                // Store in cache
+                prefetchCache.set(title, data.parse);
+                console.log(`✓ Prefetched: ${title}`);
+
+                // Keep cache size reasonable (max 10 pages)
+                if (prefetchCache.size > 10) {
+                    const firstKey = prefetchCache.keys().next().value;
+                    prefetchCache.delete(firstKey);
+                }
+            } catch (error) {
+                console.log(`✗ Prefetch failed: ${title}`, error);
+            } finally {
+                prefetchInProgress.delete(title);
             }
         }
 
@@ -3907,18 +4193,25 @@
                         }
                         
                         let previewTimeout = null;
+                        let prefetchTimeout = null;
                         let previewCache = {};
-                        
+
                         link.addEventListener('mouseenter', async (e) => {
+                            // Start prefetch after 200ms (intent signal)
+                            prefetchTimeout = setTimeout(() => {
+                                prefetchPage(pageTitle);
+                            }, 200);
+
+                            // Show preview after 500ms (existing behavior)
                             previewTimeout = setTimeout(async () => {
                                 const preview = document.getElementById('link-preview');
                                 const previewTitle = document.getElementById('preview-title');
                                 const previewText = document.getElementById('preview-text');
-                                
+
                                 previewTitle.textContent = pageTitle;
                                 previewText.innerHTML = '<span class="link-preview-loading">Loading preview...</span>';
                                 preview.classList.add('active');
-                                
+
                                 if (!previewCache[pageTitle]) {
                                     try {
                                         const description = await fetchPageDescription(pageTitle);
@@ -3927,7 +4220,7 @@
                                         previewCache[pageTitle] = 'Preview unavailable.';
                                     }
                                 }
-                                
+
                                 if (preview.classList.contains('active')) {
                                     previewText.textContent = previewCache[pageTitle].substring(0, 200) + '...';
                                 }
@@ -3954,6 +4247,7 @@
                         
                         link.addEventListener('mouseleave', () => {
                             clearTimeout(previewTimeout);
+                            clearTimeout(prefetchTimeout);
                             const preview = document.getElementById('link-preview');
                             preview.classList.remove('active');
                         });
@@ -3977,8 +4271,16 @@
                             this.handleLinkClick(pageTitle);
                         });
                     } else {
-                        // Remove non-article links completely from the page
-                        link.remove();
+                        // For non-article links (like File: links), preserve any images they contain
+                        const containsImage = link.querySelector('img');
+                        if (containsImage) {
+                            // Unwrap the image from the link but keep the image
+                            link.parentNode.insertBefore(containsImage, link);
+                            link.remove();
+                        } else {
+                            // Remove non-article links that don't contain images
+                            link.remove();
+                        }
                     }
                 });
             }
