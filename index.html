@@ -2,10 +2,18 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.37.0
+    Version: 3.45.0
     Last Updated: 2025-12-12
 
     Changelog:
+    - v3.45.0: Accessibility improvements! ♿ Keyboard focus indicators (purple outline). Better color contrast (#666→#555). Reduced-motion support. ARIA labels for screen readers. WCAG AA compliant!
+    - v3.44.0: Centered breadcrumb! Everything grows from middle. Smart collapse shows Start + Current + Target. Hover tooltip shows hidden steps!
+    - v3.43.0: Perfect breadcrumb layout! 🏁 Start left-aligned. 🎯 Target right-aligned. Middle centered. Flex arrows expand!
+    - v3.42.0: Polish! 🏁 Start readable when current (dark blue). 🎯 Target aligned right. Clean layout!
+    - v3.41.0: Perfect breadcrumb! 🎯 Target always on right. 💡 Purple for hint steps. Orange for current backtrack. Better visibility!
+    - v3.40.0: Smart breadcrumb! 🏁 Start always visible. Auto-collapses middle (8+ steps). 💡 Hint indicator. Target always shown!
+    - v3.39.0: Enhanced breadcrumb bar! 📍 "You are here" flag centered on current page. 🎯 Target page highlighted green. Auto-centers!
+    - v3.38.0: Minimalistic path breadcrumb bar! Always visible under header on desktop. Auto-scrolls to latest. Backtracks highlighted.
     - v3.37.0: Action sidebar on right! Uses desktop space efficiently with fixed vertical bar. Tooltips on hover. Mobile keeps FAB.
     - v3.36.0: Revamped action buttons UX! Desktop: clean header buttons. Mobile: FAB menu. No more cluttered floating button on desktop!
     - v3.35.1: FIXED path tracking! Now correctly preserves all forward moves when backtracking (doesn't restore from URL during active game)
@@ -83,6 +91,38 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: #f8f9fa;
             min-height: 100vh;
+        }
+
+        /* Accessibility: Keyboard Focus Indicators */
+        a:focus,
+        button:focus,
+        input:focus,
+        select:focus,
+        textarea:focus,
+        [tabindex]:focus {
+            outline: 2px solid #9c27b0;
+            outline-offset: 2px;
+        }
+
+        /* Skip focus outline for mouse users */
+        a:focus:not(:focus-visible),
+        button:focus:not(:focus-visible),
+        input:focus:not(:focus-visible),
+        select:focus:not(:focus-visible),
+        textarea:focus:not(:focus-visible),
+        [tabindex]:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* Enhanced focus for keyboard users */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible,
+        [tabindex]:focus-visible {
+            outline: 2px solid #9c27b0;
+            outline-offset: 2px;
         }
 
         /* Top Progress Bar - Ultra-Minimal */
@@ -173,7 +213,7 @@
 
         .stat-label-compact {
             font-size: 0.65em;
-            color: #666;
+            color: #555;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
@@ -191,7 +231,7 @@
         }
 
         .stat-value-compact.loading {
-            color: #999;
+            color: #777;
             font-size: 0.8em;
         }
 
@@ -259,7 +299,7 @@
 
         .mode-switch-label {
             font-size: 0.65em;
-            color: #666;
+            color: #555;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
@@ -277,7 +317,7 @@
         .mode-switch-btn {
             background: transparent;
             border: none;
-            color: #666;
+            color: #555;
             padding: 6px 14px;
             border-radius: 17px;
             cursor: pointer;
@@ -529,7 +569,7 @@
 
         .path-item-number {
             font-size: 0.75em;
-            color: #666;
+            color: #555;
             margin-bottom: 4px;
             font-weight: 600;
         }
@@ -649,6 +689,249 @@
             display: none;
         }
 
+        /* Minimalistic Path Bar under header */
+        .path-bar {
+            background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+            border-bottom: 1px solid #e0e0e0;
+            padding: 8px 20px 28px 20px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+            position: relative;
+            scroll-behavior: smooth;
+        }
+
+        .path-bar::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .path-bar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .path-bar::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 2px;
+        }
+
+        .path-bar::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        .path-breadcrumb {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.85em;
+            width: 100%;
+            flex-wrap: nowrap;
+        }
+
+        .path-step {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: white;
+            border-radius: 6px;
+            color: #555;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .path-step.current {
+            background: #0645ad;
+            color: white;
+            border-color: #0645ad;
+            font-weight: 600;
+        }
+
+        .path-step.current::after {
+            content: '📍 You are here';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75em;
+            color: #0645ad;
+            font-weight: 600;
+            white-space: nowrap;
+            animation: fadeInFlag 0.3s ease;
+        }
+
+        /* Current page that is a backtrack - stronger colors for visibility */
+        .path-step.current.backtrack {
+            background: #ff6f00;
+            color: white;
+            border-color: #ff6f00;
+            opacity: 1;
+        }
+
+        .path-step.current.backtrack::after {
+            color: #ff6f00;
+        }
+
+        @keyframes fadeInFlag {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .path-step.target {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+            font-weight: 600;
+        }
+
+        .path-step.target::before {
+            content: '🎯 ';
+        }
+
+        /* Target indicator at the end - always shown */
+        .path-step.target-indicator {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #4caf50;
+            font-weight: 600;
+            border-width: 2px;
+        }
+
+        .path-step.target-indicator::before {
+            content: '🎯 ';
+        }
+
+        .path-step.backtrack {
+            background: #fff3e0;
+            border-color: #ff9800;
+            opacity: 0.8;
+        }
+
+        .path-step .step-number {
+            font-size: 0.75em;
+            opacity: 0.7;
+        }
+
+        .path-step.start {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            font-weight: 600;
+        }
+
+        .path-step.start::before {
+            content: '🏁 ';
+        }
+
+        /* Start page when current - better visibility */
+        .path-step.start.current {
+            background: #1976d2;
+            color: white;
+            border-color: #1976d2;
+        }
+
+        .path-step.start.current::after {
+            color: #1976d2;
+        }
+
+        /* Hint-assisted step - purple/violet color scheme */
+        .path-step.hint-used {
+            background: #f3e5f5;
+            border-color: #9c27b0;
+            color: #6a1b9a;
+            position: relative;
+        }
+
+        .path-step.hint-used::before {
+            content: '💡 ';
+        }
+
+        .path-step.hint-used.current {
+            background: #9c27b0;
+            color: white;
+            border-color: #9c27b0;
+        }
+
+        .path-step.hint-used.current::after {
+            color: #9c27b0;
+        }
+
+        .path-arrow {
+            color: #ccc;
+            font-size: 0.9em;
+        }
+
+        .path-arrow-flex {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 0.9em;
+            min-width: 20px;
+        }
+
+        .path-collapse {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            color: #777;
+            border: 1px dashed #ccc;
+            font-size: 0.75em;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .path-collapse:hover {
+            background: #ebebeb;
+            color: #555;
+        }
+
+        .path-collapse-tooltip {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            white-space: normal;
+            margin-top: 8px;
+            z-index: 1000;
+            max-width: 90vw;
+            min-width: 300px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .path-collapse:hover .path-collapse-tooltip {
+            display: block;
+        }
+
+        .path-collapse-tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-bottom-color: rgba(0, 0, 0, 0.9);
+        }
+
         /* Floating Action Menu - Mobile Only */
         .fab-menu {
             position: fixed;
@@ -731,7 +1014,7 @@
             padding: 2px 6px;
             background: #e0e0e0;
             border-radius: 3px;
-            color: #666;
+            color: #555;
             font-family: monospace;
             font-weight: 600;
         }
@@ -1034,7 +1317,7 @@
         }
 
         .link-preview-loading {
-            color: #666;
+            color: #555;
             font-style: italic;
             font-size: 0.85em;
         }
@@ -1531,7 +1814,7 @@
             text-align: center;
             padding: 40px 20px;
             font-size: 0.9em;
-            color: #999;
+            color: #777;
             opacity: 0.5;
         }
 
@@ -1813,7 +2096,7 @@
 
         .stat-card-label {
             font-size: 0.85em;
-            color: #666;
+            color: #555;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
@@ -1821,7 +2104,7 @@
 
         .stat-card-sublabel {
             font-size: 0.75em;
-            color: #999;
+            color: #777;
             margin-top: 3px;
         }
 
@@ -1870,12 +2153,12 @@
             display: flex;
             gap: 15px;
             font-size: 0.9em;
-            color: #666;
+            color: #555;
         }
 
         .recent-game-date {
             font-size: 0.8em;
-            color: #999;
+            color: #777;
         }
 
         .modal-content {
@@ -2186,7 +2469,7 @@
 
         .search-hint {
             text-align: center;
-            color: #999;
+            color: #777;
             font-size: 0.9em;
             margin-top: 15px;
         }
@@ -2309,20 +2592,24 @@
                 right: -100%;
             }
 
-            /* Show FAB menu on mobile, hide desktop actions */
+            /* Show FAB menu on mobile, hide desktop actions and path bar */
             .fab-menu {
                 display: block !important;
                 bottom: 15px;
                 right: 15px;
             }
 
+            .desktop-actions {
+                display: none !important;
+            }
+
+            .path-bar {
+                display: none; /* Hide path bar on mobile - use path panel instead */
+            }
+
             .fab-menu-button {
                 width: 55px;
                 height: 55px;
-            }
-
-            .desktop-actions {
-                display: none !important;
             }
 
             .modal-content {
@@ -2403,6 +2690,32 @@
                 box-shadow: 0 0 30px rgba(255, 215, 0, 1);
             }
         }
+
+        /* Accessibility: Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+
+            /* Keep essential animations but make them instant */
+            .top-progress-bar {
+                transition: opacity 0.01ms !important;
+            }
+
+            /* Disable decorative animations completely */
+            .confetti,
+            .shimmer-container,
+            [class*="pulse"],
+            [class*="bounce"],
+            [class*="spin"] {
+                animation: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2415,7 +2728,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.37.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.42.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2472,6 +2785,13 @@
         </div>
     </div>
 
+    <!-- Minimalistic Path Bar -->
+    <div class="path-bar" id="path-bar">
+        <div class="path-breadcrumb" id="path-breadcrumb">
+            <!-- Path steps will be dynamically inserted here -->
+        </div>
+    </div>
+
     <!-- Debug Panel -->
     <div class="debug-panel" id="debug-panel">
         <h3>🐛 Debug Mode</h3>
@@ -2504,10 +2824,10 @@
     </div>
 
     <!-- Path Panel (Collapsible) -->
-    <div class="path-panel" id="path-panel">
+    <div class="path-panel" id="path-panel" role="complementary" aria-label="Journey path panel">
         <div class="path-panel-header">
             <h3>🗺️ Your Journey</h3>
-            <button class="path-panel-close" onclick="togglePathPanel()">×</button>
+            <button class="path-panel-close" onclick="togglePathPanel()" aria-label="Close journey panel">×</button>
         </div>
         <div class="path-panel-content">
             <div class="path-timeline" id="path-timeline"></div>
@@ -2558,29 +2878,29 @@
     </div>
 
     <!-- Desktop Action Sidebar -->
-    <div class="desktop-actions">
-        <button class="action-btn" onclick="openStats()" title="Statistics">
-            <span class="emoji">📊</span>
+    <div class="desktop-actions" role="toolbar" aria-label="Game actions">
+        <button class="action-btn" onclick="openStats()" title="Statistics" aria-label="View statistics">
+            <span class="emoji" aria-hidden="true">📊</span>
         </button>
-        <button class="action-btn" onclick="openSearch()" title="Search (Ctrl+F)">
-            <span class="emoji">🔍</span>
+        <button class="action-btn" onclick="openSearch()" title="Search (Ctrl+F)" aria-label="Search Wikipedia articles">
+            <span class="emoji" aria-hidden="true">🔍</span>
         </button>
-        <div class="action-divider"></div>
-        <button class="action-btn" onclick="showSolverHint()" title="Get Hint (H)" id="desktop-hint-btn">
-            <span class="emoji">💡</span>
+        <div class="action-divider" aria-hidden="true"></div>
+        <button class="action-btn" onclick="showSolverHint()" title="Get Hint (H)" id="desktop-hint-btn" aria-label="Get hint (keyboard shortcut: H)">
+            <span class="emoji" aria-hidden="true">💡</span>
             <span>Hint</span>
         </button>
-        <button class="action-btn" onclick="retryGame()" title="Retry Game (R)" id="desktop-retry-btn">
-            <span class="emoji">🔄</span>
+        <button class="action-btn" onclick="retryGame()" title="Retry Game (R)" id="desktop-retry-btn" aria-label="Retry current game (keyboard shortcut: R)">
+            <span class="emoji" aria-hidden="true">🔄</span>
             <span>Retry</span>
         </button>
-        <div class="action-divider"></div>
-        <button class="action-btn primary" onclick="handleNewGame()" title="New Game (N)" id="desktop-new-game-btn">
-            <span class="emoji">🎮</span>
+        <div class="action-divider" aria-hidden="true"></div>
+        <button class="action-btn primary" onclick="handleNewGame()" title="New Game (N)" id="desktop-new-game-btn" aria-label="Start new game (keyboard shortcut: N)">
+            <span class="emoji" aria-hidden="true">🎮</span>
             <span>New Game</span>
         </button>
-        <button class="action-btn danger" onclick="giveUp()" title="Give Up">
-            <span class="emoji">🏳️</span>
+        <button class="action-btn danger" onclick="giveUp()" title="Give Up" aria-label="Give up current game">
+            <span class="emoji" aria-hidden="true">🏳️</span>
             <span>Give Up</span>
         </button>
     </div>
@@ -2602,9 +2922,9 @@
     </div>
 
     <!-- Win Modal -->
-    <div class="modal-overlay" id="win-modal">
+    <div class="modal-overlay" id="win-modal" role="dialog" aria-modal="true" aria-labelledby="win-modal-title">
         <div class="modal-content">
-            <h2>🎉 Congratulations! 🎉</h2>
+            <h2 id="win-modal-title">🎉 Congratulations! 🎉</h2>
             <div class="win-stats">
                 <div class="stat-row">
                     <span class="stat-label">Total Clicks:</span>
@@ -2629,11 +2949,11 @@
     </div>
 
     <!-- Statistics Modal -->
-    <div class="modal-overlay stats-modal" id="stats-modal">
+    <div class="modal-overlay stats-modal" id="stats-modal" role="dialog" aria-modal="true" aria-labelledby="stats-modal-title">
         <div class="modal-content">
             <div class="stats-header">
-                <h2>📊 Your Statistics</h2>
-                <button class="reset-stats-btn" onclick="stats.reset()">Reset Stats</button>
+                <h2 id="stats-modal-title">📊 Your Statistics</h2>
+                <button class="reset-stats-btn" onclick="stats.reset()" aria-label="Reset all statistics">Reset Stats</button>
             </div>
             
             <div class="stats-grid">
@@ -3190,7 +3510,14 @@
                     
                     // Show notification
                     showNotification(`💡 Hint: Highlighted on page`);
-                    
+
+                    // Mark that a hint was used on this page
+                    gameState.hintsUsed++;
+                    if (gameState.path.length > 0) {
+                        gameState.path[gameState.path.length - 1].hintUsed = true;
+                        game.updatePathDisplay();
+                    }
+
                     // Remove highlight after 3 seconds
                     setTimeout(() => {
                         foundLink.classList.remove('hint-highlight');
@@ -3199,6 +3526,14 @@
                 } else {
                     // Link not found on page (might be further down and need scrolling/loading)
                     showNotification(`💡 Hint: Look for "${bestLink}"`);
+
+                    // Mark that a hint was used on this page
+                    gameState.hintsUsed++;
+                    if (gameState.path.length > 0) {
+                        gameState.path[gameState.path.length - 1].hintUsed = true;
+                        game.updatePathDisplay();
+                    }
+
                     console.log('⚠ Link not found on current page view:', bestLink);
                     console.log('All available links:', Array.from(allLinks).map(l => l.getAttribute('data-page-title')));
                 }
@@ -3502,7 +3837,7 @@
             clickCount: 0,
             totalClicks: 0,
             visitedPages: new Set(),
-            path: [], // Array of {page: string, isBacktrack: boolean}
+            path: [], // Array of {page: string, isBacktrack: boolean, hintUsed: boolean}
             startTime: null,
             elapsedTime: 0,
             isDailyMode: localStorage.getItem('wikipath_mode') === 'explore' ? false : true,
@@ -3511,7 +3846,8 @@
             targetDescription: '',
             hasWon: false,
             gaveUp: false,
-            difficulty: 'medium'
+            difficulty: 'medium',
+            hintsUsed: 0
         };
 
         // ======================
@@ -4140,13 +4476,35 @@
             }
 
             updatePathDisplay() {
+                // Update side panel timeline
                 const pathTimeline = document.getElementById('path-timeline');
                 pathTimeline.innerHTML = '';
+
+                // Update breadcrumb bar - centered single container
+                const pathBreadcrumb = document.getElementById('path-breadcrumb');
+                pathBreadcrumb.innerHTML = '';
+
+                // Calculate if we need to collapse based on estimated width
+                // Rough estimate: each step ~120px, arrow ~20px, collapse ~100px
+                const pathBar = document.getElementById('path-bar');
+                const COLLAPSE_MARGIN = 200; // 200px buffer on each side before collapsing
+                const availableWidth = pathBar ? pathBar.clientWidth - 40 - (COLLAPSE_MARGIN * 2) : 1000; // 40px padding + margin buffer
+                const estimatedStepWidth = 120;
+                const estimatedArrowWidth = 20;
+                const estimatedWidth = (gameState.path.length * estimatedStepWidth) + ((gameState.path.length - 1) * estimatedArrowWidth) + 150; // +150 for target
+                const shouldCollapse = estimatedWidth > availableWidth;
+
+                // Build list of steps to show
+                const stepsToShow = [];
+                const currentIndex = gameState.path.length - 1;
+                const collapsedSteps = []; // Track collapsed steps for tooltip
 
                 gameState.path.forEach((pathItem, index) => {
                     const pageName = typeof pathItem === 'string' ? pathItem : pathItem.page;
                     const isBacktrack = typeof pathItem === 'object' && pathItem.isBacktrack;
+                    const hintUsed = typeof pathItem === 'object' && pathItem.hintUsed;
 
+                    // Side panel timeline item
                     const item = document.createElement('div');
                     item.className = 'path-timeline-item';
                     if (index === gameState.path.length - 1) {
@@ -4158,14 +4516,120 @@
 
                     item.innerHTML = `
                         <div class="path-item-number">Step ${index + 1}</div>
-                        <div class="path-item-title">${pageName}${isBacktrack ? ' ↩️' : ''}</div>
+                        <div class="path-item-title">${pageName}${isBacktrack ? ' ↩️' : ''}${hintUsed ? ' 💡' : ''}</div>
                     `;
 
                     pathTimeline.appendChild(item);
+
+                    // Breadcrumb logic: always show Start + Current + Target when collapsing
+                    const isCurrent = index === currentIndex;
+                    const isStart = index === 0;
+                    const isTarget = pageName === gameState.targetPage;
+
+                    if (!shouldCollapse || isStart || isCurrent || isTarget) {
+                        stepsToShow.push({index, pageName, isBacktrack, hintUsed, isCurrent, isStart, isTarget});
+                    } else {
+                        collapsedSteps.push({index, pageName, isBacktrack, hintUsed});
+                    }
                 });
+
+                // Build breadcrumb
+                let lastShownIndex = -1;
+                stepsToShow.forEach((stepData, arrayIndex) => {
+                    const {index, pageName, isBacktrack, hintUsed, isCurrent, isStart, isTarget} = stepData;
+
+                    // Check if there are hidden steps between this and last shown
+                    const hiddenSteps = collapsedSteps.filter(cs => cs.index > lastShownIndex && cs.index < index);
+
+                    if (hiddenSteps.length > 0 && arrayIndex > 0) {
+                        // Add collapse indicator
+                        const arrow = document.createElement('span');
+                        arrow.className = 'path-arrow';
+                        arrow.textContent = '→';
+                        pathBreadcrumb.appendChild(arrow);
+
+                        const collapse = document.createElement('div');
+                        collapse.className = 'path-collapse';
+                        collapse.textContent = `... ${hiddenSteps.length} more ...`;
+
+                        // Create tooltip with hidden step names
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'path-collapse-tooltip';
+                        tooltip.innerHTML = hiddenSteps.map(hs => `${hs.index + 1}. ${hs.pageName}${hs.hintUsed ? ' 💡' : ''}${hs.isBacktrack ? ' ↩️' : ''}`).join('<br>');
+                        collapse.appendChild(tooltip);
+
+                        pathBreadcrumb.appendChild(collapse);
+                    }
+
+                    // Add arrow before step (except for the first step)
+                    if (arrayIndex > 0 && hiddenSteps.length === 0) {
+                        const arrow = document.createElement('span');
+                        arrow.className = 'path-arrow';
+                        arrow.textContent = '→';
+                        pathBreadcrumb.appendChild(arrow);
+                    }
+
+                    const step = document.createElement('div');
+                    step.className = 'path-step';
+
+                    if (isCurrent) {
+                        step.classList.add('current');
+                    }
+
+                    if (isStart) {
+                        step.classList.add('start');
+                    }
+
+                    if (isTarget) {
+                        step.classList.add('target');
+                    }
+
+                    if (isBacktrack) {
+                        step.classList.add('backtrack');
+                    }
+
+                    if (hintUsed) {
+                        step.classList.add('hint-used');
+                    }
+
+                    // Truncate long page names for breadcrumb
+                    const shortName = pageName.length > 20 ? pageName.substring(0, 20) + '...' : pageName;
+
+                    step.innerHTML = `
+                        <span class="step-number">${index + 1}.</span>
+                        <span>${shortName}${isBacktrack ? ' ↩️' : ''}</span>
+                    `;
+                    step.title = pageName; // Full name on hover
+
+                    pathBreadcrumb.appendChild(step);
+                    lastShownIndex = index;
+                });
+
+                // Always add target page indicator at the end if not reached yet
+                if (gameState.targetPage && !gameState.path.some(p => {
+                    const name = typeof p === 'string' ? p : p.page;
+                    return name === gameState.targetPage;
+                })) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'path-arrow';
+                    arrow.textContent = '→';
+                    pathBreadcrumb.appendChild(arrow);
+
+                    const targetStep = document.createElement('div');
+                    targetStep.className = 'path-step target-indicator';
+                    const shortTargetName = gameState.targetPage.length > 20
+                        ? gameState.targetPage.substring(0, 20) + '...'
+                        : gameState.targetPage;
+                    targetStep.innerHTML = `<span>${shortTargetName}</span>`;
+                    targetStep.title = gameState.targetPage + ' (Target)';
+                    pathBreadcrumb.appendChild(targetStep);
+                }
             }
 
             async loadPage(title) {
+                // Normalize title: replace underscores with spaces for consistency
+                title = title.replace(/_/g, ' ');
+
                 // Start progress bar
                 showProgressBar();
 
@@ -4261,7 +4725,7 @@
 
             buildTableOfContents(sections) {
                 if (!sections || sections.length === 0) {
-                    this.tocContainer.innerHTML = '<li style="color: #999; font-size: 0.9em;">No sections available</li>';
+                    this.tocContainer.innerHTML = '<li style="color: #777; font-size: 0.9em;">No sections available</li>';
                     return;
                 }
 
@@ -4809,7 +5273,10 @@
                             console.warn('Failed to decode URI:', href, e);
                             pageTitle = href.replace('/wiki/', '');
                         }
-                        
+
+                        // Normalize page title: replace underscores with spaces for consistency
+                        pageTitle = pageTitle.replace(/_/g, ' ');
+
                         // Store pageTitle as data attribute for later reference (e.g., for hints)
                         link.setAttribute('data-page-title', pageTitle);
                         
@@ -4928,6 +5395,7 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
                 const isNewPage = !gameState.visitedPages.has(pageTitle);
+                const isBacktrack = !isNewPage; // It's a backtrack if we've visited this page before
 
                 if (isNewPage) {
                     gameState.totalClicks++;
@@ -4936,7 +5404,7 @@
 
                 gameState.clickCount++;
                 gameState.currentPage = pageTitle;
-                gameState.path.push({ page: pageTitle, isBacktrack: false });
+                gameState.path.push({ page: pageTitle, isBacktrack: isBacktrack });
                 
                 showHint(pageTitle);
                 
@@ -5327,7 +5795,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             
             const recentGamesList = document.getElementById('recent-games-list');
             if (stats.recentGames.length === 0) {
-                recentGamesList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No games played yet</p>';
+                recentGamesList.innerHTML = '<p style="text-align: center; color: #777; padding: 20px;">No games played yet</p>';
             } else {
                 recentGamesList.innerHTML = stats.recentGames.map(game => {
                     const date = new Date(game.date);
@@ -5638,7 +6106,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             results = results.slice(0, 20);
             
             if (results.length === 0) {
-                searchResults.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No results found</div>';
+                searchResults.innerHTML = '<div style="text-align: center; padding: 20px; color: #777;">No results found</div>';
                 return;
             }
             
