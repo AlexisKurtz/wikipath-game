@@ -2,10 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.35.1
+    Version: 3.37.0
     Last Updated: 2025-12-12
 
     Changelog:
+    - v3.37.0: Action sidebar on right! Uses desktop space efficiently with fixed vertical bar. Tooltips on hover. Mobile keeps FAB.
+    - v3.36.0: Revamped action buttons UX! Desktop: clean header buttons. Mobile: FAB menu. No more cluttered floating button on desktop!
     - v3.35.1: FIXED path tracking! Now correctly preserves all forward moves when backtracking (doesn't restore from URL during active game)
     - v3.35.0: Complete path tracking with visual distinction! Backtracks now appear with orange styling and ↩️ emoji
     - v3.34.0: Path now tracks all navigation including backtracks - shows complete journey in win screen
@@ -538,12 +540,122 @@
             font-weight: 500;
         }
 
-        /* Floating Action Menu */
+        /* Desktop Action Sidebar - Right Side */
+        .desktop-actions {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+            background: white;
+            padding: 12px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .action-btn {
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+            position: relative;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .action-btn:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .action-btn.primary {
+            background: #0645ad;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #0b0080;
+        }
+
+        .action-btn.danger {
+            color: #c62828;
+        }
+
+        .action-btn.danger:hover {
+            background: #ffebee;
+        }
+
+        .action-btn .emoji {
+            font-size: 1.4em;
+        }
+
+        /* Tooltip for action buttons */
+        .action-btn::before {
+            content: attr(title);
+            position: absolute;
+            right: 100%;
+            margin-right: 12px;
+            background: #333;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 1000;
+        }
+
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            right: 100%;
+            margin-right: 6px;
+            border: 6px solid transparent;
+            border-left-color: #333;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .action-btn:hover::before,
+        .action-btn:hover::after {
+            opacity: 1;
+        }
+
+        /* Divider between action groups */
+        .action-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 4px 0;
+        }
+
+        /* Hide text labels on sidebar buttons */
+        .action-btn span:not(.emoji) {
+            display: none;
+        }
+
+        /* Floating Action Menu - Mobile Only */
         .fab-menu {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 150;
+            display: none; /* Hidden on desktop */
         }
 
         .fab-menu-button {
@@ -2197,7 +2309,9 @@
                 right: -100%;
             }
 
+            /* Show FAB menu on mobile, hide desktop actions */
             .fab-menu {
+                display: block !important;
                 bottom: 15px;
                 right: 15px;
             }
@@ -2205,6 +2319,10 @@
             .fab-menu-button {
                 width: 55px;
                 height: 55px;
+            }
+
+            .desktop-actions {
+                display: none !important;
             }
 
             .modal-content {
@@ -2297,7 +2415,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.35.1</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.37.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -2437,6 +2555,34 @@
                 <span class="keyboard-shortcut">N</span>
             </button>
         </div>
+    </div>
+
+    <!-- Desktop Action Sidebar -->
+    <div class="desktop-actions">
+        <button class="action-btn" onclick="openStats()" title="Statistics">
+            <span class="emoji">📊</span>
+        </button>
+        <button class="action-btn" onclick="openSearch()" title="Search (Ctrl+F)">
+            <span class="emoji">🔍</span>
+        </button>
+        <div class="action-divider"></div>
+        <button class="action-btn" onclick="showSolverHint()" title="Get Hint (H)" id="desktop-hint-btn">
+            <span class="emoji">💡</span>
+            <span>Hint</span>
+        </button>
+        <button class="action-btn" onclick="retryGame()" title="Retry Game (R)" id="desktop-retry-btn">
+            <span class="emoji">🔄</span>
+            <span>Retry</span>
+        </button>
+        <div class="action-divider"></div>
+        <button class="action-btn primary" onclick="handleNewGame()" title="New Game (N)" id="desktop-new-game-btn">
+            <span class="emoji">🎮</span>
+            <span>New Game</span>
+        </button>
+        <button class="action-btn danger" onclick="giveUp()" title="Give Up">
+            <span class="emoji">🏳️</span>
+            <span>Give Up</span>
+        </button>
     </div>
 
     <div class="container">
