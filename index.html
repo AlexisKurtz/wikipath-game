@@ -2,10 +2,13 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.26.0
-    Last Updated: 2024-12-11
+    Version: 3.27.2
+    Last Updated: 2025-12-11
 
     Changelog:
+    - v3.27.2: Perfect progress bar! Fixed to exactly 3px with !important flags. Removed header border. Ultra-clean single loading indicator.
+    - v3.27.1: Refined progress bar! Ultra-minimal 2px height, smoother animations, subtle glow. Hidden loading spinner. Clean, modern look following UX best practices.
+    - v3.27.0: Added sleek top progress bar! YouTube/GitHub-style loading indicator at the top of screen. Smooth animations, gradient blue color, auto-hides when complete. Visual feedback for every page load!
     - v3.26.0: PERFORMANCE BOOST! Implemented hover prefetch - pages load INSTANTLY when clicked (200ms hover triggers background fetch). Smart cache system with max 10 pages, max 3 concurrent prefetches. Clicks now feel instant!
     - v3.25.0: MAJOR typography upgrade! Modern sans-serif font stack (16px base). Enhanced heading hierarchy with better sizing (h2: 1.75em, h3: 1.35em). Improved vertical rhythm with 1.2em paragraph spacing. Added letter-spacing, muted caption colors, and refined blockquotes.
     - v3.24.0: EXACT Wikipedia layout match! Fixed image box sizing to wrap tightly around images (display: table). Added .mw-default-size support (220px max). Removed excessive borders. Images now align perfectly with paragraphs matching native Wikipedia.
@@ -59,13 +62,42 @@
             min-height: 100vh;
         }
 
+        /* Top Progress Bar - Ultra-Minimal */
+        .top-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px !important;
+            max-height: 3px !important;
+            min-height: 3px !important;
+            background: #2196f3;
+            z-index: 10000;
+            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            opacity: 0;
+            box-sizing: border-box;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            overflow: hidden;
+        }
+
+        .top-progress-bar.loading {
+            opacity: 1;
+        }
+
+        .top-progress-bar.complete {
+            width: 100% !important;
+            opacity: 0;
+            transition: width 0.15s ease, opacity 0.4s ease 0.15s;
+        }
+
         /* Compact Header */
         .game-header {
             background: white;
             color: #202122;
             padding: 15px 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-            border-bottom: 3px solid #0645ad;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -1364,14 +1396,15 @@
 
         .loading {
             text-align: center;
-            padding: 60px 40px;
-            font-size: 1.1em;
-            color: #666;
+            padding: 40px 20px;
+            font-size: 0.9em;
+            color: #999;
+            opacity: 0.5;
         }
 
         .loading::before {
             content: '';
-            display: block;
+            display: none; /* Hide spinner - we have progress bar now */
             width: 50px;
             height: 50px;
             margin: 0 auto 20px;
@@ -2134,6 +2167,9 @@
     </style>
 </head>
 <body>
+    <!-- Top Progress Bar -->
+    <div id="top-progress-bar" class="top-progress-bar"></div>
+
     <div class="game-header" id="game-header">
         <div class="header-top">
             <!-- Left: Branding & Stats -->
@@ -2406,6 +2442,54 @@
     </div>
 
     <script>
+        // ======================
+        // TOP PROGRESS BAR
+        // ======================
+        let progressInterval = null;
+        let currentProgress = 0;
+
+        function showProgressBar() {
+            const bar = document.getElementById('top-progress-bar');
+            bar.classList.remove('complete');
+            bar.classList.add('loading');
+            currentProgress = 0;
+            bar.style.width = '0%';
+
+            // Simulate progress with incremental updates
+            clearInterval(progressInterval);
+            progressInterval = setInterval(() => {
+                if (currentProgress < 90) {
+                    // Quick progress to 30%, then slow down
+                    if (currentProgress < 30) {
+                        currentProgress += 15;
+                    } else if (currentProgress < 60) {
+                        currentProgress += 5;
+                    } else {
+                        currentProgress += 2;
+                    }
+                    bar.style.width = currentProgress + '%';
+                }
+            }, 100);
+        }
+
+        function completeProgressBar() {
+            clearInterval(progressInterval);
+            const bar = document.getElementById('top-progress-bar');
+            bar.style.width = '100%';
+
+            // Wait a moment then hide
+            setTimeout(() => {
+                bar.classList.remove('loading');
+                bar.classList.add('complete');
+
+                // Reset after animation
+                setTimeout(() => {
+                    bar.classList.remove('complete');
+                    bar.style.width = '0%';
+                }, 700);
+            }, 200);
+        }
+
         // ======================
         // WIKIPEDIA PATH SOLVER
         // ======================
@@ -3657,11 +3741,17 @@
             }
 
             async loadPage(title) {
+                // Start progress bar
+                showProgressBar();
+
                 this.gameArea.innerHTML = '<div class="loading">Loading Wikipedia article...</div>';
                 this.tocContainer.innerHTML = '';
 
                 try {
                     const pageData = await fetchWikipediaPage(title);
+
+                    // Complete progress bar
+                    completeProgressBar();
                     
                     const actualPageTitle = pageData.title;
                     
@@ -3696,6 +3786,8 @@
                     this.renderPage(pageData);
                     this.buildTableOfContents(pageData.sections);
                 } catch (error) {
+                    // Complete progress bar even on error
+                    completeProgressBar();
                     this.showError(`Failed to load page: ${error.message}`);
                 }
             }
