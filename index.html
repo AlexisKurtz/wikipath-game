@@ -2,10 +2,16 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.30.2
-    Last Updated: 2025-12-11
+    Version: 3.33.0
+    Last Updated: 2025-12-12
 
     Changelog:
+    - v3.33.0: FIXED BACK BUTTON! Use replaceState for redirects instead of pushState. Now back button works perfectly!
+    - v3.32.3: Fixed back button! Initialize history state with replaceState on game load so there's something to go back to.
+    - v3.32.2: Debug logging for history pushState to diagnose back button issue.
+    - v3.32.1: Fixed browser back button! Now properly stores game state in history so back/forward navigation works correctly with cached pages.
+    - v3.32.0: localStorage page caching! Visited pages are cached in browser for instant revisits. Max 50 pages, 1-hour expiry. Back/forward navigation is now instant!
+    - v3.31.0: Skeleton screen loading! Shows animated placeholder layout while pages load for a polished, modern feel. Shimmer animation makes wait time feel faster.
     - v3.30.2: Code cleanup - removed debug console.log statements from External links removal.
     - v3.30.1: Removed "External links" from Table of Contents! Now filters it out so it doesn't appear in the TOC.
     - v3.30.0: External links section removal now works! Simplified logic to always remove "External links" sections since they're never useful for the game.
@@ -1509,6 +1515,63 @@
             }
         }
 
+        /* Skeleton Screen Loading */
+        .skeleton-container {
+            max-width: 900px;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .skeleton-title {
+            height: 40px;
+            width: 60%;
+            margin-bottom: 20px;
+        }
+
+        .skeleton-infobox {
+            float: right;
+            width: 300px;
+            height: 400px;
+            margin: 0 0 20px 20px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+        }
+
+        .skeleton-paragraph {
+            height: 16px;
+            margin-bottom: 12px;
+        }
+
+        .skeleton-paragraph.short {
+            width: 70%;
+        }
+
+        .skeleton-paragraph.medium {
+            width: 85%;
+        }
+
+        .skeleton-heading {
+            height: 28px;
+            width: 40%;
+            margin: 30px 0 15px 0;
+        }
+
         /* Success celebration animation */
         @keyframes celebrate {
             0%, 100% { transform: scale(1); }
@@ -2215,7 +2278,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.30.2</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.33.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3299,13 +3362,29 @@
             params.set('visited', visited.join(','));
             params.set('path', path.join(','));
             params.set('startTime', startTime);
-            
+
             if (gameState.isDailyMode) {
                 params.set('daily', gameState.dailyDate);
             }
-            
+
             const newUrl = `${window.location.pathname}?${params.toString()}`;
-            window.history.pushState({}, '', newUrl);
+
+            // Store state in history for back button
+            const state = {
+                start,
+                target,
+                current,
+                clicks,
+                totalClicks,
+                visited,
+                path,
+                startTime,
+                isDailyMode: gameState.isDailyMode,
+                dailyDate: gameState.dailyDate
+            };
+
+            console.log('Pushing state to history:', newUrl);
+            window.history.pushState(state, '', newUrl);
         }
 
         function getUrlParams() {
@@ -3419,12 +3498,110 @@
         const prefetchInProgress = new Set();
         const MAX_PREFETCH_CONCURRENT = 3;
 
+        // localStorage cache configuration
+        const CACHE_PREFIX = 'wikipath_cache_';
+        const CACHE_EXPIRY = 60 * 60 * 1000; // 1 hour in milliseconds
+        const MAX_CACHE_ENTRIES = 50;
+
+        // Get page from localStorage cache
+        function getFromCache(title) {
+            try {
+                const cacheKey = CACHE_PREFIX + title;
+                const cached = localStorage.getItem(cacheKey);
+                if (!cached) return null;
+
+                const { data, timestamp } = JSON.parse(cached);
+                const now = Date.now();
+
+                // Check if expired
+                if (now - timestamp > CACHE_EXPIRY) {
+                    localStorage.removeItem(cacheKey);
+                    return null;
+                }
+
+                console.log(`✓ Using cached page: ${title}`);
+                return data;
+            } catch (error) {
+                console.error('Error reading from cache:', error);
+                return null;
+            }
+        }
+
+        // Save page to localStorage cache
+        function saveToCache(title, data) {
+            try {
+                const cacheKey = CACHE_PREFIX + title;
+                const cacheEntry = {
+                    data: data,
+                    timestamp: Date.now()
+                };
+
+                localStorage.setItem(cacheKey, JSON.stringify(cacheEntry));
+
+                // Clean up old entries if we exceed max
+                cleanupCache();
+            } catch (error) {
+                // If storage is full, clear some old entries
+                if (error.name === 'QuotaExceededError') {
+                    console.log('Cache full, cleaning up...');
+                    cleanupCache(true);
+                }
+            }
+        }
+
+        // Clean up old cache entries
+        function cleanupCache(aggressive = false) {
+            try {
+                const cacheKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith(CACHE_PREFIX)) {
+                        cacheKeys.push(key);
+                    }
+                }
+
+                // If we have too many entries or aggressive cleanup
+                if (cacheKeys.length > MAX_CACHE_ENTRIES || aggressive) {
+                    // Get all entries with timestamps
+                    const entries = cacheKeys.map(key => {
+                        try {
+                            const { timestamp } = JSON.parse(localStorage.getItem(key));
+                            return { key, timestamp };
+                        } catch {
+                            return { key, timestamp: 0 };
+                        }
+                    });
+
+                    // Sort by timestamp (oldest first)
+                    entries.sort((a, b) => a.timestamp - b.timestamp);
+
+                    // Remove oldest entries
+                    const toRemove = aggressive ? Math.ceil(entries.length / 2) : entries.length - MAX_CACHE_ENTRIES;
+                    for (let i = 0; i < toRemove; i++) {
+                        localStorage.removeItem(entries[i].key);
+                    }
+                }
+            } catch (error) {
+                console.error('Error cleaning cache:', error);
+            }
+        }
+
         async function fetchWikipediaPage(title) {
-            // Check prefetch cache first
+            // Check localStorage cache first
+            const cachedPage = getFromCache(title);
+            if (cachedPage) {
+                return cachedPage;
+            }
+
+            // Check prefetch cache second
             if (prefetchCache.has(title)) {
                 console.log(`✓ Using prefetched page: ${title}`);
                 const cached = prefetchCache.get(title);
                 prefetchCache.delete(title); // Remove from cache after use
+
+                // Save to localStorage for future use
+                saveToCache(title, cached);
+
                 return cached;
             }
 
@@ -3447,6 +3624,9 @@
                     throw new Error(data.error.info);
                 }
 
+                // Save to localStorage cache
+                saveToCache(title, data.parse);
+
                 return data.parse;
             } catch (error) {
                 console.error('Error fetching Wikipedia page:', error);
@@ -3456,8 +3636,8 @@
 
         // Prefetch a page in the background
         async function prefetchPage(title) {
-            // Don't prefetch if already cached or in progress
-            if (prefetchCache.has(title) || prefetchInProgress.has(title)) {
+            // Don't prefetch if already in localStorage cache or in progress
+            if (getFromCache(title) || prefetchCache.has(title) || prefetchInProgress.has(title)) {
                 return;
             }
 
@@ -3488,11 +3668,12 @@
                     throw new Error(data.error.info);
                 }
 
-                // Store in cache
+                // Store in both caches
                 prefetchCache.set(title, data.parse);
+                saveToCache(title, data.parse);
                 console.log(`✓ Prefetched: ${title}`);
 
-                // Keep cache size reasonable (max 10 pages)
+                // Keep prefetch cache size reasonable (max 10 pages)
                 if (prefetchCache.size > 10) {
                     const firstKey = prefetchCache.keys().next().value;
                     prefetchCache.delete(firstKey);
@@ -3642,10 +3823,25 @@
                     this.updateDisplay();
                     this.updatePathDisplay();
                     this.startTimer();
-                    
+
                     // NEW: Calculate minimum clicks for resumed game
                     calculateMinimumClicks(gameState.startPage, gameState.targetPage);
-                    
+
+                    // Initialize history state for back button
+                    const state = {
+                        start: gameState.startPage,
+                        target: gameState.targetPage,
+                        current: gameState.currentPage,
+                        clicks: gameState.clickCount,
+                        totalClicks: gameState.totalClicks,
+                        visited: Array.from(gameState.visitedPages),
+                        path: gameState.path,
+                        startTime: gameState.startTime,
+                        isDailyMode: gameState.isDailyMode,
+                        dailyDate: gameState.dailyDate
+                    };
+                    window.history.replaceState(state, '', window.location.href);
+
                     await this.loadPage(gameState.currentPage);
                 } else {
                     if (gameState.isDailyMode) {
@@ -3783,7 +3979,28 @@
                 // Start progress bar
                 showProgressBar();
 
-                this.gameArea.innerHTML = '<div class="loading">Loading Wikipedia article...</div>';
+                // Show skeleton screen
+                this.gameArea.innerHTML = `
+                    <div class="skeleton-container">
+                        <div class="skeleton skeleton-infobox"></div>
+                        <div class="skeleton skeleton-title"></div>
+                        <div class="skeleton skeleton-paragraph"></div>
+                        <div class="skeleton skeleton-paragraph medium"></div>
+                        <div class="skeleton skeleton-paragraph"></div>
+                        <div class="skeleton skeleton-paragraph short"></div>
+                        <div class="skeleton skeleton-paragraph medium"></div>
+                        <div class="skeleton skeleton-heading"></div>
+                        <div class="skeleton skeleton-paragraph"></div>
+                        <div class="skeleton skeleton-paragraph medium"></div>
+                        <div class="skeleton skeleton-paragraph"></div>
+                        <div class="skeleton skeleton-paragraph short"></div>
+                        <div class="skeleton skeleton-paragraph"></div>
+                        <div class="skeleton skeleton-heading"></div>
+                        <div class="skeleton skeleton-paragraph medium"></div>
+                        <div class="skeleton skeleton-paragraph"></div>
+                        <div class="skeleton skeleton-paragraph short"></div>
+                    </div>
+                `;
                 this.tocContainer.innerHTML = '';
 
                 try {
@@ -3797,21 +4014,42 @@
                     if (actualPageTitle !== title) {
                         console.log(`Redirect: ${title} -> ${actualPageTitle}`);
                         gameState.currentPage = actualPageTitle;
-                        
+
                         if (gameState.path[gameState.path.length - 1] === title) {
                             gameState.path[gameState.path.length - 1] = actualPageTitle;
                         }
-                        
-                        updateUrl(
-                            gameState.startPage,
-                            gameState.targetPage,
-                            gameState.currentPage,
-                            gameState.clickCount,
-                            gameState.totalClicks,
-                            Array.from(gameState.visitedPages),
-                            gameState.path,
-                            gameState.startTime
-                        );
+
+                        // Use replaceState instead of pushState for redirects
+                        const params = new URLSearchParams();
+                        params.set('start', gameState.startPage);
+                        params.set('target', gameState.targetPage);
+                        params.set('current', gameState.currentPage);
+                        params.set('clicks', gameState.clickCount);
+                        params.set('totalClicks', gameState.totalClicks);
+                        params.set('visited', Array.from(gameState.visitedPages).join(','));
+                        params.set('path', gameState.path.join(','));
+                        params.set('startTime', gameState.startTime);
+
+                        if (gameState.isDailyMode) {
+                            params.set('daily', gameState.dailyDate);
+                        }
+
+                        const newUrl = `${window.location.pathname}?${params.toString()}`;
+                        const state = {
+                            start: gameState.startPage,
+                            target: gameState.targetPage,
+                            current: gameState.currentPage,
+                            clicks: gameState.clickCount,
+                            totalClicks: gameState.totalClicks,
+                            visited: Array.from(gameState.visitedPages),
+                            path: gameState.path,
+                            startTime: gameState.startTime,
+                            isDailyMode: gameState.isDailyMode,
+                            dailyDate: gameState.dailyDate
+                        };
+
+                        console.log('Replacing state for redirect:', newUrl);
+                        window.history.replaceState(state, '', newUrl);
                         
                         const normalizedCurrent = actualPageTitle.trim().toLowerCase().replace(/_/g, ' ');
                         const normalizedTarget = gameState.targetPage.trim().toLowerCase().replace(/_/g, ' ');
@@ -4496,8 +4734,9 @@
             }
 
             async handleLinkClick(pageTitle) {
+                console.log('👆 handleLinkClick called for:', pageTitle);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                
+
                 const isNewPage = !gameState.visitedPages.has(pageTitle);
                 
                 if (isNewPage) {
@@ -4779,7 +5018,9 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         // BROWSER BACK BUTTON HANDLER
         // ======================
         window.addEventListener('popstate', function(event) {
+            console.log('🔙 Popstate event fired!', event.state);
             const urlParams = getUrlParams();
+            console.log('URL params:', urlParams);
             
             if (urlParams.start && urlParams.target) {
                 if (urlParams.daily) {
