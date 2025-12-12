@@ -2,10 +2,14 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.46.0
+    Version: 3.47.3
     Last Updated: 2025-12-12
 
     Changelog:
+    - v3.47.3: Final polish! Action buttons now have light grey background for contrast. All headings (h2, h3, h4) have scroll-margin-top for proper TOC alignment!
+    - v3.47.2: Fixed all polish issues! Added text labels to Stats/Search buttons. Removed link hover backgrounds. TOC scroll now uses scroll-margin-top CSS for proper positioning!
+    - v3.47.1: Polish fixes! 🔧 Action sidebar border for contrast. Link hover shows only underline (no grey box). TOC scrolls with proper offset for sticky header!
+    - v3.47.0: Action button discoverability! 🎯 Labels expand on hover with smooth animation. Primary actions always visible. Subtle pulse on first visit. Better UX!
     - v3.46.0: Design system! 🎨 CSS custom properties for colors, spacing (8px scale), border-radius, shadows, and font-weights. Consistent, maintainable, scalable design foundation!
     - v3.45.0: Accessibility improvements! ♿ Keyboard focus indicators (purple outline). Better color contrast (#666→#555). Reduced-motion support. ARIA labels for screen readers. WCAG AA compliant!
     - v3.44.0: Centered breadcrumb! Everything grows from middle. Smart collapse shows Start + Current + Target. Hover tooltip shows hidden steps!
@@ -531,7 +535,7 @@
             box-shadow: -2px 0 8px rgba(0,0,0,0.1);
             z-index: 200;
             transition: right 0.3s ease;
-            overflow-y: auto;
+            overflow: hidden;
         }
 
         .path-panel.open {
@@ -545,9 +549,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
             z-index: 10;
+            height: 60px;
+            flex-shrink: 0;
         }
 
         .path-panel-header h3 {
@@ -572,6 +576,8 @@
 
         .path-panel-content {
             padding: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 60px);
         }
 
         .path-timeline {
@@ -641,99 +647,121 @@
         /* Desktop Action Sidebar - Right Side */
         .desktop-actions {
             position: fixed;
-            right: 20px;
+            right: 24px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: var(--space-1);
             z-index: 100;
-            background: white;
-            padding: 12px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background: var(--color-bg-primary);
+            padding: var(--space-2);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--color-border);
+            transition: right 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Move desktop actions left when path panel is open */
+        .desktop-actions.panel-open {
+            right: 370px !important; /* 350px panel width + 20px spacing */
+        }
+
+        /* Subtle pulse animation to draw attention on first load */
+        @keyframes sidebar-hint {
+            0%, 100% {
+                box-shadow: var(--shadow-lg);
+            }
+            50% {
+                box-shadow: 0 8px 24px rgba(6, 69, 173, 0.25);
+            }
+        }
+
+        .desktop-actions.first-load {
+            animation: sidebar-hint 2s ease-in-out 3;
         }
 
         .action-btn {
-            padding: 12px;
+            padding: var(--space-2);
             border: none;
-            background: transparent;
-            border-radius: 12px;
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-lg);
             cursor: pointer;
             font-size: 0.85em;
-            font-weight: 500;
-            color: #333;
-            transition: all 0.2s;
+            font-weight: var(--font-weight-medium);
+            color: var(--color-text-primary);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            justify-content: flex-start;
+            gap: var(--space-1);
             white-space: nowrap;
             position: relative;
             min-width: 44px;
             min-height: 44px;
+            overflow: hidden;
         }
 
         .action-btn:hover {
-            background: #f0f0f0;
-            transform: scale(1.05);
+            background: var(--color-bg-tertiary);
+            transform: translateX(-4px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .action-btn:active {
+            transform: translateX(-2px) scale(0.98);
         }
 
         .action-btn.primary {
-            background: #0645ad;
+            background: var(--color-primary);
             color: white;
         }
 
         .action-btn.primary:hover {
-            background: #0b0080;
+            background: var(--color-primary-hover);
         }
 
         .action-btn.danger {
-            color: #c62828;
+            color: var(--color-danger);
         }
 
         .action-btn.danger:hover {
             background: #ffebee;
+            color: var(--color-danger-light);
         }
 
         .action-btn .emoji {
             font-size: 1.4em;
+            flex-shrink: 0;
         }
 
-        /* Tooltip for action buttons */
-        .action-btn::before {
-            content: attr(title);
-            position: absolute;
-            right: 100%;
-            margin-right: 12px;
-            background: #333;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.85em;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-            z-index: 1000;
+        /* Show text labels on hover - expand button width */
+        .action-btn span:not(.emoji) {
+            max-width: 120px;
+            opacity: 1;
+            transition: max-width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            overflow: hidden;
+            color: var(--color-text-primary);
         }
 
-        .action-btn::after {
-            content: '';
-            position: absolute;
-            right: 100%;
-            margin-right: 6px;
-            border: 6px solid transparent;
-            border-left-color: #333;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-
-        .action-btn:hover::before,
-        .action-btn:hover::after {
+        .action-btn:hover span:not(.emoji) {
+            max-width: 120px;
             opacity: 1;
         }
+
+        /* Optional: Always show text for primary actions */
+        .action-btn.primary span:not(.emoji) {
+            max-width: 120px;
+            opacity: 1;
+            color: white;
+        }
+
+        /* Danger button text color */
+        .action-btn.danger span:not(.emoji) {
+            color: var(--color-danger);
+        }
+
+        /* Tooltips removed - labels now show inline on hover */
 
         /* Divider between action groups */
         .action-divider {
@@ -742,10 +770,7 @@
             margin: 4px 0;
         }
 
-        /* Hide text labels on sidebar buttons */
-        .action-btn span:not(.emoji) {
-            display: none;
-        }
+        /* Text labels are now shown on hover via max-width animation above */
 
         /* Minimalistic Path Bar under header */
         .path-bar {
@@ -1254,13 +1279,19 @@
         .wikipedia-article h1 {
             font-size: 2.5em; /* Slightly smaller for better proportion */
             margin-bottom: 0.5em;
-            margin-top: 0.25em;
+            margin-top: 0;
+            padding-top: 0.25em;
             padding-bottom: 0.3em;
             border-bottom: 1px solid #a2a9b1;
             font-weight: 600; /* Slightly bolder for clarity */
             line-height: 1.25;
             color: #202122;
             letter-spacing: -0.02em; /* Tighter spacing for large text */
+            position: sticky;
+            top: 80px; /* Below the game header */
+            background: white;
+            z-index: 50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .wikipedia-article h2 {
@@ -1273,6 +1304,7 @@
             line-height: 1.3;
             color: #202122;
             letter-spacing: -0.01em;
+            scroll-margin-top: 220px; /* Account for sticky header (80px) + sticky h1 title (~140px) */
         }
 
         /* Ensure h2 sections clear floated elements (especially the infobox) */
@@ -1287,6 +1319,7 @@
             font-weight: 600;
             line-height: 1.35;
             color: #202122;
+            scroll-margin-top: 150px; /* Account for sticky header + breadcrumb */
         }
 
         .wikipedia-article h4 {
@@ -1296,6 +1329,7 @@
             font-weight: 600;
             line-height: 1.4;
             color: #202122;
+            scroll-margin-top: 150px; /* Account for sticky header + breadcrumb */
         }
 
         .wikipedia-article p {
@@ -1314,10 +1348,8 @@
         }
 
         .wikipedia-article a:hover {
-            color: #0b0080;
-            border-bottom: 1px solid #0645ad;
-            background: rgba(6, 69, 173, 0.05);
-            border-radius: 3px;
+            color: var(--color-primary-hover);
+            border-bottom: 1px solid var(--color-primary);
         }
 
         .wikipedia-article a.visited-link {
@@ -1328,19 +1360,17 @@
         .wikipedia-article a.visited-link:hover {
             color: #6d28d9;
             border-bottom-color: #7c3aed;
-            background: rgba(124, 58, 237, 0.05);
         }
 
         .wikipedia-article a.disambiguation-link {
-            color: #dc2626;
+            color: var(--color-danger);
             font-style: italic;
-            font-weight: 600;
+            font-weight: var(--font-weight-semibold);
         }
 
         .wikipedia-article a.disambiguation-link:hover {
             color: #991b1b;
-            border-bottom-color: #dc2626;
-            background: rgba(220, 38, 38, 0.05);
+            border-bottom-color: var(--color-danger);
         }
 
         /* Link Preview Tooltip */
@@ -2939,9 +2969,11 @@
     <div class="desktop-actions" role="toolbar" aria-label="Game actions">
         <button class="action-btn" onclick="openStats()" title="Statistics" aria-label="View statistics">
             <span class="emoji" aria-hidden="true">📊</span>
+            <span>Stats</span>
         </button>
         <button class="action-btn" onclick="openSearch()" title="Search (Ctrl+F)" aria-label="Search Wikipedia articles">
             <span class="emoji" aria-hidden="true">🔍</span>
+            <span>Search</span>
         </button>
         <div class="action-divider" aria-hidden="true"></div>
         <button class="action-btn" onclick="showSolverHint()" title="Get Hint (H)" id="desktop-hint-btn" aria-label="Get hint (keyboard shortcut: H)">
@@ -4857,7 +4889,7 @@
                             const heading = document.getElementById(subsection.anchor);
                             if (heading) {
                                 heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                
+
                                 document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
                                 link.classList.add('active');
                             }
@@ -5938,7 +5970,11 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         // ======================
         function togglePathPanel() {
             const panel = document.getElementById('path-panel');
+            const desktopActions = document.querySelector('.desktop-actions');
             panel.classList.toggle('open');
+            if (desktopActions) {
+                desktopActions.classList.toggle('panel-open');
+            }
         }
 
         // ======================
@@ -6205,6 +6241,20 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         globalGameController = game;
         game.initialize();
         initializeSearch();
+
+        // Add subtle hint animation to action sidebar on first visit
+        const hasSeenSidebar = localStorage.getItem('wikipath_sidebar_seen');
+        if (!hasSeenSidebar) {
+            const desktopActions = document.querySelector('.desktop-actions');
+            if (desktopActions) {
+                desktopActions.classList.add('first-load');
+                // Remove animation class after it completes
+                setTimeout(() => {
+                    desktopActions.classList.remove('first-load');
+                    localStorage.setItem('wikipath_sidebar_seen', 'true');
+                }, 6000); // 3 pulses × 2 seconds
+            }
+        }
 
         // Add responsive resize listener for collapsible sections
         let resizeTimeout;
