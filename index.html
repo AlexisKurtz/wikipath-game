@@ -2,10 +2,22 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.27.2
+    Version: 3.30.2
     Last Updated: 2025-12-11
 
     Changelog:
+    - v3.30.2: Code cleanup - removed debug console.log statements from External links removal.
+    - v3.30.1: Removed "External links" from Table of Contents! Now filters it out so it doesn't appear in the TOC.
+    - v3.30.0: External links section removal now works! Simplified logic to always remove "External links" sections since they're never useful for the game.
+    - v3.29.3: Fixed External links removal! Now ignores navboxes/portal-bars/sister-bars when checking for Wikipedia links. These are just footer navigation, not actual content.
+    - v3.29.2: Improved External links detection with console logging. Changed from exact match to includes() for better flexibility.
+    - v3.29.1: Fixed External links removal to include the heading! Now removes the entire section including the "External links" heading itself.
+    - v3.29.0: Remove "External links" sections! Cleans up end-of-article external link sections (unless they contain Wikipedia article links).
+    - v3.28.4: Enhanced external content removal! Now removes ANY table/box with "External videos", "External media", "External links" headers, not just infoboxes.
+    - v3.28.3: Improved external media infobox removal! Now properly detects and removes infoboxes with "Images"/"Video" headers that only contain YouTube/external identifiers with no substantive content.
+    - v3.28.2: Smart removal of external media infoboxes! Removes entire infoboxes that only contain external links/videos, or just removes external media rows from larger infoboxes.
+    - v3.28.1: Removed external videos/media boxes for cleaner article layout.
+    - v3.28.0: Added loading state on clicked links! Links now show a subtle spinner and reduced opacity while the page loads. Immediate click feedback for better UX.
     - v3.27.2: Perfect progress bar! Fixed to exactly 3px with !important flags. Removed header border. Ultra-clean single loading indicator.
     - v3.27.1: Refined progress bar! Ultra-minimal 2px height, smoother animations, subtle glow. Hidden loading spinner. Clean, modern look following UX best practices.
     - v3.27.0: Added sleek top progress bar! YouTube/GitHub-style loading indicator at the top of screen. Smooth animations, gradient blue color, auto-hides when complete. Visual feedback for every page load!
@@ -1452,6 +1464,33 @@
             animation: clickPulse 0.2s ease;
         }
 
+        /* Loading State for Clicked Links */
+        .wikipedia-article a.loading {
+            opacity: 0.6;
+            pointer-events: none;
+            padding-right: 20px;
+        }
+
+        .wikipedia-article a.loading::after {
+            content: '';
+            position: absolute;
+            right: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border: 2px solid #0645ad;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: linkSpinner 0.6s linear infinite;
+        }
+
+        @keyframes linkSpinner {
+            to {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        }
+
         /* Confetti Animation */
         .confetti {
             position: fixed;
@@ -2176,7 +2215,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.20.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.30.2</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3799,11 +3838,17 @@
                 }
 
                 this.tocContainer.innerHTML = '';
-                
+
+                // Filter out "External links" and other unwanted sections from TOC
+                const filteredSections = sections.filter(section => {
+                    const title = section.line.toLowerCase();
+                    return !title.includes('external link');
+                });
+
                 const sectionGroups = {};
                 let currentH1 = null;
-                
-                sections.forEach(section => {
+
+                filteredSections.forEach(section => {
                     if (section.toclevel === 1) {
                         currentH1 = section.line;
                         sectionGroups[currentH1] = {
@@ -3916,7 +3961,70 @@
                 });
                 // Edit section links are safe to remove (they never contain images)
                 articleDiv.querySelectorAll('.mw-editsection, [class*="editsection"]').forEach(el => el.remove());
-                
+
+                // Remove external videos/media boxes - check by content and common classes
+                articleDiv.querySelectorAll('.side-box, .sister-external, [class*="external"]').forEach(el => {
+                    const text = el.textContent.toLowerCase();
+                    if (text.includes('external video') || text.includes('external media') || text.includes('external link')) {
+                        el.remove();
+                    }
+                });
+
+                // Remove any table/box with "External videos", "External media", "External links" headers
+                articleDiv.querySelectorAll('table, div[class*="box"]').forEach(box => {
+                    const allHeaders = box.querySelectorAll('th, caption, .infobox-header, [class*="header"]');
+                    const headerTexts = Array.from(allHeaders).map(h => h.textContent.toLowerCase().trim());
+
+                    // Check if any header is explicitly about external content
+                    const isExternalBox = headerTexts.some(h =>
+                        h === 'external videos' || h === 'external video' ||
+                        h === 'external media' || h === 'external links' ||
+                        h === 'external images' || h === 'images' || h === 'video'
+                    );
+
+                    if (isExternalBox) {
+                        const text = box.textContent.toLowerCase();
+                        const hasSubstantiveContent =
+                            text.includes('born') || text.includes('died') || text.includes('population') ||
+                            text.includes('founded') || text.includes('location') || text.includes('capital') ||
+                            text.includes('area') || text.includes('president');
+
+                        // If it's external content with no substantive info, remove it
+                        if (!hasSubstantiveContent) {
+                            box.remove();
+                        }
+                    }
+                });
+
+                // Remove "External links" sections (usually at the end of articles)
+                articleDiv.querySelectorAll('h2, h3').forEach(heading => {
+                    const headingText = heading.textContent.toLowerCase().trim();
+
+                    // Match "external links" or "external link" (use includes for flexibility)
+                    if (headingText.includes('external link')) {
+                        // Find the wrapper (could be .mw-heading or direct parent)
+                        let sectionStart = heading.parentElement?.classList.contains('mw-heading') ?
+                                          heading.parentElement : heading;
+
+                        const elementsToRemove = [sectionStart];
+
+                        // Collect all siblings until next heading section
+                        let nextSibling = sectionStart.nextElementSibling;
+                        while (nextSibling) {
+                            // Stop if we hit another heading section
+                            if (nextSibling.classList.contains('mw-heading') ||
+                                nextSibling.querySelector('h2, h3')) {
+                                break;
+                            }
+                            elementsToRemove.push(nextSibling);
+                            nextSibling = nextSibling.nextElementSibling;
+                        }
+
+                        // External links sections are never useful for the game - always remove them
+                        elementsToRemove.forEach(el => el.remove());
+                    }
+                });
+
                 console.log(`After cleanup: ${articleDiv.querySelectorAll('img').length} images remaining`);
                 
                 if (gameState.currentPage === gameState.startPage && gameState.path.length === 1) {
@@ -4004,6 +4112,11 @@
 
                 this.gameArea.innerHTML = '';
                 this.gameArea.appendChild(articleDiv);
+
+                // Clear any remaining loading states from previous page
+                document.querySelectorAll('.wikipedia-article a.loading').forEach(link => {
+                    link.classList.remove('loading');
+                });
 
                 this.processLinks();
                 this.fixImages();
@@ -4346,20 +4459,25 @@
                         
                         link.addEventListener('click', async (e) => {
                             e.preventDefault();
-                            
+
                             addClickFeedback(link);
-                            
+
+                            // Add loading state
+                            link.classList.add('loading');
+
                             const preview = document.getElementById('link-preview');
                             preview.classList.remove('active');
-                            
+
                             if (link.classList.contains('disambiguation-link')) {
                                 const confirmed = confirm(`⚠️ WARNING: "${pageTitle}" appears to be a disambiguation page.\n\nDisambiguation pages don't contain actual content - they just list links to other articles with similar names.\n\nDo you want to continue?`);
-                                
+
                                 if (!confirmed) {
+                                    // Remove loading state if user cancels
+                                    link.classList.remove('loading');
                                     return;
                                 }
                             }
-                            
+
                             this.handleLinkClick(pageTitle);
                         });
                     } else {
