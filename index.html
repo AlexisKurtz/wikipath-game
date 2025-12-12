@@ -2,10 +2,13 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.33.0
+    Version: 3.35.1
     Last Updated: 2025-12-12
 
     Changelog:
+    - v3.35.1: FIXED path tracking! Now correctly preserves all forward moves when backtracking (doesn't restore from URL during active game)
+    - v3.35.0: Complete path tracking with visual distinction! Backtracks now appear with orange styling and ↩️ emoji
+    - v3.34.0: Path now tracks all navigation including backtracks - shows complete journey in win screen
     - v3.33.0: FIXED BACK BUTTON! Use replaceState for redirects instead of pushState. Now back button works perfectly!
     - v3.32.3: Fixed back button! Initialize history state with replaceState on game load so there's something to go back to.
     - v3.32.2: Debug logging for history pushState to diagnose back button issue.
@@ -1874,6 +1877,22 @@
             background: #28a745;
         }
 
+        .path-item.backtrack {
+            border-left-color: #ff9800;
+            background: #fff3e0;
+            opacity: 0.85;
+        }
+
+        .path-item.backtrack .path-item-number {
+            background: #ff9800;
+        }
+
+        .path-item.backtrack::after {
+            content: '↩️';
+            margin-left: auto;
+            font-size: 1.2em;
+        }
+
         .performance-rating {
             background: #f0f0f0;
             padding: 20px;
@@ -2278,7 +2297,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.33.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #666; font-weight: 400;">v3.35.1</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3337,7 +3356,7 @@
             clickCount: 0,
             totalClicks: 0,
             visitedPages: new Set(),
-            path: [],
+            path: [], // Array of {page: string, isBacktrack: boolean}
             startTime: null,
             elapsedTime: 0,
             isDailyMode: localStorage.getItem('wikipath_mode') === 'explore' ? false : true,
@@ -3360,7 +3379,7 @@
             params.set('clicks', clicks);
             params.set('totalClicks', totalClicks);
             params.set('visited', visited.join(','));
-            params.set('path', path.join(','));
+            params.set('path', JSON.stringify(path));
             params.set('startTime', startTime);
 
             if (gameState.isDailyMode) {
@@ -3389,6 +3408,25 @@
 
         function getUrlParams() {
             const params = new URLSearchParams(window.location.search);
+            let path = [];
+            try {
+                const pathParam = params.get('path');
+                if (pathParam) {
+                    // Try to parse as JSON first (new format)
+                    path = JSON.parse(pathParam);
+                    // If it's an array of strings (old format), convert to new format
+                    if (path.length > 0 && typeof path[0] === 'string') {
+                        path = path.map(p => ({ page: p, isBacktrack: false }));
+                    }
+                }
+            } catch (e) {
+                // Fallback to old format (comma-separated strings)
+                const pathParam = params.get('path');
+                if (pathParam) {
+                    path = pathParam.split(',').map(p => ({ page: p, isBacktrack: false }));
+                }
+            }
+
             return {
                 start: params.get('start'),
                 target: params.get('target'),
@@ -3396,7 +3434,7 @@
                 clicks: parseInt(params.get('clicks')) || 0,
                 totalClicks: parseInt(params.get('totalClicks')) || 0,
                 visited: params.get('visited') ? params.get('visited').split(',') : [],
-                path: params.get('path') ? params.get('path').split(',') : [],
+                path: path,
                 startTime: parseInt(params.get('startTime')) || Date.now(),
                 daily: params.get('daily')
             };
@@ -3813,7 +3851,7 @@
                     gameState.clickCount = urlParams.clicks;
                     gameState.totalClicks = urlParams.totalClicks;
                     gameState.visitedPages = new Set(urlParams.visited);
-                    gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
+                    gameState.path = urlParams.path.length > 0 ? urlParams.path : [{ page: urlParams.start, isBacktrack: false }];
                     gameState.startTime = urlParams.startTime;
                     
                     updateModeUI();
@@ -3861,7 +3899,7 @@
                 gameState.clickCount = 0;
                 gameState.totalClicks = 0;
                 gameState.visitedPages = new Set([startPage]);
-                gameState.path = [startPage];
+                gameState.path = [{ page: startPage, isBacktrack: false }];
                 gameState.startTime = Date.now();
                 gameState.hasWon = false;
                 gameState.gaveUp = false;
@@ -3885,7 +3923,7 @@
                     0,
                     0,
                     [startPage],
-                    [startPage],
+                    [{ page: startPage, isBacktrack: false }],
                     gameState.startTime
                 );
                 
@@ -3905,7 +3943,7 @@
                 gameState.clickCount = 0;
                 gameState.totalClicks = 0;
                 gameState.visitedPages = new Set([startPage]);
-                gameState.path = [startPage];
+                gameState.path = [{ page: startPage, isBacktrack: false }];
                 gameState.startTime = Date.now();
                 gameState.hasWon = false;
                 gameState.gaveUp = false;
@@ -3932,7 +3970,7 @@
                     0,
                     0,
                     [startPage],
-                    [startPage],
+                    [{ page: startPage, isBacktrack: false }],
                     gameState.startTime
                 );
 
@@ -3958,19 +3996,25 @@
             updatePathDisplay() {
                 const pathTimeline = document.getElementById('path-timeline');
                 pathTimeline.innerHTML = '';
-                
-                gameState.path.forEach((page, index) => {
+
+                gameState.path.forEach((pathItem, index) => {
+                    const pageName = typeof pathItem === 'string' ? pathItem : pathItem.page;
+                    const isBacktrack = typeof pathItem === 'object' && pathItem.isBacktrack;
+
                     const item = document.createElement('div');
                     item.className = 'path-timeline-item';
                     if (index === gameState.path.length - 1) {
                         item.classList.add('current');
                     }
-                    
+                    if (isBacktrack) {
+                        item.classList.add('backtrack');
+                    }
+
                     item.innerHTML = `
                         <div class="path-item-number">Step ${index + 1}</div>
-                        <div class="path-item-title">${page}</div>
+                        <div class="path-item-title">${pageName}${isBacktrack ? ' ↩️' : ''}</div>
                     `;
-                    
+
                     pathTimeline.appendChild(item);
                 });
             }
@@ -4015,8 +4059,8 @@
                         console.log(`Redirect: ${title} -> ${actualPageTitle}`);
                         gameState.currentPage = actualPageTitle;
 
-                        if (gameState.path[gameState.path.length - 1] === title) {
-                            gameState.path[gameState.path.length - 1] = actualPageTitle;
+                        if (gameState.path[gameState.path.length - 1].page === title) {
+                            gameState.path[gameState.path.length - 1].page = actualPageTitle;
                         }
 
                         // Use replaceState instead of pushState for redirects
@@ -4027,7 +4071,7 @@
                         params.set('clicks', gameState.clickCount);
                         params.set('totalClicks', gameState.totalClicks);
                         params.set('visited', Array.from(gameState.visitedPages).join(','));
-                        params.set('path', gameState.path.join(','));
+                        params.set('path', JSON.stringify(gameState.path));
                         params.set('startTime', gameState.startTime);
 
                         if (gameState.isDailyMode) {
@@ -4738,15 +4782,15 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
                 const isNewPage = !gameState.visitedPages.has(pageTitle);
-                
+
                 if (isNewPage) {
                     gameState.totalClicks++;
                     gameState.visitedPages.add(pageTitle);
                 }
-                
+
                 gameState.clickCount++;
                 gameState.currentPage = pageTitle;
-                gameState.path.push(pageTitle);
+                gameState.path.push({ page: pageTitle, isBacktrack: false });
                 
                 showHint(pageTitle);
                 
@@ -4866,10 +4910,12 @@
                 }
                 
                 pathHtml += '<h3>🗺️ Your Journey:</h3>';
-                gameState.path.forEach((page, index) => {
-                    pathHtml += `<div class="path-item">
+                gameState.path.forEach((pathItem, index) => {
+                    const backtrackClass = pathItem.isBacktrack ? ' backtrack' : '';
+                    const pageName = typeof pathItem === 'string' ? pathItem : pathItem.page;
+                    pathHtml += `<div class="path-item${backtrackClass}">
                         <div class="path-item-number">${index + 1}</div>
-                        <div>${page}</div>
+                        <div>${pageName}</div>
                     </div>`;
                 });
                 
@@ -5021,12 +5067,12 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             console.log('🔙 Popstate event fired!', event.state);
             const urlParams = getUrlParams();
             console.log('URL params:', urlParams);
-            
+
             if (urlParams.start && urlParams.target) {
                 if (urlParams.daily) {
                     gameState.isDailyMode = true;
                     gameState.dailyDate = urlParams.daily;
-                    
+
                     if (urlParams.daily !== getTodayDateString()) {
                         location.reload();
                         return;
@@ -5034,15 +5080,62 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 } else {
                     gameState.isDailyMode = false;
                 }
-                
+
+                const previousPage = gameState.currentPage;
+                const targetPage = urlParams.current || urlParams.start;
+
+                // Check if we're in an active game (path exists and not empty)
+                const isActiveGame = gameState.path && gameState.path.length > 0;
+
                 gameState.startPage = urlParams.start;
                 gameState.targetPage = urlParams.target;
-                gameState.currentPage = urlParams.current || urlParams.start;
+                gameState.currentPage = targetPage;
                 gameState.clickCount = urlParams.clicks;
                 gameState.totalClicks = Math.max(gameState.totalClicks, urlParams.totalClicks);
                 gameState.visitedPages = new Set(urlParams.visited);
-                gameState.path = urlParams.path.length > 0 ? urlParams.path : [urlParams.start];
-                
+
+                // Only restore path if we're not in an active game (e.g., page refresh)
+                if (!isActiveGame) {
+                    gameState.path = urlParams.path.length > 0 ? urlParams.path : [{ page: urlParams.start, isBacktrack: false }];
+                }
+
+                // Add the backtrack to the path if we're in an active game and moved to different page
+                if (isActiveGame && previousPage && previousPage !== gameState.currentPage) {
+                    gameState.path.push({ page: gameState.currentPage, isBacktrack: true });
+                    gameState.clickCount++;
+
+                    // Update the URL state to include the backtrack
+                    const params = new URLSearchParams();
+                    params.set('start', gameState.startPage);
+                    params.set('target', gameState.targetPage);
+                    params.set('current', gameState.currentPage);
+                    params.set('clicks', gameState.clickCount);
+                    params.set('totalClicks', gameState.totalClicks);
+                    params.set('visited', Array.from(gameState.visitedPages).join(','));
+                    params.set('path', JSON.stringify(gameState.path));
+                    params.set('startTime', gameState.startTime);
+
+                    if (gameState.isDailyMode) {
+                        params.set('daily', gameState.dailyDate);
+                    }
+
+                    const newUrl = `${window.location.pathname}?${params.toString()}`;
+                    const state = {
+                        start: gameState.startPage,
+                        target: gameState.targetPage,
+                        current: gameState.currentPage,
+                        clicks: gameState.clickCount,
+                        totalClicks: gameState.totalClicks,
+                        visited: Array.from(gameState.visitedPages),
+                        path: gameState.path,
+                        startTime: gameState.startTime,
+                        isDailyMode: gameState.isDailyMode,
+                        dailyDate: gameState.dailyDate
+                    };
+
+                    window.history.replaceState(state, '', newUrl);
+                }
+
                 updateModeUI();
                 game.updateDisplay();
                 game.updatePathDisplay();
@@ -5237,12 +5330,15 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 </div>
                 <div class="win-path">
                     <h3>🗺️ Your Path So Far:</h3>
-                    ${gameState.path.map((page, index) => `
-                        <div class="path-item">
+                    ${gameState.path.map((pathItem, index) => {
+                        const backtrackClass = (typeof pathItem === 'object' && pathItem.isBacktrack) ? ' backtrack' : '';
+                        const pageName = typeof pathItem === 'string' ? pathItem : pathItem.page;
+                        return `
+                        <div class="path-item${backtrackClass}">
                             <div class="path-item-number">${index + 1}</div>
-                            <div>${page}</div>
+                            <div>${pageName}</div>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                     <div style="text-align: center; margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
                         <strong>💡 Tip:</strong> Try exploring links related to broader categories or finding connections through related topics!
                     </div>
@@ -5471,7 +5567,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             gameState.clickCount = 0;
             gameState.totalClicks = 0;
             gameState.visitedPages = new Set([start]);
-            gameState.path = [start];
+            gameState.path = [{ page: start, isBacktrack: false }];
             gameState.startTime = Date.now();
             gameState.elapsedTime = 0;
             gameState.hasWon = false;
