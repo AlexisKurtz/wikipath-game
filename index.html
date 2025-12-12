@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.45.0
+    Version: 3.46.0
     Last Updated: 2025-12-12
 
     Changelog:
+    - v3.46.0: Design system! 🎨 CSS custom properties for colors, spacing (8px scale), border-radius, shadows, and font-weights. Consistent, maintainable, scalable design foundation!
     - v3.45.0: Accessibility improvements! ♿ Keyboard focus indicators (purple outline). Better color contrast (#666→#555). Reduced-motion support. ARIA labels for screen readers. WCAG AA compliant!
     - v3.44.0: Centered breadcrumb! Everything grows from middle. Smart collapse shows Start + Current + Target. Hover tooltip shows hidden steps!
     - v3.43.0: Perfect breadcrumb layout! 🏁 Start left-aligned. 🎯 Target right-aligned. Middle centered. Flex arrows expand!
@@ -81,6 +82,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WikiPath - Connect the Pages</title>
     <style>
+        /* Design System: CSS Custom Properties */
+        :root {
+            /* Color System */
+            --color-primary: #0645ad;
+            --color-primary-hover: #0b0080;
+            --color-primary-light: #1976d2;
+
+            --color-success: #28a745;
+            --color-success-light: #4caf50;
+            --color-warning: #ff9800;
+            --color-danger: #c62828;
+            --color-danger-light: #f44336;
+            --color-accent: #9c27b0;
+            --color-accent-dark: #6a1b9a;
+
+            --color-text-primary: #202122;
+            --color-text-secondary: #555;
+            --color-text-tertiary: #777;
+
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f8f9fa;
+            --color-bg-tertiary: #f0f0f0;
+
+            --color-border: #e0e0e0;
+            --color-border-light: #f0f0f0;
+
+            /* Spacing Scale (8px base unit) */
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            --space-5: 40px;
+            --space-6: 48px;
+
+            /* Border Radius Scale */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-full: 50%;
+
+            /* Shadow System */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.15);
+            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.4);
+
+            /* Font Weight Scale */
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+
+            /* Typography */
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -88,8 +146,8 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f8f9fa;
+            font-family: var(--font-family);
+            background: var(--color-bg-secondary);
             min-height: 100vh;
         }
 
@@ -100,7 +158,7 @@
         select:focus,
         textarea:focus,
         [tabindex]:focus {
-            outline: 2px solid #9c27b0;
+            outline: 2px solid var(--color-accent);
             outline-offset: 2px;
         }
 
@@ -121,7 +179,7 @@
         select:focus-visible,
         textarea:focus-visible,
         [tabindex]:focus-visible {
-            outline: 2px solid #9c27b0;
+            outline: 2px solid var(--color-accent);
             outline-offset: 2px;
         }
 
@@ -157,10 +215,10 @@
 
         /* Compact Header */
         .game-header {
-            background: white;
-            color: #202122;
-            padding: 15px 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            padding: var(--space-2) var(--space-3);
+            box-shadow: var(--shadow-sm);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -172,7 +230,7 @@
             align-items: center;
             max-width: 1400px;
             margin: 0 auto;
-            gap: 20px;
+            gap: var(--space-3);
         }
 
         /* Left Side - Branding & Stats */
@@ -2162,13 +2220,13 @@
         }
 
         .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
+            background: var(--color-bg-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
             max-width: 650px;
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            box-shadow: var(--shadow-xl);
             animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -2352,33 +2410,33 @@
 
         .modal-btn {
             flex: 1;
-            padding: 14px 24px;
+            padding: var(--space-2) var(--space-3);
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             font-size: 1em;
             cursor: pointer;
-            font-weight: 700;
+            font-weight: var(--font-weight-bold);
             transition: all 0.2s ease;
         }
 
         .modal-btn.primary {
-            background: #0645ad;
+            background: var(--color-primary);
             color: white;
         }
 
         .modal-btn.primary:hover {
-            background: #0b0080;
+            background: var(--color-primary-hover);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(6, 69, 173, 0.3);
+            box-shadow: var(--shadow-md);
         }
 
         .modal-btn.secondary {
-            background: #f0f0f0;
+            background: var(--color-bg-tertiary);
             color: #333;
         }
 
         .modal-btn.secondary:hover {
-            background: #e0e0e0;
+            background: var(--color-border);
         }
 
         .share-notification {
