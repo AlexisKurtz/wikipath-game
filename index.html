@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.47.3
+    Version: 3.48.0
     Last Updated: 2025-12-12
 
     Changelog:
+    - v3.48.0: Sticky fixes! Article h1 title stays visible when scrolling. Path panel header stays fixed. Desktop actions move left when panel opens. Action button text always visible!
     - v3.47.3: Final polish! Action buttons now have light grey background for contrast. All headings (h2, h3, h4) have scroll-margin-top for proper TOC alignment!
     - v3.47.2: Fixed all polish issues! Added text labels to Stats/Search buttons. Removed link hover backgrounds. TOC scroll now uses scroll-margin-top CSS for proper positioning!
     - v3.47.1: Polish fixes! 🔧 Action sidebar border for contrast. Link hover shows only underline (no grey box). TOC scrolls with proper offset for sticky header!
@@ -535,7 +536,8 @@
             box-shadow: -2px 0 8px rgba(0,0,0,0.1);
             z-index: 200;
             transition: right 0.3s ease;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .path-panel.open {
@@ -577,7 +579,7 @@
         .path-panel-content {
             padding: 20px;
             overflow-y: auto;
-            height: calc(100vh - 60px);
+            flex: 1;
         }
 
         .path-timeline {
@@ -1288,7 +1290,7 @@
             color: #202122;
             letter-spacing: -0.02em; /* Tighter spacing for large text */
             position: sticky;
-            top: 80px; /* Below the game header */
+            top: 0; /* Sticky within the content-area scroll container */
             background: white;
             z-index: 50;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -2816,7 +2818,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.42.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.48.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -5974,6 +5976,7 @@ Play at: ${window.location.origin}${window.location.pathname}`;
             panel.classList.toggle('open');
             if (desktopActions) {
                 desktopActions.classList.toggle('panel-open');
+                console.log('Desktop actions panel-open class:', desktopActions.classList.contains('panel-open'));
             }
         }
 
