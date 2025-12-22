@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.48.0
-    Last Updated: 2025-12-12
+    Version: 3.49.0
+    Last Updated: 2025-12-22
 
     Changelog:
+    - v3.49.0: iOS-quality touch controls! Fixed collapsible sections closing when scrolling content. Enhanced touch detection with movement tracking. Ripple effects on links. Active states for all touch targets. GPU acceleration. ARIA labels & keyboard support. 44x44pt touch targets. No double-tap zoom!
     - v3.48.0: Sticky fixes! Article h1 title stays visible when scrolling. Path panel header stays fixed. Desktop actions move left when panel opens. Action button text always visible!
     - v3.47.3: Final polish! Action buttons now have light grey background for contrast. All headings (h2, h3, h4) have scroll-margin-top for proper TOC alignment!
     - v3.47.2: Fixed all polish issues! Added text labels to Stats/Search buttons. Removed link hover backgrounds. TOC scroll now uses scroll-margin-top CSS for proper positioning!
@@ -150,10 +151,17 @@
             box-sizing: border-box;
         }
 
+        /* Optimize scrolling performance */
+        html {
+            overflow-y: scroll;
+            -webkit-overflow-scrolling: touch;
+        }
+
         body {
             font-family: var(--font-family);
             background: var(--color-bg-secondary);
             min-height: 100vh;
+            overscroll-behavior-y: none; /* Prevent pull-to-refresh on iOS */
         }
 
         /* Accessibility: Keyboard Focus Indicators */
@@ -1373,6 +1381,27 @@
         .wikipedia-article a.disambiguation-link:hover {
             color: #991b1b;
             border-bottom-color: var(--color-danger);
+        }
+
+        /* Touch active state */
+        .touch-active {
+            background: rgba(6, 69, 173, 0.08) !important;
+            border-radius: 3px;
+        }
+
+        /* Ripple effect for touch feedback */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+            transform: scale(0);
+            animation: rippleEffect 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes rippleEffect {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
         }
 
         /* Link Preview Tooltip */
@@ -2640,6 +2669,95 @@
             transition: max-height 0.3s ease;
         }
 
+        /* === iOS-Quality Touch Optimizations === */
+
+        /* Disable iOS tap highlight */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Smooth momentum scrolling */
+        body, .container, .game-area, .section-content, .path-panel {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+
+        /* Prevent double-tap zoom */
+        a, button, h2, .section-toggle {
+            touch-action: manipulation;
+        }
+
+        /* Minimum 44x44pt touch targets */
+        h2 {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .section-toggle {
+            min-width: 44px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Active states for touch feedback */
+        h2:active {
+            background: rgba(6, 69, 173, 0.05);
+            transition: background 0.1s ease;
+        }
+
+        .section-toggle:active {
+            transform: scale(0.92);
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .wikipedia-article a:active {
+            background: rgba(6, 69, 173, 0.1);
+            border-radius: 3px;
+            transform: scale(0.98);
+            transition: all 0.08s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        button:active, .fab-menu-item:active {
+            transform: scale(0.95);
+        }
+
+        .action-btn:active {
+            transform: translateX(-2px) scale(0.96);
+        }
+
+        /* === Performance Optimizations === */
+
+        /* Force GPU acceleration for smooth animations */
+        .section-content,
+        .wikipedia-article a,
+        .fab-menu-button,
+        .action-btn,
+        h2 {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        .section-content {
+            will-change: transform, opacity;
+        }
+
+        /* Keyboard focus for collapsible sections */
+        h2:focus-visible {
+            outline: 2px solid #7c3aed;
+            outline-offset: 4px;
+            border-radius: 4px;
+        }
+
+        .section-toggle:focus-visible {
+            outline: 2px solid #7c3aed;
+            outline-offset: 2px;
+            border-radius: 3px;
+        }
+
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .header-top {
@@ -2818,7 +2936,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.48.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.49.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -5190,15 +5308,38 @@
                     
                     // Insert wrapper after the header wrapper
                     headerWrapper.parentNode.insertBefore(wrapper, headerWrapper.nextSibling);
-                    
+
+                    // Prevent touch events on content from bubbling to header
+                    wrapper.addEventListener('touchstart', (e) => {
+                        e.stopPropagation();
+                    }, { passive: true });
+
+                    wrapper.addEventListener('touchmove', (e) => {
+                        e.stopPropagation();
+                    }, { passive: true });
+
+                    wrapper.addEventListener('touchend', (e) => {
+                        e.stopPropagation();
+                    }, { passive: true });
+
+                    wrapper.addEventListener('touchcancel', (e) => {
+                        e.stopPropagation();
+                    }, { passive: true });
+
                     // Add toggle button to the actual H2
                     const toggleBtn = document.createElement('span');
                     toggleBtn.className = 'section-toggle';
                     toggleBtn.textContent = '[-]';
-                    
+                    toggleBtn.setAttribute('role', 'button');
+                    toggleBtn.setAttribute('aria-label', 'Expand or collapse section');
+                    toggleBtn.setAttribute('tabindex', '0');
+
                     header.appendChild(toggleBtn);
                     header.style.cursor = 'pointer';
-                    
+                    header.setAttribute('role', 'button');
+                    header.setAttribute('aria-expanded', 'true');
+                    header.setAttribute('tabindex', '0');
+
                     // Store references
                     header._collapsibleWrapper = wrapper;
                     header._collapsibleToggle = toggleBtn;
@@ -5214,17 +5355,19 @@
                         console.log('  ✓ Expanded');
                     }
                     
-                    // Toggle handler with mobile scroll detection
+                    // Toggle handler with enhanced mobile scroll detection
                     let touchStartY = 0;
+                    let touchStartX = 0;
                     let touchStartTime = 0;
-                    
+                    let isTouchMoveDetected = false;
+
                     const toggle = (e) => {
                         e.stopPropagation();
                         const isVisible = wrapper.style.display !== 'none';
                         wrapper.style.display = isVisible ? 'none' : 'block';
                         toggleBtn.textContent = isVisible ? '[+]' : '[-]';
                     };
-                    
+
                     // Desktop: simple click
                     header.addEventListener('click', (e) => {
                         // Only toggle on actual clicks, not touch events
@@ -5232,25 +5375,46 @@
                         if (e.pointerType === 'touch') return; // Ignore if it came from touch
                         toggle(e);
                     });
-                    
-                    // Mobile: detect tap vs scroll
+
+                    // Mobile: enhanced tap vs scroll detection
                     header.addEventListener('touchstart', (e) => {
                         touchStartY = e.touches[0].clientY;
+                        touchStartX = e.touches[0].clientX;
                         touchStartTime = Date.now();
+                        isTouchMoveDetected = false;
                     }, { passive: true });
-                    
+
+                    header.addEventListener('touchmove', (e) => {
+                        isTouchMoveDetected = true;
+                    }, { passive: true });
+
                     header.addEventListener('touchend', (e) => {
                         const touchEndY = e.changedTouches[0].clientY;
+                        const touchEndX = e.changedTouches[0].clientX;
                         const touchDuration = Date.now() - touchStartTime;
-                        const touchDistance = Math.abs(touchEndY - touchStartY);
-                        
+                        const touchDistanceY = Math.abs(touchEndY - touchStartY);
+                        const touchDistanceX = Math.abs(touchEndX - touchStartX);
+                        const totalDistance = Math.sqrt(touchDistanceY * touchDistanceY + touchDistanceX * touchDistanceX);
+
                         // Only toggle if it was a quick tap with minimal movement
-                        // (not a scroll gesture)
-                        if (touchDistance < 10 && touchDuration < 300) {
+                        if (!isTouchMoveDetected && totalDistance < 10 && touchDuration < 300) {
                             toggle(e);
                         }
+                    }, { passive: true });
+
+                    header.addEventListener('touchcancel', (e) => {
+                        isTouchMoveDetected = false;
+                    }, { passive: true });
+
+                    // Keyboard support for accessibility
+                    header.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            toggle(e);
+                            header.setAttribute('aria-expanded', wrapper.style.display !== 'none');
+                        }
                     });
-                    
+
                     // Store reference for hint feature to expand section if needed
                     header._collapsibleSection = { wrapper, toggleBtn, toggle };
                 });
@@ -5444,7 +5608,75 @@
                             preview.classList.remove('active');
                         });
                         
+                        // Touch handling for links
+                        let linkTouchStartY = 0;
+                        let linkTouchStartX = 0;
+                        let linkTouchStartTime = 0;
+                        let linkTouchMoved = false;
+
+                        link.addEventListener('touchstart', (e) => {
+                            linkTouchStartY = e.touches[0].clientY;
+                            linkTouchStartX = e.touches[0].clientX;
+                            linkTouchStartTime = Date.now();
+                            linkTouchMoved = false;
+                            link.classList.add('touch-active');
+                        }, { passive: true });
+
+                        link.addEventListener('touchmove', (e) => {
+                            const touchY = e.touches[0].clientY;
+                            const touchX = e.touches[0].clientX;
+                            const distanceY = Math.abs(touchY - linkTouchStartY);
+                            const distanceX = Math.abs(touchX - linkTouchStartX);
+
+                            if (distanceY > 10 || distanceX > 10) {
+                                linkTouchMoved = true;
+                                link.classList.remove('touch-active');
+                            }
+                        }, { passive: true });
+
+                        link.addEventListener('touchend', async (e) => {
+                            const touchEndY = e.changedTouches[0].clientY;
+                            const touchEndX = e.changedTouches[0].clientX;
+                            const touchDuration = Date.now() - linkTouchStartTime;
+                            const distanceY = Math.abs(touchEndY - linkTouchStartY);
+                            const distanceX = Math.abs(touchEndX - linkTouchStartX);
+                            const totalDistance = Math.sqrt(distanceY * distanceY + distanceX * distanceX);
+
+                            link.classList.remove('touch-active');
+
+                            if (!linkTouchMoved && totalDistance < 10 && touchDuration < 500) {
+                                e.preventDefault();
+                                createRipple(link, e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+
+                                addClickFeedback(link);
+                                link.classList.add('loading');
+
+                                const preview = document.getElementById('link-preview');
+                                preview.classList.remove('active');
+
+                                if (link.classList.contains('disambiguation-link')) {
+                                    const confirmed = confirm(`⚠️ WARNING: "${pageTitle}" appears to be a disambiguation page.\n\nDisambiguation pages don't contain actual content - they just list links to other articles with similar names.\n\nDo you want to continue?`);
+
+                                    if (!confirmed) {
+                                        link.classList.remove('loading');
+                                        return;
+                                    }
+                                }
+
+                                this.handleLinkClick(pageTitle);
+                            }
+                        }, { passive: false });
+
+                        link.addEventListener('touchcancel', (e) => {
+                            link.classList.remove('touch-active');
+                            linkTouchMoved = false;
+                        }, { passive: true });
+
+                        // Desktop click handler
                         link.addEventListener('click', async (e) => {
+                            // Ignore if this came from touch (we handle that separately)
+                            if (e.pointerType === 'touch') return;
+
                             e.preventDefault();
 
                             addClickFeedback(link);
@@ -5672,6 +5904,27 @@
         function addClickFeedback(element) {
             element.classList.add('click-feedback');
             setTimeout(() => element.classList.remove('click-feedback'), 200);
+        }
+
+        // Create ripple effect at touch point
+        function createRipple(element, x, y) {
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const xPos = x - rect.left - size / 2;
+            const yPos = y - rect.top - size / 2;
+
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = xPos + 'px';
+            ripple.style.top = yPos + 'px';
+
+            element.style.position = 'relative';
+            element.style.overflow = 'hidden';
+            element.appendChild(ripple);
+
+            setTimeout(() => ripple.remove(), 600);
         }
 
         // ======================
