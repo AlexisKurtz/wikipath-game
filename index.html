@@ -2,10 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.50.3
+    Version: 3.51.0
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.51.0: Compact mobile header! Essential info only (target, moves, min, timer). Hides branding. Gets even smaller when scrolling down (50px → 40px). Smooth transitions. Much more screen space for reading!
+    - v3.50.4: Debug console toggle! Added floating 🐛 button in bottom-left to show/hide debug console. Console now hidden by default. Click the bug to toggle!
     - v3.50.3: UX improvements! Toggle button positioned lower for better alignment. Entire H2 header is clickable again (not just the button). Resize fix still active - user toggles are never overridden!
     - v3.50.2: Mobile font size reduction! Reduced base font from 16px to 14px on mobile. All headings scaled down proportionally. Content padding reduced. More content fits on screen!
     - v3.50.1: REAL FIX! Found the actual bug - window resize events (from mobile Safari toolbar hiding) were re-collapsing sections. Now tracks user manual toggles and resize handler NEVER changes sections the user opened. BULLETPROOF!
@@ -2800,27 +2802,93 @@
                 line-height: 1.6;
             }
 
+            /* Compact mobile header */
             .header-top {
-                flex-wrap: wrap;
-                gap: 10px;
+                padding: 8px 12px;
+                gap: 8px;
+                transition: all 0.3s ease;
+                flex-wrap: nowrap;
+                min-height: 50px;
             }
 
+            /* Scrolled state - even more compact */
+            .header-top.scrolled {
+                padding: 4px 12px;
+                min-height: 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+
+            /* Hide branding on mobile */
+            .game-branding {
+                display: none !important;
+            }
+
+            /* Compact stats layout */
             .header-left {
-                flex: 1 1 100%;
-                justify-content: space-between;
+                flex: 0 0 auto;
+                gap: 8px;
+                align-items: center;
             }
 
+            .header-stats {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+
+            .stat-item-compact {
+                min-width: auto;
+                padding: 2px 6px;
+            }
+
+            .stat-label-compact {
+                font-size: 9px;
+                margin-bottom: 0;
+            }
+
+            .stat-value-compact {
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            /* Compact target display */
             .header-center {
-                flex: 1 1 100%;
-                order: 3;
-            }
-
-            .header-right {
+                flex: 1 1 auto;
                 order: 2;
+                min-width: 0;
             }
 
             .target-display {
                 width: 100%;
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+
+            .target-display strong {
+                font-size: 12px;
+            }
+
+            /* Hide desktop actions */
+            .header-right {
+                display: none !important;
+            }
+
+            /* Scrolled state - smaller text */
+            .header-top.scrolled .stat-label-compact {
+                font-size: 8px;
+            }
+
+            .header-top.scrolled .stat-value-compact {
+                font-size: 11px;
+            }
+
+            .header-top.scrolled .target-display {
+                font-size: 10px;
+                padding: 2px 6px;
+            }
+
+            .header-top.scrolled .target-display strong {
+                font-size: 11px;
             }
 
             .container {
@@ -2976,7 +3044,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.50.3</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.51.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3082,6 +3150,11 @@
         </div>
     </div>
 
+    <!-- Debug Console Toggle Button -->
+    <button id="debug-console-toggle" onclick="toggleDebugConsole()" style="position: fixed; bottom: 15px; left: 15px; width: 45px; height: 45px; background: rgba(0,0,0,0.8); color: #0f0; border: 2px solid #0f0; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10000; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+        🐛
+    </button>
+
     <!-- Debug Console Overlay -->
     <div id="debug-console" style="position: fixed; bottom: 80px; left: 10px; right: 10px; max-height: 200px; background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; overflow-y: auto; z-index: 9999; display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 5px;">
@@ -3089,7 +3162,7 @@
             <div style="display: flex; gap: 5px;">
                 <button onclick="clearDebugLog()" style="background: #ff9800; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Clean</button>
                 <button onclick="copyDebugLog()" style="background: #2196f3; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Copy</button>
-                <button onclick="document.getElementById('debug-console').style.display='none'" style="background: #f00; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Close</button>
+                <button onclick="toggleDebugConsole()" style="background: #f00; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Close</button>
             </div>
         </div>
         <div id="debug-log" style="max-height: 150px; overflow-y: auto;"></div>
@@ -3300,8 +3373,14 @@
         let logCount = 0;
         const maxLogs = 50;
 
-        // Show debug console on page load
-        debugConsole.style.display = 'block';
+        // Toggle debug console visibility
+        function toggleDebugConsole() {
+            const isVisible = debugConsole.style.display !== 'none';
+            debugConsole.style.display = isVisible ? 'none' : 'block';
+        }
+
+        // Hide debug console by default
+        debugConsole.style.display = 'none';
 
         // Override console.log to show in our debug panel
         const originalLog = console.log;
@@ -6613,6 +6692,28 @@ Play at: ${window.location.origin}${window.location.pathname}`;
                 }
             }, 150);
         });
+
+        // Mobile header scroll behavior
+        if (window.innerWidth <= 768) {
+            const headerTop = document.querySelector('.header-top');
+            const contentArea = document.querySelector('.content-area');
+            let lastScrollTop = 0;
+
+            if (contentArea && headerTop) {
+                contentArea.addEventListener('scroll', () => {
+                    const scrollTop = contentArea.scrollTop;
+
+                    // Add 'scrolled' class when scrolled down more than 50px
+                    if (scrollTop > 50) {
+                        headerTop.classList.add('scrolled');
+                    } else {
+                        headerTop.classList.remove('scrolled');
+                    }
+
+                    lastScrollTop = scrollTop;
+                }, { passive: true });
+            }
+        }
 
         function startNewGame() {
             clearUrl();
