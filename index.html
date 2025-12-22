@@ -2,13 +2,14 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.51.3
+    Version: 3.51.4
     Last Updated: 2025-12-22
 
     Changelog:
-    - v3.51.3: Fixed scroll detection - header now compacts when scrolling down
+    - v3.51.4: Simplified scroll listener - should work now
     - v3.51.2: Mobile header scroll behavior added
-    - v3.51.0: Compact mobile header! Essential info only (target, moves, min, timer). Hides branding. Gets even smaller when scrolling down (50px → 40px). Smooth transitions. Much more screen space for reading!
+    - v3.51.1: Fixed mobile header to keep v3.50.4 original when at top
+    - v3.51.0: Compact mobile header with smaller fonts
     - v3.50.4: Debug console toggle! Added floating 🐛 button in bottom-left to show/hide debug console. Console now hidden by default. Click the bug to toggle!
     - v3.50.3: UX improvements! Toggle button positioned lower for better alignment. Entire H2 header is clickable again (not just the button). Resize fix still active - user toggles are never overridden!
     - v3.50.2: Mobile font size reduction! Reduced base font from 16px to 14px on mobile. All headings scaled down proportionally. Content padding reduced. More content fits on screen!
@@ -3036,7 +3037,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.51.3</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.51.4</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -6686,36 +6687,22 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         });
 
         // Mobile header scroll behavior
-        function initMobileHeaderScroll() {
+        (function() {
             if (window.innerWidth <= 768) {
                 const headerTop = document.querySelector('.header-top');
                 const contentArea = document.querySelector('.content-area');
 
                 if (contentArea && headerTop) {
-                    // Remove existing listener if any
-                    contentArea.removeEventListener('scroll', handleScroll);
-
-                    // Add scroll listener
-                    contentArea.addEventListener('scroll', handleScroll, { passive: true });
-
-                    function handleScroll() {
-                        const scrollTop = contentArea.scrollTop;
-
-                        if (scrollTop > 50) {
+                    contentArea.addEventListener('scroll', function() {
+                        if (contentArea.scrollTop > 50) {
                             headerTop.classList.add('scrolled');
                         } else {
                             headerTop.classList.remove('scrolled');
                         }
-                    }
+                    }, { passive: true });
                 }
             }
-        }
-
-        // Initialize on page load
-        initMobileHeaderScroll();
-
-        // Re-initialize on window resize
-        window.addEventListener('resize', initMobileHeaderScroll);
+        })();
 
         function startNewGame() {
             clearUrl();
