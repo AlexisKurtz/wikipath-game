@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.49.4
+    Version: 3.49.5
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.49.5: Stricter header tap detection! Headers now only toggle if there's ZERO movement (not even 1px). Added Clean & Copy buttons to debug console. Prevents sections from collapsing when scrolling near header area.
     - v3.49.4: Added on-screen debug console! Shows touch event logs in a floating panel. Comprehensive logging for header and wrapper touch events to debug collapsing issue.
     - v3.49.3: Fixed double-toggle bug! Headers now track last touch event time and ignore clicks within 500ms to prevent touch+click double-firing.
     - v3.49.2: Performance boost! Added CSS containment and content-visibility to section-content for faster rendering. Added performance logging to debug toggle delays.
@@ -5494,10 +5495,10 @@
 
                         console.log(`[HEADER] touchmove - distance: ${distanceY}px Y, ${distanceX}px X`);
 
-                        // Only mark as moved if significant movement (more than 15px)
-                        if (distanceY > 15 || distanceX > 15) {
+                        // Mark as moved on ANY movement - even 1px means it's a scroll, not a tap
+                        if (distanceY > 0 || distanceX > 0) {
                             isTouchMoveDetected = true;
-                            console.log('[HEADER] Marked as SCROLL (movement > 15px)');
+                            console.log('[HEADER] Marked as SCROLL (ANY movement detected)');
                         }
                     }, { passive: true });
 
@@ -5511,8 +5512,8 @@
 
                         console.log(`[HEADER] touchend - moved: ${isTouchMoveDetected}, distance: ${totalDistance}px`);
 
-                        // Toggle if it was a tap (not a scroll) - be generous with movement tolerance
-                        if (!isTouchMoveDetected && totalDistance < 20) {
+                        // Only toggle if there was absolutely NO movement detected
+                        if (!isTouchMoveDetected) {
                             console.log('[HEADER] TAP detected - toggling!');
                             e.preventDefault(); // Prevent 300ms delay and click event
                             lastTouchEndTime = Date.now(); // Track when touch event fired
