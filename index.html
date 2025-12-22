@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.50.0
+    Version: 3.50.1
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.50.1: REAL FIX! Found the actual bug - window resize events (from mobile Safari toolbar hiding) were re-collapsing sections. Now tracks user manual toggles and resize handler NEVER changes sections the user opened. BULLETPROOF!
     - v3.50.0: CORE FIX - Radical simplification! Removed ALL complex touch handling. ONLY the [+]/[-] button toggles sections (44x44px touch target). Headers are no longer clickable. Content can be scrolled freely without any interference. Simple, reliable, bulletproof.
     - v3.49.5: Stricter header tap detection! Headers now only toggle if there's ZERO movement (not even 1px). Added Clean & Copy buttons to debug console. Prevents sections from collapsing when scrolling near header area.
     - v3.49.4: Added on-screen debug console! Shows touch event logs in a floating panel. Comprehensive logging for header and wrapper touch events to debug collapsing issue.
@@ -5426,6 +5427,9 @@
                         console.log('  ✓ Expanded');
                     }
                     
+                    // Track if user manually toggled this section
+                    let userToggled = false;
+
                     // SIMPLE toggle - just click the button
                     const toggle = (e) => {
                         e.preventDefault();
@@ -5437,13 +5441,17 @@
                             wrapper.style.display = 'none';
                             toggleBtn.textContent = '[+]';
                             header.setAttribute('aria-expanded', 'false');
-                            console.log('Section COLLAPSED');
+                            console.log('Section COLLAPSED by user');
                         } else {
                             wrapper.style.display = 'block';
                             toggleBtn.textContent = '[-]';
                             header.setAttribute('aria-expanded', 'true');
-                            console.log('Section EXPANDED');
+                            console.log('Section EXPANDED by user');
                         }
+
+                        // Mark that user manually toggled this
+                        userToggled = true;
+                        header._userToggled = true;
                     };
 
                     // ONLY the toggle button is clickable - nothing else
@@ -5468,22 +5476,28 @@
                 const isMobile = window.innerWidth <= 768;
                 console.log('=== Updating sections for resize ===');
                 console.log('Window width:', window.innerWidth, 'Is mobile:', isMobile);
-                
+
                 const headers = this.gameArea.querySelectorAll('h2');
-                
+
                 headers.forEach(header => {
                     const wrapper = header._collapsibleWrapper;
                     const toggleBtn = header._collapsibleToggle;
-                    
+
                     if (!wrapper || !toggleBtn) return;
-                    
+
+                    // NEVER change state if user manually toggled this section
+                    if (header._userToggled) {
+                        console.log('Skipping - user manually toggled this section');
+                        return;
+                    }
+
                     // Check if section should be collapsed
                     const shouldCollapse = isMobile || this.shouldCollapseSection(header);
-                    
+
                     // Only auto-collapse/expand if user hasn't manually toggled
                     // Check if current state matches what it should be
                     const isCurrentlyCollapsed = wrapper.style.display === 'none';
-                    
+
                     if (shouldCollapse && !isCurrentlyCollapsed) {
                         // Should be collapsed but isn't
                         wrapper.style.display = 'none';
