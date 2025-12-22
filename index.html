@@ -2,11 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.51.6
+    Version: 3.51.7
     Last Updated: 2025-12-22
 
     Changelog:
-    - v3.51.6: Organic stretch transitions + fixed stat alignment
+    - v3.51.7: 3 transition examples + fixed minimum "..." alignment
     - v3.51.5: Window scroll listener works
     - v3.51.4: Simplified scroll listener
     - v3.51.2: Mobile header scroll behavior added
@@ -2807,43 +2807,75 @@
                 line-height: 1.6;
             }
 
-            /* Add organic stretch transition for scroll state */
+            /* EXAMPLE 1: Smooth Slide (default) */
+            .header-top.transition-slide {
+                transition: all 0.3s ease-out;
+            }
+            .header-top.transition-slide .game-branding {
+                transition: opacity 0.2s ease, transform 0.3s ease-out;
+            }
+            .header-top.transition-slide .stat-item-compact,
+            .header-top.transition-slide .target-display {
+                transition: all 0.3s ease-out;
+            }
+
+            /* EXAMPLE 2: Elastic Bounce */
+            .header-top.transition-bounce {
+                transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            }
+            .header-top.transition-bounce .game-branding {
+                transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            }
+            .header-top.transition-bounce .stat-item-compact,
+            .header-top.transition-bounce .target-display {
+                transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            }
+
+            /* EXAMPLE 3: Spring Stretch */
+            .header-top.transition-spring {
+                transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .header-top.transition-spring .game-branding {
+                transition: opacity 0.2s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .header-top.transition-spring .stat-item-compact,
+            .header-top.transition-spring .target-display {
+                transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            /* Apply default transition */
             .header-top {
-                transition: padding 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                           gap 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                           min-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                           box-shadow 0.3s ease;
                 flex-wrap: wrap;
                 gap: 10px;
+                transition: all 0.3s ease-out;
             }
 
             .header-left {
                 flex: 1 1 100%;
                 justify-content: space-between;
-                transition: flex 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                           gap 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
 
             .header-stats {
-                transition: gap 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                display: flex;
+                gap: 12px;
             }
 
             .stat-item-compact {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                transition: padding 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                           font-size 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                justify-content: center;
+                min-width: 50px;
             }
 
-            .stat-label-compact, .stat-value-compact {
-                transition: font-size 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            .stat-value-compact {
+                text-align: center;
+                min-width: 30px;
             }
 
             .header-center {
                 flex: 1 1 100%;
                 order: 3;
-                transition: flex 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
 
             .header-right {
@@ -2852,17 +2884,15 @@
 
             .target-display {
                 width: 100%;
-                transition: font-size 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                           padding 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-
-            .target-display strong {
-                transition: font-size 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
 
             .game-branding {
-                transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                transition: opacity 0.2s ease, transform 0.3s ease-out;
                 transform-origin: left center;
+            }
+
+            .stat-item-compact, .target-display {
+                transition: all 0.3s ease-out;
             }
 
             /* SCROLLED state - compact everything */
@@ -3075,7 +3105,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.51.6</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.51.7</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3185,6 +3215,15 @@
     <button id="debug-console-toggle" onclick="toggleDebugConsole()" style="position: fixed; bottom: 15px; left: 15px; width: 45px; height: 45px; background: rgba(0,0,0,0.8); color: #0f0; border: 2px solid #0f0; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10000; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
         🐛
     </button>
+
+    <!-- Transition Tester (Mobile Only) -->
+    <div id="transition-tester" style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); color: white; padding: 10px; border-radius: 8px; z-index: 10001; display: none; font-size: 11px;">
+        <div style="font-weight: bold; margin-bottom: 8px;">Header Transition:</div>
+        <button onclick="setTransition('slide')" style="display: block; width: 100%; margin: 4px 0; padding: 6px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 11px;">1. Smooth Slide</button>
+        <button onclick="setTransition('bounce')" style="display: block; width: 100%; margin: 4px 0; padding: 6px; background: #2196F3; color: white; border: none; border-radius: 4px; font-size: 11px;">2. Elastic Bounce</button>
+        <button onclick="setTransition('spring')" style="display: block; width: 100%; margin: 4px 0; padding: 6px; background: #FF9800; color: white; border: none; border-radius: 4px; font-size: 11px;">3. Spring Stretch</button>
+        <button onclick="document.getElementById('transition-tester').style.display='none'" style="display: block; width: 100%; margin-top: 8px; padding: 6px; background: #f44336; color: white; border: none; border-radius: 4px; font-size: 11px;">Close</button>
+    </div>
 
     <!-- Debug Console Overlay -->
     <div id="debug-console" style="position: fixed; bottom: 80px; left: 10px; right: 10px; max-height: 200px; background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; overflow-y: auto; z-index: 9999; display: none;">
@@ -3408,6 +3447,21 @@
         function toggleDebugConsole() {
             const isVisible = debugConsole.style.display !== 'none';
             debugConsole.style.display = isVisible ? 'none' : 'block';
+        }
+
+        // Transition tester functions
+        function setTransition(type) {
+            const header = document.querySelector('.header-top');
+            // Remove all transition classes
+            header.classList.remove('transition-slide', 'transition-bounce', 'transition-spring');
+            // Add selected transition
+            header.classList.add('transition-' + type);
+            console.log('Transition set to:', type);
+        }
+
+        // Show transition tester on mobile
+        if (window.innerWidth <= 768) {
+            document.getElementById('transition-tester').style.display = 'block';
         }
 
         // Hide debug console by default
