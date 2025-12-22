@@ -3050,9 +3050,13 @@
 
     <!-- Debug Console Overlay -->
     <div id="debug-console" style="position: fixed; bottom: 80px; left: 10px; right: 10px; max-height: 200px; background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; overflow-y: auto; z-index: 9999; display: none;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 5px;">
             <strong style="color: #fff;">Debug Console</strong>
-            <button onclick="document.getElementById('debug-console').style.display='none'" style="background: #f00; color: #fff; border: none; padding: 2px 8px; border-radius: 3px;">Close</button>
+            <div style="display: flex; gap: 5px;">
+                <button onclick="clearDebugLog()" style="background: #ff9800; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Clean</button>
+                <button onclick="copyDebugLog()" style="background: #2196f3; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Copy</button>
+                <button onclick="document.getElementById('debug-console').style.display='none'" style="background: #f00; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Close</button>
+            </div>
         </div>
         <div id="debug-log" style="max-height: 150px; overflow-y: auto;"></div>
     </div>
@@ -3291,6 +3295,28 @@
             // Auto-scroll to top (newest)
             debugLog.scrollTop = 0;
         };
+
+        // Clear debug log
+        function clearDebugLog() {
+            debugLog.innerHTML = '';
+            logCount = 0;
+            console.log('Debug log cleared');
+        }
+
+        // Copy debug log to clipboard
+        function copyDebugLog() {
+            const allLogs = Array.from(debugLog.children)
+                .map(entry => entry.textContent)
+                .reverse()
+                .join('\n');
+
+            navigator.clipboard.writeText(allLogs).then(() => {
+                alert('Debug log copied to clipboard!');
+            }).catch(err => {
+                console.log('Copy failed:', err);
+                alert('Copy failed - see console');
+            });
+        }
 
         // ======================
         // TOP PROGRESS BAR
