@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.50.1
+    Version: 3.50.2
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.50.2: Mobile font size reduction! Reduced base font from 16px to 14px on mobile. All headings scaled down proportionally. Content padding reduced. More content fits on screen!
     - v3.50.1: REAL FIX! Found the actual bug - window resize events (from mobile Safari toolbar hiding) were re-collapsing sections. Now tracks user manual toggles and resize handler NEVER changes sections the user opened. BULLETPROOF!
     - v3.50.0: CORE FIX - Radical simplification! Removed ALL complex touch handling. ONLY the [+]/[-] button toggles sections (44x44px touch target). Headers are no longer clickable. Content can be scrolled freely without any interference. Simple, reliable, bulletproof.
     - v3.49.5: Stricter header tap detection! Headers now only toggle if there's ZERO movement (not even 1px). Added Clean & Copy buttons to debug console. Prevents sections from collapsing when scrolling near header area.
@@ -2767,6 +2768,36 @@
 
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
+            /* Mobile font size reductions */
+            body {
+                font-size: 14px;
+            }
+
+            .wikipedia-article {
+                font-size: 14px; /* Reduced from 16px */
+            }
+
+            .wikipedia-article h1 {
+                font-size: 1.75em; /* Reduced from 2.5em */
+            }
+
+            .wikipedia-article h2 {
+                font-size: 1.4em; /* Reduced from 1.75em */
+            }
+
+            .wikipedia-article h3 {
+                font-size: 1.15em; /* Reduced from 1.35em */
+            }
+
+            .wikipedia-article h4 {
+                font-size: 1.05em; /* Reduced from 1.15em */
+            }
+
+            .wikipedia-article p {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
             .header-top {
                 flex-wrap: wrap;
                 gap: 10px;
@@ -2799,7 +2830,7 @@
             }
 
             .content-area {
-                padding: 20px;
+                padding: 15px; /* Reduced from 20px */
             }
 
             .path-panel {
@@ -2943,7 +2974,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.49.4</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.50.2</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
