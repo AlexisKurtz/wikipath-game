@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.49.5
+    Version: 3.50.0
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.50.0: CORE FIX - Radical simplification! Removed ALL complex touch handling. ONLY the [+]/[-] button toggles sections (44x44px touch target). Headers are no longer clickable. Content can be scrolled freely without any interference. Simple, reliable, bulletproof.
     - v3.49.5: Stricter header tap detection! Headers now only toggle if there's ZERO movement (not even 1px). Added Clean & Copy buttons to debug console. Prevents sections from collapsing when scrolling near header area.
     - v3.49.4: Added on-screen debug console! Shows touch event logs in a floating panel. Comprehensive logging for header and wrapper touch events to debug collapsing issue.
     - v3.49.3: Fixed double-toggle bug! Headers now track last touch event time and ignore clicks within 500ms to prevent touch+click double-firing.
@@ -2657,12 +2658,21 @@
         /* Collapsible Sections */
         .section-toggle {
             cursor: pointer;
-            margin-left: 8px;
+            margin-right: 8px;
             user-select: none;
-            font-size: 0.8em;
+            font-size: 1em;
             color: #0645ad;
-            font-weight: normal;
+            font-weight: bold;
             font-family: monospace;
+            /* Large touch target */
+            min-width: 44px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            /* Prevent scroll on button */
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
         }
 
         .section-toggle:hover {
@@ -2702,23 +2712,12 @@
             padding: 8px 0;
         }
 
-        .section-toggle {
-            min-width: 44px;
-            min-height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
         /* Active states for touch feedback */
-        h2:active {
-            background: rgba(6, 69, 173, 0.05);
-            transition: background 0.1s ease;
-        }
-
         .section-toggle:active {
-            transform: scale(0.92);
-            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(6, 69, 173, 0.15);
+            border-radius: 4px;
+            transform: scale(0.9);
+            transition: all 0.08s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .wikipedia-article a:active {
@@ -5389,27 +5388,6 @@
                     // Insert wrapper after the header wrapper
                     headerWrapper.parentNode.insertBefore(wrapper, headerWrapper.nextSibling);
 
-                    // Prevent touch events on content from bubbling to header
-                    wrapper.addEventListener('touchstart', (e) => {
-                        console.log('[WRAPPER] touchstart - stopping propagation');
-                        e.stopPropagation();
-                    }, { passive: true });
-
-                    wrapper.addEventListener('touchmove', (e) => {
-                        console.log('[WRAPPER] touchmove - stopping propagation');
-                        e.stopPropagation();
-                    }, { passive: true });
-
-                    wrapper.addEventListener('touchend', (e) => {
-                        console.log('[WRAPPER] touchend - stopping propagation');
-                        e.stopPropagation();
-                    }, { passive: true });
-
-                    wrapper.addEventListener('touchcancel', (e) => {
-                        console.log('[WRAPPER] touchcancel - stopping propagation');
-                        e.stopPropagation();
-                    }, { passive: true });
-
                     // Add toggle button to the actual H2
                     const toggleBtn = document.createElement('span');
                     toggleBtn.className = 'section-toggle';
@@ -5418,11 +5396,20 @@
                     toggleBtn.setAttribute('aria-label', 'Expand or collapse section');
                     toggleBtn.setAttribute('tabindex', '0');
 
-                    header.appendChild(toggleBtn);
-                    header.style.cursor = 'pointer';
-                    header.setAttribute('role', 'button');
+                    // Make toggle button large and prevent scroll on it
+                    toggleBtn.style.display = 'inline-flex';
+                    toggleBtn.style.alignItems = 'center';
+                    toggleBtn.style.justifyContent = 'center';
+                    toggleBtn.style.minWidth = '44px';
+                    toggleBtn.style.minHeight = '44px';
+                    toggleBtn.style.cursor = 'pointer';
+                    toggleBtn.style.userSelect = 'none';
+                    toggleBtn.style.webkitUserSelect = 'none';
+                    toggleBtn.style.touchAction = 'manipulation'; // Prevent double-tap zoom and scrolling
+                    toggleBtn.style.marginRight = '8px';
+
+                    header.insertBefore(toggleBtn, header.firstChild);
                     header.setAttribute('aria-expanded', 'true');
-                    header.setAttribute('tabindex', '0');
 
                     // Store references
                     header._collapsibleWrapper = wrapper;
@@ -5439,101 +5426,33 @@
                         console.log('  ✓ Expanded');
                     }
                     
-                    // Toggle handler with enhanced mobile scroll detection
-                    let touchStartY = 0;
-                    let touchStartX = 0;
-                    let touchStartTime = 0;
-                    let isTouchMoveDetected = false;
-                    let lastTouchEndTime = 0;
-
+                    // SIMPLE toggle - just click the button
                     const toggle = (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        const startTime = performance.now();
+
                         const isVisible = wrapper.style.display !== 'none';
 
-                        if (!isVisible) {
-                            // Opening - use visibility for instant response
-                            wrapper.style.display = 'block';
-                            wrapper.style.visibility = 'visible';
-                        } else {
-                            // Closing
+                        if (isVisible) {
                             wrapper.style.display = 'none';
+                            toggleBtn.textContent = '[+]';
+                            header.setAttribute('aria-expanded', 'false');
+                            console.log('Section COLLAPSED');
+                        } else {
+                            wrapper.style.display = 'block';
+                            toggleBtn.textContent = '[-]';
+                            header.setAttribute('aria-expanded', 'true');
+                            console.log('Section EXPANDED');
                         }
-
-                        toggleBtn.textContent = isVisible ? '[+]' : '[-]';
-                        const endTime = performance.now();
-                        console.log(`Toggle took ${endTime - startTime}ms`);
                     };
 
-                    // Desktop: simple click
-                    header.addEventListener('click', (e) => {
-                        // Ignore clicks that come right after touch events (within 500ms)
-                        if (Date.now() - lastTouchEndTime < 500) {
-                            console.log('Ignoring click - touch event just fired');
-                            return;
-                        }
-                        // Only toggle on actual clicks, not touch events
-                        if (e.type === 'click' && !e.isTrusted) return; // Ignore synthetic clicks
-                        if (e.pointerType === 'touch') return; // Ignore if it came from touch
-                        toggle(e);
-                    });
+                    // ONLY the toggle button is clickable - nothing else
+                    toggleBtn.addEventListener('click', toggle);
 
-                    // Mobile: enhanced tap vs scroll detection
-                    header.addEventListener('touchstart', (e) => {
-                        console.log('[HEADER] touchstart');
-                        touchStartY = e.touches[0].clientY;
-                        touchStartX = e.touches[0].clientX;
-                        touchStartTime = Date.now();
-                        isTouchMoveDetected = false;
-                    }, { passive: true });
-
-                    header.addEventListener('touchmove', (e) => {
-                        const touchY = e.touches[0].clientY;
-                        const touchX = e.touches[0].clientX;
-                        const distanceY = Math.abs(touchY - touchStartY);
-                        const distanceX = Math.abs(touchX - touchStartX);
-
-                        console.log(`[HEADER] touchmove - distance: ${distanceY}px Y, ${distanceX}px X`);
-
-                        // Mark as moved on ANY movement - even 1px means it's a scroll, not a tap
-                        if (distanceY > 0 || distanceX > 0) {
-                            isTouchMoveDetected = true;
-                            console.log('[HEADER] Marked as SCROLL (ANY movement detected)');
-                        }
-                    }, { passive: true });
-
-                    header.addEventListener('touchend', (e) => {
-                        const touchEndY = e.changedTouches[0].clientY;
-                        const touchEndX = e.changedTouches[0].clientX;
-                        const touchDuration = Date.now() - touchStartTime;
-                        const touchDistanceY = Math.abs(touchEndY - touchStartY);
-                        const touchDistanceX = Math.abs(touchEndX - touchStartX);
-                        const totalDistance = Math.sqrt(touchDistanceY * touchDistanceY + touchDistanceX * touchDistanceX);
-
-                        console.log(`[HEADER] touchend - moved: ${isTouchMoveDetected}, distance: ${totalDistance}px`);
-
-                        // Only toggle if there was absolutely NO movement detected
-                        if (!isTouchMoveDetected) {
-                            console.log('[HEADER] TAP detected - toggling!');
-                            e.preventDefault(); // Prevent 300ms delay and click event
-                            lastTouchEndTime = Date.now(); // Track when touch event fired
-                            toggle(e);
-                            header.setAttribute('aria-expanded', wrapper.style.display !== 'none');
-                        } else {
-                            console.log('[HEADER] SCROLL detected - NOT toggling');
-                        }
-                    }, { passive: false }); // NOT passive - we need preventDefault
-
-                    header.addEventListener('touchcancel', (e) => {
-                        isTouchMoveDetected = false;
-                    }, { passive: true });
-
-                    // Keyboard support for accessibility
-                    header.addEventListener('keydown', (e) => {
+                    // Keyboard support
+                    toggleBtn.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
                             toggle(e);
-                            header.setAttribute('aria-expanded', wrapper.style.display !== 'none');
                         }
                     });
 
