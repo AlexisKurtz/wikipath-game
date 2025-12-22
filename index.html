@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.49.2
+    Version: 3.49.3
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.49.3: Fixed double-toggle bug! Headers now track last touch event time and ignore clicks within 500ms to prevent touch+click double-firing.
     - v3.49.2: Performance boost! Added CSS containment and content-visibility to section-content for faster rendering. Added performance logging to debug toggle delays.
     - v3.49.1: Touch control fixes! Removed 300ms tap delay with preventDefault. Increased movement tolerance (15px) to prevent false scroll detection. Headers now respond instantly to taps!
     - v3.49.0: iOS-quality touch controls! Fixed collapsible sections closing when scrolling content. Enhanced touch detection with movement tracking. Ripple effects on links. Active states for all touch targets. GPU acceleration. ARIA labels & keyboard support. 44x44pt touch targets. No double-tap zoom!
@@ -2940,7 +2941,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.49.2</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.49.3</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -5364,6 +5365,7 @@
                     let touchStartX = 0;
                     let touchStartTime = 0;
                     let isTouchMoveDetected = false;
+                    let lastTouchEndTime = 0;
 
                     const toggle = (e) => {
                         e.stopPropagation();
@@ -5386,6 +5388,11 @@
 
                     // Desktop: simple click
                     header.addEventListener('click', (e) => {
+                        // Ignore clicks that come right after touch events (within 500ms)
+                        if (Date.now() - lastTouchEndTime < 500) {
+                            console.log('Ignoring click - touch event just fired');
+                            return;
+                        }
                         // Only toggle on actual clicks, not touch events
                         if (e.type === 'click' && !e.isTrusted) return; // Ignore synthetic clicks
                         if (e.pointerType === 'touch') return; // Ignore if it came from touch
@@ -5422,7 +5429,8 @@
 
                         // Toggle if it was a tap (not a scroll) - be generous with movement tolerance
                         if (!isTouchMoveDetected && totalDistance < 20) {
-                            e.preventDefault(); // Prevent 300ms delay
+                            e.preventDefault(); // Prevent 300ms delay and click event
+                            lastTouchEndTime = Date.now(); // Track when touch event fired
                             toggle(e);
                             header.setAttribute('aria-expanded', wrapper.style.display !== 'none');
                         }
