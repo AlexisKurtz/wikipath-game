@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.52.0
+    Version: 3.52.1
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.52.1: Fixed broken references (debugConsole, transition-tester)
     - v3.52.0: Unified debug panel with Console/Debug/Transition tabs, single bottom-left button
     - v3.51.8: Fixed all - monospace minimum, tester at bottom, transitions VERY different, green=selected
     - v3.51.5: Window scroll listener works
@@ -3108,7 +3109,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.52.0</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.52.1</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3457,16 +3458,9 @@
         // ======================
         // DEBUG CONSOLE
         // ======================
-        const debugConsole = document.getElementById('debug-console');
         const debugLog = document.getElementById('debug-log');
         let logCount = 0;
         const maxLogs = 50;
-
-        // Toggle debug console visibility
-        function toggleDebugConsole() {
-            const isVisible = debugConsole.style.display !== 'none';
-            debugConsole.style.display = isVisible ? 'none' : 'block';
-        }
 
         // Transition tester functions
         function setTransition(type) {
@@ -3493,14 +3487,6 @@
 
             console.log('Transition set to:', type);
         }
-
-        // Show transition tester on mobile
-        if (window.innerWidth <= 768) {
-            document.getElementById('transition-tester').style.display = 'block';
-        }
-
-        // Hide debug console by default
-        debugConsole.style.display = 'none';
 
         // Override console.log to show in our debug panel
         const originalLog = console.log;
