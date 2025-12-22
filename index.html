@@ -2,11 +2,12 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.51.7
+    Version: 3.52.0
     Last Updated: 2025-12-22
 
     Changelog:
-    - v3.51.7: 3 transition examples + fixed minimum "..." alignment
+    - v3.52.0: Unified debug panel with Console/Debug/Transition tabs, single bottom-left button
+    - v3.51.8: Fixed all - monospace minimum, tester at bottom, transitions VERY different, green=selected
     - v3.51.5: Window scroll listener works
     - v3.51.4: Simplified scroll listener
     - v3.51.2: Mobile header scroll behavior added
@@ -2807,40 +2808,40 @@
                 line-height: 1.6;
             }
 
-            /* EXAMPLE 1: Smooth Slide (default) */
+            /* EXAMPLE 1: Quick & Smooth */
             .header-top.transition-slide {
-                transition: all 0.3s ease-out;
+                transition: all 0.25s ease-in-out;
             }
             .header-top.transition-slide .game-branding {
-                transition: opacity 0.2s ease, transform 0.3s ease-out;
+                transition: opacity 0.15s ease, transform 0.25s ease-in-out;
             }
             .header-top.transition-slide .stat-item-compact,
             .header-top.transition-slide .target-display {
-                transition: all 0.3s ease-out;
+                transition: all 0.25s ease-in-out;
             }
 
-            /* EXAMPLE 2: Elastic Bounce */
+            /* EXAMPLE 2: Bouncy Overshoot */
             .header-top.transition-bounce {
-                transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                transition: all 0.7s cubic-bezier(0.68, -0.6, 0.32, 1.6);
             }
             .header-top.transition-bounce .game-branding {
-                transition: opacity 0.3s ease, transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                transition: opacity 0.2s ease, transform 0.7s cubic-bezier(0.68, -0.6, 0.32, 1.6);
             }
             .header-top.transition-bounce .stat-item-compact,
             .header-top.transition-bounce .target-display {
-                transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                transition: all 0.7s cubic-bezier(0.68, -0.6, 0.32, 1.6);
             }
 
-            /* EXAMPLE 3: Spring Stretch */
+            /* EXAMPLE 3: Elastic Spring */
             .header-top.transition-spring {
-                transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             }
             .header-top.transition-spring .game-branding {
-                transition: opacity 0.2s ease, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                transition: opacity 0.3s ease, transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             }
             .header-top.transition-spring .stat-item-compact,
             .header-top.transition-spring .target-display {
-                transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             }
 
             /* Apply default transition */
@@ -2871,6 +2872,8 @@
             .stat-value-compact {
                 text-align: center;
                 min-width: 30px;
+                font-family: 'Courier New', monospace;
+                letter-spacing: -1px;
             }
 
             .header-center {
@@ -3105,7 +3108,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.51.7</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.52.0</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3144,7 +3147,8 @@
 
             <!-- Right: Mode Switch -->
             <div class="header-right">
-                <button class="debug-toggle" id="debug-toggle" onclick="toggleDebugMode()">
+                <!-- Old debug toggle (HIDDEN - now using unified debug button) -->
+                <button class="debug-toggle" id="debug-toggle-old" onclick="toggleDebugMode()" style="display: none !important;">
                     🐛 Debug
                 </button>
                 <div class="mode-switch-container">
@@ -3169,35 +3173,8 @@
         </div>
     </div>
 
-    <!-- Debug Panel -->
-    <div class="debug-panel" id="debug-panel">
-        <h3>🐛 Debug Mode</h3>
-        
-        <div class="debug-section">
-            <h4>🎮 Custom Game Setup</h4>
-            <div class="debug-input-wrapper">
-                <input type="text" class="debug-input" id="debug-start-page" placeholder="Start Page (e.g., Albert Einstein)" autocomplete="off">
-                <div class="debug-autocomplete" id="autocomplete-start"></div>
-            </div>
-            <div class="debug-input-wrapper">
-                <input type="text" class="debug-input" id="debug-target-page" placeholder="Target Page (e.g., Physics)" autocomplete="off">
-                <div class="debug-autocomplete" id="autocomplete-target"></div>
-            </div>
-            <div class="debug-error" id="debug-game-error"></div>
-            <button class="debug-button" onclick="startDebugGame()">Start Custom Game</button>
-            <button class="debug-button secondary" onclick="fillRandomPages()">Fill Random</button>
-        </div>
-
-        <div class="debug-section">
-            <h4>🔍 Page Preview</h4>
-            <div class="debug-input-wrapper">
-                <input type="text" class="debug-input" id="debug-preview-page" placeholder="Page Name (e.g., Mainframe)" autocomplete="off">
-                <div class="debug-autocomplete" id="autocomplete-preview"></div>
-            </div>
-            <div class="debug-error" id="debug-preview-error"></div>
-            <button class="debug-button" onclick="loadDebugPreview()">Load Preview</button>
-            <button class="debug-button secondary" onclick="fillRandomPreview()">Fill Random</button>
-        </div>
+    <!-- Old Debug Panel (HIDDEN - now using unified debug panel) -->
+    <div class="debug-panel" id="debug-panel" style="display: none !important;">
     </div>
 
     <!-- Path Panel (Collapsible) -->
@@ -3211,31 +3188,73 @@
         </div>
     </div>
 
-    <!-- Debug Console Toggle Button -->
-    <button id="debug-console-toggle" onclick="toggleDebugConsole()" style="position: fixed; bottom: 15px; left: 15px; width: 45px; height: 45px; background: rgba(0,0,0,0.8); color: #0f0; border: 2px solid #0f0; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10000; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+    <!-- Unified Debug Button -->
+    <button id="debug-toggle" onclick="toggleDebugPanel()" style="position: fixed; bottom: 15px; left: 15px; width: 45px; height: 45px; background: rgba(0,0,0,0.8); color: #0f0; border: 2px solid #0f0; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10000; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
         🐛
     </button>
 
-    <!-- Transition Tester (Mobile Only) -->
-    <div id="transition-tester" style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.9); color: white; padding: 10px; border-radius: 8px; z-index: 10001; display: none; font-size: 11px;">
-        <div style="font-weight: bold; margin-bottom: 8px;">Header Transition:</div>
-        <button onclick="setTransition('slide')" style="display: block; width: 100%; margin: 4px 0; padding: 6px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 11px;">1. Smooth Slide</button>
-        <button onclick="setTransition('bounce')" style="display: block; width: 100%; margin: 4px 0; padding: 6px; background: #2196F3; color: white; border: none; border-radius: 4px; font-size: 11px;">2. Elastic Bounce</button>
-        <button onclick="setTransition('spring')" style="display: block; width: 100%; margin: 4px 0; padding: 6px; background: #FF9800; color: white; border: none; border-radius: 4px; font-size: 11px;">3. Spring Stretch</button>
-        <button onclick="document.getElementById('transition-tester').style.display='none'" style="display: block; width: 100%; margin-top: 8px; padding: 6px; background: #f44336; color: white; border: none; border-radius: 4px; font-size: 11px;">Close</button>
-    </div>
+    <!-- Unified Debug Panel with Tabs -->
+    <div id="debug-panel-unified" style="position: fixed; bottom: 70px; left: 10px; right: 10px; max-height: 400px; background: rgba(0,0,0,0.95); color: #fff; border-radius: 12px; z-index: 9999; display: none; box-shadow: 0 4px 16px rgba(0,0,0,0.5); border: 2px solid #0f0;">
+        <!-- Tabs -->
+        <div style="display: flex; border-bottom: 2px solid #0f0; background: rgba(0,0,0,0.3);">
+            <button onclick="switchDebugTab('console')" id="tab-console" style="flex: 1; padding: 12px; background: transparent; color: #0f0; border: none; border-bottom: 3px solid #0f0; font-size: 12px; font-weight: bold; cursor: pointer;">Console</button>
+            <button onclick="switchDebugTab('debug')" id="tab-debug" style="flex: 1; padding: 12px; background: transparent; color: #888; border: none; border-bottom: 3px solid transparent; font-size: 12px; font-weight: bold; cursor: pointer;">Debug</button>
+            <button onclick="switchDebugTab('transition')" id="tab-transition" style="flex: 1; padding: 12px; background: transparent; color: #888; border: none; border-bottom: 3px solid transparent; font-size: 12px; font-weight: bold; cursor: pointer;">Transition</button>
+            <button onclick="toggleDebugPanel()" style="padding: 8px 12px; background: #f00; color: #fff; border: none; border-radius: 0 10px 0 0; font-size: 11px; cursor: pointer;">✕</button>
+        </div>
 
-    <!-- Debug Console Overlay -->
-    <div id="debug-console" style="position: fixed; bottom: 80px; left: 10px; right: 10px; max-height: 200px; background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; overflow-y: auto; z-index: 9999; display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 5px;">
-            <strong style="color: #fff;">Debug Console</strong>
-            <div style="display: flex; gap: 5px;">
-                <button onclick="clearDebugLog()" style="background: #ff9800; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Clean</button>
-                <button onclick="copyDebugLog()" style="background: #2196f3; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Copy</button>
-                <button onclick="toggleDebugConsole()" style="background: #f00; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 10px;">Close</button>
+        <!-- Tab Content: Console -->
+        <div id="content-console" style="padding: 12px; max-height: 350px; overflow-y: auto; display: block;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <strong style="color: #0f0; font-size: 11px;">Console Logs</strong>
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="clearDebugLog()" style="background: #ff9800; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Clean</button>
+                    <button onclick="copyDebugLog()" style="background: #2196f3; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">Copy</button>
+                </div>
+            </div>
+            <div id="debug-log" style="max-height: 280px; overflow-y: auto; font-family: monospace; font-size: 10px; color: #0f0; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 6px;"></div>
+        </div>
+
+        <!-- Tab Content: Debug -->
+        <div id="content-debug" style="padding: 12px; max-height: 350px; overflow-y: auto; display: none; font-size: 11px;">
+            <div style="margin-bottom: 15px;">
+                <div style="font-weight: bold; margin-bottom: 8px; color: #0f0; font-size: 12px;">🎮 Custom Game Setup</div>
+                <div style="margin-bottom: 6px;">
+                    <input type="text" class="debug-input" id="debug-start-page" placeholder="Start Page (e.g., Albert Einstein)" autocomplete="off" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #0f0; border-radius: 4px; color: #fff; font-size: 11px;">
+                    <div class="debug-autocomplete" id="autocomplete-start"></div>
+                </div>
+                <div style="margin-bottom: 6px;">
+                    <input type="text" class="debug-input" id="debug-target-page" placeholder="Target Page (e.g., Physics)" autocomplete="off" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #0f0; border-radius: 4px; color: #fff; font-size: 11px;">
+                    <div class="debug-autocomplete" id="autocomplete-target"></div>
+                </div>
+                <div class="debug-error" id="debug-game-error" style="color: #f00; font-size: 10px; margin-bottom: 6px;"></div>
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="startDebugGame()" style="flex: 1; padding: 8px; background: #0f0; color: #000; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Start Custom Game</button>
+                    <button onclick="fillRandomPages()" style="flex: 1; padding: 8px; background: #666; color: #fff; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">Fill Random</button>
+                </div>
+            </div>
+
+            <div>
+                <div style="font-weight: bold; margin-bottom: 8px; color: #0f0; font-size: 12px;">🔍 Page Preview</div>
+                <div style="margin-bottom: 6px;">
+                    <input type="text" class="debug-input" id="debug-preview-page" placeholder="Page Name (e.g., Mainframe)" autocomplete="off" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid #0f0; border-radius: 4px; color: #fff; font-size: 11px;">
+                    <div class="debug-autocomplete" id="autocomplete-preview"></div>
+                </div>
+                <div class="debug-error" id="debug-preview-error" style="color: #f00; font-size: 10px; margin-bottom: 6px;"></div>
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="loadDebugPreview()" style="flex: 1; padding: 8px; background: #0f0; color: #000; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Load Preview</button>
+                    <button onclick="fillRandomPreview()" style="flex: 1; padding: 8px; background: #666; color: #fff; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">Fill Random</button>
+                </div>
             </div>
         </div>
-        <div id="debug-log" style="max-height: 150px; overflow-y: auto;"></div>
+
+        <!-- Tab Content: Transition -->
+        <div id="content-transition" style="padding: 12px; max-height: 350px; overflow-y: auto; display: none;">
+            <div style="font-weight: bold; margin-bottom: 10px; text-align: center; font-size: 13px; color: #0f0;">Header Transition Test</div>
+            <button id="btn-slide" onclick="setTransition('slide')" style="display: block; width: 100%; margin: 5px 0; padding: 10px; background: #666; color: white; border: 2px solid #666; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">Quick & Smooth (0.25s)</button>
+            <button id="btn-bounce" onclick="setTransition('bounce')" style="display: block; width: 100%; margin: 5px 0; padding: 10px; background: #666; color: white; border: 2px solid #666; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">Bouncy (0.7s overshoot)</button>
+            <button id="btn-spring" onclick="setTransition('spring')" style="display: block; width: 100%; margin: 5px 0; padding: 10px; background: #666; color: white; border: 2px solid #666; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">Elastic Spring (1s)</button>
+        </div>
     </div>
 
     <!-- Floating Action Menu -->
@@ -3456,6 +3475,22 @@
             header.classList.remove('transition-slide', 'transition-bounce', 'transition-spring');
             // Add selected transition
             header.classList.add('transition-' + type);
+
+            // Update button styles to show selection
+            const buttons = ['btn-slide', 'btn-bounce', 'btn-spring'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btnId === 'btn-' + type) {
+                    btn.style.background = '#4CAF50';
+                    btn.style.borderColor = '#4CAF50';
+                    btn.style.transform = 'scale(1.05)';
+                } else {
+                    btn.style.background = '#666';
+                    btn.style.borderColor = '#666';
+                    btn.style.transform = 'scale(1)';
+                }
+            });
+
             console.log('Transition set to:', type);
         }
 
@@ -6849,14 +6884,48 @@ Play at: ${window.location.origin}${window.location.pathname}`;
         // ======================
         // DEBUG MODE FUNCTIONS
         // ======================
-        
+
+        // Unified Debug Panel Functions
+        function toggleDebugPanel() {
+            const panel = document.getElementById('debug-panel-unified');
+            if (panel.style.display === 'none' || !panel.style.display) {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function switchDebugTab(tabName) {
+            // Hide all tab contents
+            document.getElementById('content-console').style.display = 'none';
+            document.getElementById('content-debug').style.display = 'none';
+            document.getElementById('content-transition').style.display = 'none';
+
+            // Reset all tab buttons
+            document.getElementById('tab-console').style.color = '#888';
+            document.getElementById('tab-console').style.borderBottom = '3px solid transparent';
+            document.getElementById('tab-debug').style.color = '#888';
+            document.getElementById('tab-debug').style.borderBottom = '3px solid transparent';
+            document.getElementById('tab-transition').style.color = '#888';
+            document.getElementById('tab-transition').style.borderBottom = '3px solid transparent';
+
+            // Show selected tab content
+            document.getElementById('content-' + tabName).style.display = 'block';
+
+            // Highlight selected tab button
+            document.getElementById('tab-' + tabName).style.color = '#0f0';
+            document.getElementById('tab-' + tabName).style.borderBottom = '3px solid #0f0';
+        }
+
+        // Old toggle function (deprecated but kept for compatibility)
         function toggleDebugMode() {
-            const toggle = document.getElementById('debug-toggle');
+            const toggle = document.getElementById('debug-toggle-old');
             const panel = document.getElementById('debug-panel');
-            const isActive = toggle.classList.toggle('active');
-            panel.classList.toggle('active');
-            
-            localStorage.setItem('wikipath_debug_mode', isActive);
+            if (toggle) {
+                const isActive = toggle.classList.toggle('active');
+                panel.classList.toggle('active');
+                localStorage.setItem('wikipath_debug_mode', isActive);
+            }
         }
         
         async function startDebugGame() {
