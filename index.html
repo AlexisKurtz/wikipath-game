@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.49.1
+    Version: 3.49.2
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.49.2: Performance boost! Added CSS containment and content-visibility to section-content for faster rendering. Added performance logging to debug toggle delays.
     - v3.49.1: Touch control fixes! Removed 300ms tap delay with preventDefault. Increased movement tolerance (15px) to prevent false scroll detection. Headers now respond instantly to taps!
     - v3.49.0: iOS-quality touch controls! Fixed collapsible sections closing when scrolling content. Enhanced touch detection with movement tracking. Ripple effects on links. Active states for all touch targets. GPU acceleration. ARIA labels & keyboard support. 44x44pt touch targets. No double-tap zoom!
     - v3.48.0: Sticky fixes! Article h1 title stays visible when scrolling. Path panel header stays fixed. Desktop actions move left when panel opens. Action button text always visible!
@@ -2668,6 +2669,8 @@
         .section-content {
             overflow: hidden;
             transition: max-height 0.3s ease;
+            contain: layout style paint;
+            content-visibility: auto;
         }
 
         /* === iOS-Quality Touch Optimizations === */
@@ -2937,7 +2940,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.49.1</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.49.2</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -5364,9 +5367,21 @@
 
                     const toggle = (e) => {
                         e.stopPropagation();
+                        const startTime = performance.now();
                         const isVisible = wrapper.style.display !== 'none';
-                        wrapper.style.display = isVisible ? 'none' : 'block';
+
+                        if (!isVisible) {
+                            // Opening - use visibility for instant response
+                            wrapper.style.display = 'block';
+                            wrapper.style.visibility = 'visible';
+                        } else {
+                            // Closing
+                            wrapper.style.display = 'none';
+                        }
+
                         toggleBtn.textContent = isVisible ? '[+]' : '[-]';
+                        const endTime = performance.now();
+                        console.log(`Toggle took ${endTime - startTime}ms`);
                     };
 
                     // Desktop: simple click
