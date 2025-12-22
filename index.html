@@ -2,10 +2,11 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.49.3
+    Version: 3.49.4
     Last Updated: 2025-12-22
 
     Changelog:
+    - v3.49.4: Added on-screen debug console! Shows touch event logs in a floating panel. Comprehensive logging for header and wrapper touch events to debug collapsing issue.
     - v3.49.3: Fixed double-toggle bug! Headers now track last touch event time and ignore clicks within 500ms to prevent touch+click double-firing.
     - v3.49.2: Performance boost! Added CSS containment and content-visibility to section-content for faster rendering. Added performance logging to debug toggle delays.
     - v3.49.1: Touch control fixes! Removed 300ms tap delay with preventDefault. Increased movement tolerance (15px) to prevent false scroll detection. Headers now respond instantly to taps!
@@ -2941,7 +2942,7 @@
             <div class="header-left">
                 <div class="game-branding">
                     <span class="logo">🌐</span>
-                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.49.3</span></h1>
+                    <h1>WikiPath <span style="font-size: 0.5em; color: #555; font-weight: 400;">v3.49.4</span></h1>
                 </div>
                 <div class="header-stats">
                     <div class="stat-item-compact">
@@ -3045,6 +3046,15 @@
         <div class="path-panel-content">
             <div class="path-timeline" id="path-timeline"></div>
         </div>
+    </div>
+
+    <!-- Debug Console Overlay -->
+    <div id="debug-console" style="position: fixed; bottom: 80px; left: 10px; right: 10px; max-height: 200px; background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; overflow-y: auto; z-index: 9999; display: none;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <strong style="color: #fff;">Debug Console</strong>
+            <button onclick="document.getElementById('debug-console').style.display='none'" style="background: #f00; color: #fff; border: none; padding: 2px 8px; border-radius: 3px;">Close</button>
+        </div>
+        <div id="debug-log" style="max-height: 150px; overflow-y: auto;"></div>
     </div>
 
     <!-- Floating Action Menu -->
@@ -3244,6 +3254,44 @@
     </div>
 
     <script>
+        // ======================
+        // DEBUG CONSOLE
+        // ======================
+        const debugConsole = document.getElementById('debug-console');
+        const debugLog = document.getElementById('debug-log');
+        let logCount = 0;
+        const maxLogs = 50;
+
+        // Show debug console on page load
+        debugConsole.style.display = 'block';
+
+        // Override console.log to show in our debug panel
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+
+            const message = args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ');
+
+            const logEntry = document.createElement('div');
+            logEntry.style.marginBottom = '2px';
+            logEntry.style.borderBottom = '1px solid #333';
+            logEntry.style.paddingBottom = '2px';
+            logEntry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+
+            debugLog.insertBefore(logEntry, debugLog.firstChild);
+
+            // Limit log entries
+            logCount++;
+            if (logCount > maxLogs) {
+                debugLog.removeChild(debugLog.lastChild);
+            }
+
+            // Auto-scroll to top (newest)
+            debugLog.scrollTop = 0;
+        };
+
         // ======================
         // TOP PROGRESS BAR
         // ======================
@@ -5316,18 +5364,22 @@
 
                     // Prevent touch events on content from bubbling to header
                     wrapper.addEventListener('touchstart', (e) => {
+                        console.log('[WRAPPER] touchstart - stopping propagation');
                         e.stopPropagation();
                     }, { passive: true });
 
                     wrapper.addEventListener('touchmove', (e) => {
+                        console.log('[WRAPPER] touchmove - stopping propagation');
                         e.stopPropagation();
                     }, { passive: true });
 
                     wrapper.addEventListener('touchend', (e) => {
+                        console.log('[WRAPPER] touchend - stopping propagation');
                         e.stopPropagation();
                     }, { passive: true });
 
                     wrapper.addEventListener('touchcancel', (e) => {
+                        console.log('[WRAPPER] touchcancel - stopping propagation');
                         e.stopPropagation();
                     }, { passive: true });
 
@@ -5401,6 +5453,7 @@
 
                     // Mobile: enhanced tap vs scroll detection
                     header.addEventListener('touchstart', (e) => {
+                        console.log('[HEADER] touchstart');
                         touchStartY = e.touches[0].clientY;
                         touchStartX = e.touches[0].clientX;
                         touchStartTime = Date.now();
@@ -5413,9 +5466,12 @@
                         const distanceY = Math.abs(touchY - touchStartY);
                         const distanceX = Math.abs(touchX - touchStartX);
 
+                        console.log(`[HEADER] touchmove - distance: ${distanceY}px Y, ${distanceX}px X`);
+
                         // Only mark as moved if significant movement (more than 15px)
                         if (distanceY > 15 || distanceX > 15) {
                             isTouchMoveDetected = true;
+                            console.log('[HEADER] Marked as SCROLL (movement > 15px)');
                         }
                     }, { passive: true });
 
@@ -5427,12 +5483,17 @@
                         const touchDistanceX = Math.abs(touchEndX - touchStartX);
                         const totalDistance = Math.sqrt(touchDistanceY * touchDistanceY + touchDistanceX * touchDistanceX);
 
+                        console.log(`[HEADER] touchend - moved: ${isTouchMoveDetected}, distance: ${totalDistance}px`);
+
                         // Toggle if it was a tap (not a scroll) - be generous with movement tolerance
                         if (!isTouchMoveDetected && totalDistance < 20) {
+                            console.log('[HEADER] TAP detected - toggling!');
                             e.preventDefault(); // Prevent 300ms delay and click event
                             lastTouchEndTime = Date.now(); // Track when touch event fired
                             toggle(e);
                             header.setAttribute('aria-expanded', wrapper.style.display !== 'none');
+                        } else {
+                            console.log('[HEADER] SCROLL detected - NOT toggling');
                         }
                     }, { passive: false }); // NOT passive - we need preventDefault
 
