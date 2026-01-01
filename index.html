@@ -2,10 +2,19 @@
 <html lang="en">
 <!--
     WikiPath - Wikipedia Navigation Game
-    Version: 3.52.1
-    Last Updated: 2025-12-22
+    Version: 3.55.1
+    Last Updated: 2026-01-01
 
     Changelog:
+    - v3.55.1: Consistent table column alignment! Added fixed column widths and table-layout:fixed so multiple tables with same structure align perfectly with consistent spacing.
+    - v3.55.0: Wikipedia table styling! Added proper wikitable styles with borders, bold headers, centered captions, and harmonized image columns. Tables now match Wikipedia's appearance.
+    - v3.54.2: Clean table-like gallery layout! Removed borders, aligned images and text horizontally, centered captions. Gallery now has clean spacing like a table.
+    - v3.54.1: Harmonized gallery sizing! Fixed box-sizing and line-height to match Wikipedia's packed gallery layout. All images now align at same height with proper spacing.
+    - v3.54.0: FIXED missing gallery images! srcset URLs now properly fixed - all // URLs within srcset attributes are converted to https://. Gallery images now load correctly!
+    - v3.53.3: Added comprehensive debug logging for image processing and gallery structure to diagnose missing images issue
+    - v3.53.2: FIXED missing gallery images! File: link unwrapping now preserves entire content structure, not just img tags. All gallery images now display correctly!
+    - v3.53.1: PERFECT Wikipedia gallery matching! Added full support for mw-gallery-packed layout (Pizza preparation/baking sections). Galleries now display horizontally with proper justified alignment, captions, and borders exactly like Wikipedia.
+    - v3.53.0: Wikipedia layout improvements! Removed Commons logos and small icon images. Fixed multi-column layouts (galleries, tables) to display horizontally. Better support for preparation/process sections.
     - v3.52.1: Fixed broken references (debugConsole, transition-tester)
     - v3.52.0: Unified debug panel with Console/Debug/Transition tabs, single bottom-left button
     - v3.51.8: Fixed all - monospace minimum, tester at bottom, transitions VERY different, green=selected
@@ -1640,37 +1649,193 @@
 
         /* Gallery Images */
         .wikipedia-article .gallery {
-            margin: 2px;
-            padding: 2px;
+            margin: 1em 0;
+            padding: 0;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 0;
+            list-style: none;
         }
 
-        .wikipedia-article .gallerybox {
-            margin: 2px;
-            padding: 5px;
-            display: inline-block;
-            vertical-align: top;
-            background-color: #f8f9fa;
-            border: 1px solid #c8ccd1;
+        /* Packed gallery - table-like layout */
+        .wikipedia-article .mw-gallery-packed {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 15px;
+            line-height: 0;
+        }
+
+        /* Center alignment for galleries */
+        .wikipedia-article ul.center,
+        .wikipedia-article .gallery.center {
+            margin-left: auto;
+            margin-right: auto;
             text-align: center;
         }
 
-        .wikipedia-article .gallerybox .thumb {
-            margin: 2px auto;
+        .wikipedia-article .gallerycaption {
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            padding: 0.5em 0 1em 0;
+            display: block;
+            line-height: 1.4;
+        }
+
+        .wikipedia-article .gallerybox {
+            margin: 0;
+            padding: 0;
+            display: inline-block;
+            vertical-align: top;
+            background-color: transparent;
             border: none;
+            text-align: center;
+            box-sizing: content-box;
+        }
+
+        .wikipedia-article .mw-gallery-packed .gallerybox {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: top;
+            margin: 0;
+            box-sizing: content-box;
+        }
+
+        .wikipedia-article .gallerybox .thumb {
+            margin: 0 0 8px 0;
             background: transparent;
             padding: 0;
+            border: none;
+            display: block;
+            box-sizing: content-box;
+            line-height: 0;
+        }
+
+        .wikipedia-article .mw-gallery-packed .gallerybox .thumb {
+            margin: 0 0 8px 0;
         }
 
         .wikipedia-article .gallerytext,
         .wikipedia-article .gallerytxt {
             font-size: 0.85em;
             line-height: 1.4em;
-            padding: 2px 4px;
+            padding: 0;
             color: #202122;
             text-align: center;
+            word-wrap: break-word;
+            background-color: transparent;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .wikipedia-article .mw-gallery-packed .gallerytext {
+            line-height: 1.4em;
+            width: 100%;
+        }
+
+        /* Gallery images should respect their dimensions */
+        .wikipedia-article .gallery img,
+        .wikipedia-article .gallerybox img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Multi-column layouts for process/preparation sections */
+        .wikipedia-article ul.gallery,
+        .wikipedia-article div.gallery,
+        .wikipedia-article .tsingle {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Wikipedia wikitable styles */
+        .wikipedia-article table.wikitable {
+            border-collapse: collapse;
+            border: 1px solid #a2a9b1;
+            background-color: #f8f9fa;
+            color: #202122;
+            margin: 1em 0;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .wikipedia-article table.wikitable > caption {
+            font-weight: bold;
+            padding: 0.5em;
+            text-align: center;
+        }
+
+        .wikipedia-article table.wikitable th {
+            background-color: #eaecf0;
+            font-weight: bold;
+            text-align: center;
+            padding: 0.4em;
+            border: 1px solid #a2a9b1;
+            vertical-align: middle;
+        }
+
+        .wikipedia-article table.wikitable td {
+            border: 1px solid #a2a9b1;
+            padding: 0.4em;
+            vertical-align: top;
+        }
+
+        /* Fixed column widths for consistent alignment across multiple tables */
+        .wikipedia-article table.wikitable th:nth-child(1),
+        .wikipedia-article table.wikitable td:nth-child(1) {
+            width: 180px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .wikipedia-article table.wikitable th:nth-child(2),
+        .wikipedia-article table.wikitable td:nth-child(2) {
+            width: 15%;
+        }
+
+        .wikipedia-article table.wikitable th:nth-child(3),
+        .wikipedia-article table.wikitable td:nth-child(3) {
+            width: 25%;
+        }
+
+        .wikipedia-article table.wikitable th:nth-child(4),
+        .wikipedia-article table.wikitable td:nth-child(4) {
+            width: 12%;
+        }
+
+        .wikipedia-article table.wikitable th:nth-child(5),
+        .wikipedia-article table.wikitable td:nth-child(5) {
+            width: 12%;
+        }
+
+        .wikipedia-article table.wikitable td img {
+            max-width: 160px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Handle tables with side-by-side images */
+        .wikipedia-article table {
+            border-collapse: collapse;
+            margin: 1em 0;
+        }
+
+        .wikipedia-article table td {
+            vertical-align: top;
+            padding: 5px;
+        }
+
+        /* Support for Wikipedia's thumbnail tables */
+        .wikipedia-article table.mw-content-ltr td,
+        .wikipedia-article table td.tsingle {
+            display: table-cell;
         }
 
         /* Make sure content flows around infobox */
@@ -5330,12 +5495,17 @@
                 articleDiv.className = 'wikipedia-article';
                 
                 let htmlContent = pageData.text['*'];
-                
+
+                // Fix src attributes
                 htmlContent = htmlContent.replace(/src="\/\//g, 'src="https://');
-                htmlContent = htmlContent.replace(/srcset="\/\//g, 'srcset="https://');
                 htmlContent = htmlContent.replace(/src="\/(?!\/)/g, 'src="https://en.wikipedia.org/');
-                htmlContent = htmlContent.replace(/srcset="\/(?!\/)/g, 'srcset="https://en.wikipedia.org/');
-                
+
+                // Fix srcset attributes - replace // with https:// anywhere in srcset
+                htmlContent = htmlContent.replace(/srcset="([^"]*)"/g, (match, srcsetContent) => {
+                    const fixed = srcsetContent.replace(/ \/\//g, ' https://').replace(/^\/\//g, 'https://');
+                    return `srcset="${fixed}"`;
+                });
+
                 articleDiv.innerHTML = htmlContent;
 
                 // DEBUG: Check what images we have
@@ -5425,8 +5595,29 @@
                     }
                 });
 
+                // Remove small icon images (Commons logos, icons, etc.) that clutter the layout
+                articleDiv.querySelectorAll('img').forEach(img => {
+                    const src = img.getAttribute('src') || '';
+                    const alt = (img.getAttribute('alt') || '').toLowerCase();
+
+                    // Remove Commons logos and other small icon/UI images
+                    const isSmallIcon = (
+                        src.includes('Commons-logo') ||
+                        src.includes('commons-logo') ||
+                        src.includes('Sister_Projects') ||
+                        src.includes('Wikimedia-logo') ||
+                        (src.includes('40px-') && (alt.includes('logo') || alt.includes('icon'))) ||
+                        (src.includes('20px-') && (alt.includes('logo') || alt.includes('icon'))) ||
+                        (src.includes('15px-'))
+                    );
+
+                    if (isSmallIcon) {
+                        img.remove();
+                    }
+                });
+
                 console.log(`After cleanup: ${articleDiv.querySelectorAll('img').length} images remaining`);
-                
+
                 if (gameState.currentPage === gameState.startPage && gameState.path.length === 1) {
                     const indicator = document.createElement('div');
                     indicator.className = 'starting-page-indicator';
@@ -5791,7 +5982,7 @@
 
             processLinks() {
                 const links = this.gameArea.querySelectorAll('a');
-                
+
                 links.forEach(link => {
                     const href = link.getAttribute('href');
                     
@@ -5978,8 +6169,10 @@
                         // For non-article links (like File: links), preserve any images they contain
                         const containsImage = link.querySelector('img');
                         if (containsImage) {
-                            // Unwrap the image from the link but keep the image
-                            link.parentNode.insertBefore(containsImage, link);
+                            // Unwrap the link but keep ALL its contents (preserves gallery structure)
+                            while (link.firstChild) {
+                                link.parentNode.insertBefore(link.firstChild, link);
+                            }
                             link.remove();
                         } else {
                             // Remove non-article links that don't contain images
